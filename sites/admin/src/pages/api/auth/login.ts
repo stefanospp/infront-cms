@@ -13,8 +13,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    const passwordHash = import.meta.env.ADMIN_PASSWORD_HASH;
-    const sessionSecret = import.meta.env.SESSION_SECRET;
+    const passwordHash = process.env.ADMIN_PASSWORD_HASH;
+    const sessionSecret = process.env.SESSION_SECRET;
 
     if (!passwordHash || !sessionSecret) {
       console.error('Missing ADMIN_PASSWORD_HASH or SESSION_SECRET env vars');

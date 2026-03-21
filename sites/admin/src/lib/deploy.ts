@@ -100,8 +100,8 @@ async function wranglerDeploy(
       timeout: 120_000,
       env: {
         ...process.env,
-        CLOUDFLARE_API_TOKEN: import.meta.env.CLOUDFLARE_API_TOKEN,
-        CLOUDFLARE_ACCOUNT_ID: import.meta.env.CLOUDFLARE_ACCOUNT_ID,
+        CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
+        CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
       },
     },
   );

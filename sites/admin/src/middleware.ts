@@ -23,7 +23,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect('/login');
   }
 
-  const secret = import.meta.env.SESSION_SECRET;
+  const secret = process.env.SESSION_SECRET;
 
   if (!secret) {
     console.error('SESSION_SECRET environment variable is not set');
