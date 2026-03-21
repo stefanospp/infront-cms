@@ -1,3 +1,4 @@
+import { env } from '@/lib/env';
 // ---------------------------------------------------------------------------
 // Cloudflare API wrapper for Pages, DNS, and custom domains
 // ---------------------------------------------------------------------------
@@ -9,7 +10,7 @@ const CF_API_BASE = 'https://api.cloudflare.com/client/v4';
 // ---------------------------------------------------------------------------
 
 async function cfFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const token = process.env.CLOUDFLARE_API_TOKEN;
+  const token = env('CLOUDFLARE_API_TOKEN');
   if (!token) {
     throw new Error('CLOUDFLARE_API_TOKEN is not set');
   }
@@ -50,7 +51,7 @@ async function cfFetch<T>(path: string, options?: RequestInit): Promise<T> {
 export async function createPagesProject(
   slug: string,
 ): Promise<{ projectName: string; pagesDevUrl: string }> {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const accountId = env('CLOUDFLARE_ACCOUNT_ID');
   if (!accountId) {
     throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
   }
@@ -83,7 +84,7 @@ export async function addCustomDomain(
   projectName: string,
   domain: string,
 ): Promise<void> {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const accountId = env('CLOUDFLARE_ACCOUNT_ID');
   if (!accountId) {
     throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
   }
@@ -104,7 +105,7 @@ export async function removeCustomDomain(
   projectName: string,
   domain: string,
 ): Promise<void> {
-  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const accountId = env('CLOUDFLARE_ACCOUNT_ID');
   if (!accountId) {
     throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
   }
@@ -129,7 +130,7 @@ export async function createDnsRecord(
   name: string,
   target: string,
 ): Promise<string> {
-  const zoneId = process.env.CLOUDFLARE_ZONE_ID;
+  const zoneId = env('CLOUDFLARE_ZONE_ID');
   if (!zoneId) {
     throw new Error('CLOUDFLARE_ZONE_ID is not set');
   }
@@ -155,7 +156,7 @@ export async function createDnsRecord(
  * Delete a DNS record.
  */
 export async function deleteDnsRecord(recordId: string): Promise<void> {
-  const zoneId = process.env.CLOUDFLARE_ZONE_ID;
+  const zoneId = env('CLOUDFLARE_ZONE_ID');
   if (!zoneId) {
     throw new Error('CLOUDFLARE_ZONE_ID is not set');
   }

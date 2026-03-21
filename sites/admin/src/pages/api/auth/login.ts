@@ -1,3 +1,4 @@
+import { env } from '@/lib/env';
 import type { APIRoute } from 'astro';
 import { verifyPassword, createSessionToken } from '@/lib/auth';
 
@@ -13,8 +14,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    const passwordHash = process.env.ADMIN_PASSWORD_HASH;
-    const sessionSecret = process.env.SESSION_SECRET;
+    const passwordHash = env('ADMIN_PASSWORD_HASH');
+    const sessionSecret = env('SESSION_SECRET');
 
     if (!passwordHash || !sessionSecret) {
       console.error('Missing ADMIN_PASSWORD_HASH or SESSION_SECRET env vars');

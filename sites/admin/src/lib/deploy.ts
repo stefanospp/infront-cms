@@ -1,3 +1,4 @@
+import { env } from '@/lib/env';
 // ---------------------------------------------------------------------------
 // Deploy orchestrator — manages the full build-and-deploy pipeline
 // ---------------------------------------------------------------------------
@@ -99,9 +100,9 @@ async function wranglerDeploy(
       cwd: root,
       timeout: 120_000,
       env: {
-        ...process.env,
-        CLOUDFLARE_API_TOKEN: process.env.CLOUDFLARE_API_TOKEN,
-        CLOUDFLARE_ACCOUNT_ID: process.env.CLOUDFLARE_ACCOUNT_ID,
+        ...globalThis.process?.env,
+        CLOUDFLARE_API_TOKEN: env('CLOUDFLARE_API_TOKEN') ?? '',
+        CLOUDFLARE_ACCOUNT_ID: env('CLOUDFLARE_ACCOUNT_ID') ?? '',
       },
     },
   );
