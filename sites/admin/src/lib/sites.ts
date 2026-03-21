@@ -1,7 +1,5 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
-import { readFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 
 export interface SiteInfo {
   slug: string;
@@ -18,13 +16,7 @@ export interface SiteInfo {
 
 /** Resolve the monorepo root. */
 function getMonorepoRoot(): string {
-  try {
-    readFileSync('/app/package.json');
-    return '/app';
-  } catch {
-    const currentDir = dirname(fileURLToPath(import.meta.url));
-    return join(currentDir, '..', '..', '..', '..');
-  }
+  return '/app';
 }
 
 /**

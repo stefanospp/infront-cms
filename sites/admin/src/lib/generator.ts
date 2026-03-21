@@ -46,20 +46,10 @@ export interface GeneratorResult {
 
 /**
  * Resolve the monorepo root.
- * In Docker: /app
- * In dev (source): sites/admin/src/lib -> go up 4 levels
- * In dev (built): sites/admin/dist/server/chunks -> go up 5 levels
+ * Hardcoded to /app for Docker. For local dev, override via MONOREPO_ROOT env.
  */
 export function getMonorepoRoot(): string {
-  // Docker: check if /app/package.json exists
-  try {
-    fs.readFileSync('/app/package.json');
-    return '/app';
-  } catch {
-    // Not in Docker — resolve from source file location
-    const thisFile = new URL(import.meta.url).pathname;
-    return path.resolve(path.dirname(thisFile), '..', '..', '..', '..');
-  }
+  return '/app';
 }
 
 const SLUG_RE = /^[a-z][a-z0-9-]{1,}$/;
