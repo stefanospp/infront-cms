@@ -78,6 +78,7 @@ interface GeneratorResult {
 interface DeployStatusResponse {
   status: 'pending' | 'building' | 'deploying' | 'live' | 'failed';
   error?: string;
+  buildLog?: string;
 }
 
 interface FormData {
@@ -1445,6 +1446,18 @@ export default function SiteWizard({ initialTemplateId }: SiteWizardProps) {
                 Retry Deploy
               </button>
             </div>
+          )}
+
+          {/* Build log */}
+          {deployStatus?.buildLog && (
+            <details className={`mt-4 ${isFailed ? '' : 'mt-2'}`}>
+              <summary className="text-xs text-neutral-400 cursor-pointer hover:text-neutral-600">
+                {isFailed ? 'Show build log' : 'Build log'}
+              </summary>
+              <pre className="mt-2 p-3 bg-neutral-900 text-neutral-200 text-xs rounded-lg overflow-x-auto max-h-48 overflow-y-auto font-mono whitespace-pre-wrap">
+                {deployStatus.buildLog}
+              </pre>
+            </details>
           )}
 
           {/* In-progress message */}

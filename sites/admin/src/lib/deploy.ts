@@ -143,7 +143,7 @@ export async function deployNewSite(slug: string): Promise<void> {
   const buildResult = await buildSite(slug);
 
   if (!buildResult.success) {
-    meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed', buildLog: buildResult.error ?? null };
+    meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed', buildLog: buildResult.buildLog ?? buildResult.error ?? null };
     try {
       await writeDeployMetadata(slug, meta);
     } catch {
@@ -152,8 +152,8 @@ export async function deployNewSite(slug: string): Promise<void> {
     return;
   }
 
-  // Store build success log
-  meta = { ...meta, buildLog: 'Build completed successfully' };
+  // Store build log
+  meta = { ...meta, buildLog: buildResult.buildLog ?? 'Build completed successfully' };
 
   // ------ Step 2: Deploy ------
   try {
@@ -222,7 +222,7 @@ export async function redeploySite(slug: string): Promise<void> {
   const buildResult = await buildSite(slug);
 
   if (!buildResult.success) {
-    meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed' };
+    meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed', buildLog: buildResult.buildLog ?? buildResult.error ?? null };
     try {
       await writeDeployMetadata(slug, meta);
     } catch {
@@ -233,7 +233,7 @@ export async function redeploySite(slug: string): Promise<void> {
 
   // ------ Step 2: Deploy ------
   try {
-    meta = { ...meta, status: 'deploying' };
+    meta = { ...meta, status: 'deploying', buildLog: buildResult.buildLog ?? 'Build completed successfully' };
     await writeDeployMetadata(slug, meta);
 
     // Upload new assets — project already exists

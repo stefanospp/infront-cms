@@ -28,7 +28,7 @@ const deployStatusBadge: Record<string, { bg: string; text: string; label: strin
   failed: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
 };
 
-const defaultDeployBadge = { bg: 'bg-neutral-100', text: 'text-neutral-400', label: 'Not deployed' };
+const defaultDeployBadge: { bg: string; text: string; label: string; pulse?: boolean } = { bg: 'bg-neutral-100', text: 'text-neutral-400', label: 'Not deployed' };
 
 export default function SiteTable() {
   const [sites, setSites] = useState<SiteInfo[]>([]);
