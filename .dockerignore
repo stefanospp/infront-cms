@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.astro
+.wrangler
+.env
+*.log
+.DS_Store
+.claude
+tests
+.github
+prd.md

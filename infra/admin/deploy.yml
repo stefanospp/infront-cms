@@ -1,0 +1,47 @@
+# Kamal deployment config for the admin UI
+# Deploy with: kamal deploy -c infra/admin/deploy.yml
+#
+# Architecture:
+#   Cloudflare (SSL + Zero Trust) -> VPS:8443 -> admin container:4321
+#   Cloudflare DNS: web.infront.cy -> VPS IP (proxied)
+
+service: infront-admin
+
+image: infront-admin
+
+servers:
+  web:
+    hosts:
+      - xxx.xxx.xxx.xxx    # Replace with your Hetzner VPS IP
+    options:
+      publish:
+        - "8443:4321"      # Port 8443 — Cloudflare-supported HTTPS port, avoids Coolify conflict on 80/443
+      volume:
+        - infront-admin-sites:/app/sites
+
+registry:
+  server: ghcr.io
+  username:
+    - GITHUB_USERNAME
+  password:
+    - GITHUB_TOKEN
+
+builder:
+  dockerfile: Dockerfile
+  context: .
+
+# No Kamal proxy/traefik — Cloudflare handles SSL and routing
+proxy:
+  disabled: true
+
+env:
+  clear:
+    HOST: "0.0.0.0"
+    PORT: "4321"
+    NODE_ENV: "production"
+  secret:
+    - ADMIN_PASSWORD_HASH
+    - SESSION_SECRET
+    - CLOUDFLARE_API_TOKEN
+    - CLOUDFLARE_ACCOUNT_ID
+    - CLOUDFLARE_ZONE_ID
