@@ -45,10 +45,17 @@ export interface GeneratorResult {
 // ---------------------------------------------------------------------------
 
 /**
- * Resolve the monorepo root from import.meta.url.
- * Path: sites/admin/src/lib/generator.ts -> go up 4 levels to reach root.
+ * Resolve the monorepo root.
+ * In Docker: /app
+ * In dev (source): sites/admin/src/lib -> go up 4 levels
+ * In dev (built): sites/admin/dist/server/chunks -> go up 5 levels
  */
 export function getMonorepoRoot(): string {
+  // Docker: always /app
+  if (fs.existsSync('/app/package.json')) {
+    return '/app';
+  }
+  // Local dev: resolve from source file location
   const thisFile = new URL(import.meta.url).pathname;
   return path.resolve(path.dirname(thisFile), '..', '..', '..', '..');
 }

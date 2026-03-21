@@ -1,4 +1,5 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -15,10 +16,12 @@ export interface SiteInfo {
   lastDeployAt?: string | null;
 }
 
-/** Resolve the monorepo root from the current file location. */
+/** Resolve the monorepo root. */
 function getMonorepoRoot(): string {
+  if (existsSync('/app/package.json')) {
+    return '/app';
+  }
   const currentDir = dirname(fileURLToPath(import.meta.url));
-  // currentDir = <root>/sites/admin/src/lib → go up 4 levels
   return join(currentDir, '..', '..', '..', '..');
 }
 
