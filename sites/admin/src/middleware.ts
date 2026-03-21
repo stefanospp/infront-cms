@@ -1,8 +1,16 @@
-import { env } from '@/lib/env';
 import { defineMiddleware } from 'astro:middleware';
 import { verifySessionToken } from './lib/auth';
+import { readFileSync } from 'node:fs';
 
-/** Routes that do not require authentication. */
+function getSessionSecret(): string | undefined {
+  try {
+    const data = JSON.parse(readFileSync('/app/runtime-env.json', 'utf-8'));
+    return data['SESSION_SECRET'];
+  } catch {
+    return undefined;
+  }
+}
+
 const PUBLIC_PATHS = ['/login'];
 const PUBLIC_PREFIXES = ['/api/auth/'];
 
@@ -24,7 +32,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect('/login');
   }
 
-  const secret = env('SESSION_SECRET');
+  const secret = getSessionSecret();
 
   if (!secret) {
     console.error('SESSION_SECRET environment variable is not set');
