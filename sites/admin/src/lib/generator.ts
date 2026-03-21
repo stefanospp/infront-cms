@@ -488,6 +488,9 @@ export async function generateSite(
       try {
         await fs.unlink(path.join(pagesDir, 'about-cms.astro'));
       } catch { /* file may not exist */ }
+      try {
+        await fs.unlink(path.join(pagesDir, '[...slug].astro'));
+      } catch { /* file may not exist */ }
     }
 
     // 8. Create empty src/components/ for site-specific overrides

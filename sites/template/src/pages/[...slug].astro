@@ -1,0 +1,34 @@
+---
+import "../styles/global.css";
+import SingleColumn from '@agency/ui/layouts/SingleColumn.astro';
+import { getDirectusImageUrl } from '@agency/utils';
+import { getPages, getPageBySlug } from '../lib/directus';
+import config from '../../site.config';
+
+export async function getStaticPaths() {
+  const pages = await getPages();
+  return pages.map((page: any) => ({
+    params: { slug: page.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const page = await getPageBySlug(slug!);
+
+if (!page) {
+  return Astro.redirect('/404');
+}
+
+const title = page.seo_title ?? page.title;
+const description = page.seo_description ?? '';
+const ogImage = page.og_image && config.cms?.url
+  ? getDirectusImageUrl(config.cms.url, page.og_image)
+  : undefined;
+---
+
+<SingleColumn title={title} description={description} ogImage={ogImage} config={config}>
+  <article class="prose prose-lg mx-auto max-w-none text-neutral-700">
+    <h1 class="text-4xl font-heading font-bold text-neutral-900 mb-6">{page.title}</h1>
+    <Fragment set:html={page.content} />
+  </article>
+</SingleColumn>
