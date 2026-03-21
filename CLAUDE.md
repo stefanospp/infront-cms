@@ -88,6 +88,7 @@ tests/               Playwright e2e, Vitest integration, Lighthouse CI
 1. **Theme tokens** (`src/styles/global.css` `@theme` block) — colours, fonts, spacing per site
 2. **Layout templates** (`packages/ui/src/layouts/`) — page structure (BaseLayout, SingleColumn, WithSidebar, FullWidth, BlogPost)
 3. **Component variants** — visual treatment via `variant` prop on shared components
+4. **Component overrides** (`sites/<slug>/src/components/`) — per-site replacements for any shared component, resolved automatically via Vite plugin
 
 ## When building a new site
 
@@ -107,15 +108,201 @@ tests/               Playwright e2e, Vitest integration, Lighthouse CI
 6. Connect Directus data for CMS clients
 7. Test locally, deploy to preview, iterate, launch
 
+## Editing an existing site
+
+After a site is generated and deployed, all design and content changes are made by editing files in `sites/<slug>/`. Preview locally, then redeploy.
+
+### Workflow
+
+```
+1. Edit files in sites/<slug>/
+2. Preview: pnpm dev --filter @agency/<slug>
+3. Redeploy via admin UI "Redeploy" button (or: pnpm build --filter @agency/<slug> && wrangler pages deploy)
+```
+
+### Change brand colours or fonts
+
+Edit `sites/<slug>/src/styles/global.css`. All shared components read from these tokens — a single change updates the entire site.
+
+```css
+@theme {
+  /* Change primary colour from blue to green */
+  --color-primary-600: #16a34a;
+
+  /* Change heading font */
+  --font-heading: "Playfair Display", serif;
+}
+```
+
+Every `--color-primary-*`, `--color-secondary-*`, `--color-accent-*`, and `--color-neutral-*` shade (50–950) can be adjusted independently.
+
+### Change site identity, nav, footer, SEO, or contact info
+
+Edit `sites/<slug>/site.config.ts`. This is the single source of truth for all non-visual site settings.
+
+```typescript
+// Change nav items
+nav: {
+  items: [
+    { label: 'About', href: '/about' },
+    { label: 'Services', href: '/services' },  // add a new page
+    { label: 'Contact', href: '/contact' },
+  ],
+  cta: { label: 'Book Now', href: '/contact' },  // change CTA text
+},
+
+// Change theme behaviour
+theme: {
+  navStyle: 'fixed',       // 'sticky' | 'fixed' | 'static'
+  footerStyle: 'minimal',  // 'simple' | 'multi-column' | 'minimal'
+  heroDefault: 'split',    // 'centered' | 'split' | 'fullscreen' | 'minimal' | 'video'
+  borderStyle: 'pill',     // 'sharp' | 'rounded' | 'pill'
+},
+```
+
+### Change a component variant
+
+Edit the page file in `sites/<slug>/src/pages/`. Change the `variant` prop on any component.
+
+```astro
+<!-- Change hero from centered to split -->
+<Hero variant="split" heading="..." subheading="..." />
+
+<!-- Change card grid from 3 columns to 2 -->
+<CardGrid variant="two-column" cards={[...]} />
+
+<!-- Change CTA from default to minimal -->
+<CTA variant="minimal" heading="..." buttonText="..." buttonHref="..." />
+```
+
+**Available variants:**
+
+| Component | Variants |
+|-----------|----------|
+| Hero | `centered`, `split`, `fullscreen`, `minimal`, `video` |
+| CTA | `default`, `split`, `minimal` |
+| CardGrid | `two-column`, `three-column`, `four-column`, `masonry`, `list` |
+| Testimonials | `default`, `carousel`, `featured` |
+| TeamGrid | `default`, `compact`, `detailed` |
+| FAQ | `default`, `two-column` |
+| Features | `grid`, `alternating`, `icon-list` |
+| Gallery | `grid`, `masonry` |
+| Timeline | `vertical`, `alternating` |
+| StatsCounter | `inline`, `grid` |
+| LogoCloud | `grid`, `scrolling` |
+| PricingTable | `two-column`, `three-column` |
+| Section | background: `light`, `dark`, `primary` |
+| Footer | via `theme.footerStyle`: `simple`, `multi-column`, `minimal` |
+
+### Add, remove, or reorder sections on a page
+
+Edit the `.astro` page file directly. Sections are just component invocations — move them around, delete them, or add new ones.
+
+```astro
+<!-- Add a stats section above the CTA -->
+<Section heading="By the numbers">
+  <StatsCounter
+    variant="grid"
+    stats={[
+      { value: '500', suffix: '+', label: 'Clients' },
+      { value: '99', suffix: '%', label: 'Satisfaction' },
+    ]}
+  />
+</Section>
+
+<!-- Remove testimonials: just delete the <Section>/<Testimonials> block -->
+```
+
+Import any new component at the top of the file:
+
+```astro
+---
+import StatsCounter from '@agency/ui/components/StatsCounter.astro';
+---
+```
+
+### Add a new page
+
+Create a new `.astro` file in `sites/<slug>/src/pages/`. Use shared layouts and components.
+
+```astro
+---
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import Features from '@agency/ui/components/Features.astro';
+import Section from '@agency/ui/components/Section.astro';
+import config from '../../site.config';
+---
+
+<FullWidth title="Services" description="What we offer" config={config}>
+  <Hero variant="minimal" heading="Our Services" />
+  <Section heading="What we do">
+    <Features variant="grid" features={[
+      { title: 'Web Design', description: 'Beautiful, responsive websites.' },
+      { title: 'Development', description: 'Fast, accessible, SEO-optimised.' },
+    ]} />
+  </Section>
+</FullWidth>
+```
+
+Then add it to the nav in `site.config.ts`.
+
+### Override a shared component (bespoke design)
+
+For a fully custom component that only applies to one site, create a file in `sites/<slug>/src/components/` with the same name as the shared component.
+
+```
+sites/<slug>/src/components/Hero.astro    ← overrides @agency/ui/components/Hero.astro
+sites/<slug>/src/components/Footer.astro  ← overrides @agency/ui/components/Footer.astro
+```
+
+**How it works:** A Vite plugin (`componentOverridePlugin`) intercepts `@agency/ui/components/*` imports and checks for a local override first. No import changes needed in page files — the override is automatic.
+
+**Rules for overrides:**
+- The override file must accept the same props interface as the shared component (or a superset)
+- Use Tailwind tokens (`primary-600`, `font-heading`, etc.) so the override still respects site theming
+- Overrides do **not** receive shared component bug fixes — you maintain them yourself
+- The admin UI shows which components are overridden on the site management page (`/sites/<slug>`)
+
+**To remove an override:** delete the file from `sites/<slug>/src/components/`. The site reverts to the shared version.
+
+### Change the page layout
+
+Each page wraps its content in a layout component. Change the import to switch layouts.
+
+```astro
+<!-- From single column... -->
+import SingleColumn from '@agency/ui/layouts/SingleColumn.astro';
+<!-- ...to full width -->
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+```
+
+**Available layouts:** `FullWidth`, `SingleColumn`, `WithSidebar`, `BlogPost`, `BaseLayout`
+
+### Quick reference: what to edit for common requests
+
+| Client request | File to edit | What to change |
+|---------------|-------------|----------------|
+| "Change our brand colour" | `src/styles/global.css` | `--color-primary-*` values in `@theme` |
+| "Use a different font" | `src/styles/global.css` | `--font-heading` / `--font-body` in `@theme` |
+| "Update phone number" | `site.config.ts` | `contact.phone` |
+| "Add a new nav link" | `site.config.ts` | `nav.items` array |
+| "Make the hero bigger" | `src/pages/index.astro` | `variant="fullscreen"` on `<Hero>` |
+| "Add a pricing page" | `src/pages/pricing.astro` | Create new file with `PricingTable` component |
+| "Different footer style" | `site.config.ts` | `theme.footerStyle` |
+| "Completely custom hero" | `src/components/Hero.astro` | Create override file |
+| "Add team photos" | `src/pages/about.astro` | Add `photo` prop to `TeamGrid` members |
+| "Remove the map" | `src/pages/contact.astro` | Delete the `<Map>` component |
+
 ## Admin UI
 
 - **Location:** `sites/admin/` — Astro 6 SSR with `@astrojs/node` adapter
 - **Auth:** bcrypt password + JWT session cookie (24h expiry)
 - **Env vars:** `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ZONE_ID`
 - **Dashboard:** lists all sites with deploy status badges, staging/production URLs
-- **Templates:** gallery of predefined templates from `packages/config/src/templates.ts`
+- **Templates:** gallery of 5 templates (business-starter, restaurant, portfolio, saas, professional) from `packages/config/src/templates.ts`
 - **Wizard:** 5-step form → auto-builds and deploys to Cloudflare Pages → live at `<slug>.infront.cy`
-- **Site management** (`/sites/<slug>`): redeploy, add/remove custom domain
+- **Site management** (`/sites/<slug>`): redeploy, add/remove custom domain, view component overrides
 - **Deployment:** PM2 on Hetzner VPS behind Caddy reverse proxy
 
 ## Auto-deploy pipeline
