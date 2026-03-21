@@ -52,16 +52,37 @@ export interface GeneratorResult {
  * Hardcoded to /app for Docker. For local dev, override via MONOREPO_ROOT env.
  */
 export function getMonorepoRoot(): string {
-  return '/app';
+  return process.env.MONOREPO_ROOT || '/app';
 }
 
-const SLUG_RE = /^[a-z][a-z0-9-]{1,}$/;
+const SLUG_RE = /^[a-z][a-z0-9-]{1,62}$/;
 
 function validateSlug(slug: string): string | null {
   if (!SLUG_RE.test(slug)) {
-    return 'Slug must be lowercase, start with a letter, contain only letters/numbers/hyphens, and be at least 2 characters.';
+    return 'Slug must be lowercase, start with a letter, contain only letters/numbers/hyphens, and be 2–63 characters.';
   }
   return null;
+}
+
+const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
+
+function validateDomain(domain: string): string | null {
+  if (!DOMAIN_RE.test(domain)) {
+    return 'Domain must be a valid hostname (lowercase letters, numbers, hyphens, dots).';
+  }
+  return null;
+}
+
+/** Strip characters that could break CSS string interpolation */
+function sanitizeFont(name: string): string {
+  return name.replace(/["\\;{}]/g, '');
+}
+
+/** Validate a CSS color value (hex, rgb, hsl, oklch) */
+const COLOR_RE = /^(#[0-9a-fA-F]{3,8}|(?:rgb|hsl|oklch)a?\([^)]+\))$/;
+
+function validateColor(value: string): boolean {
+  return COLOR_RE.test(value);
 }
 
 /**
@@ -151,8 +172,8 @@ ${colorEntries('accent', tokens.colors.accent)}
 ${colorEntries('neutral', tokens.colors.neutral)}
 
   /* Fonts */
-  --font-heading: "${tokens.fonts.heading}", sans-serif;
-  --font-body: "${tokens.fonts.body}", sans-serif;
+  --font-heading: "${sanitizeFont(tokens.fonts.heading)}", sans-serif;
+  --font-body: "${sanitizeFont(tokens.fonts.body)}", sans-serif;
 }
 
 /* Base styles */
@@ -291,17 +312,13 @@ function renderSection(
 
   // Add config prop if the component needs it
   if (CONFIG_COMPONENTS.has(section.component)) {
-    attrs.push('{...{ config }}');
+    attrs.push('config={config}');
   }
 
   // Add remaining props
   for (const [key, value] of Object.entries(section.props)) {
     const serialized = serializePropValue(value);
-    if (serialized.startsWith('{')) {
-      attrs.push(`${key}=${serialized}`);
-    } else {
-      attrs.push(`${key}=${serialized}`);
-    }
+    attrs.push(`${key}=${serialized}`);
   }
 
   const attrStr = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
@@ -383,10 +400,15 @@ export async function generateSite(
   const checklist: string[] = [];
 
   try {
-    // 1. Validate slug
+    // 1. Validate slug and domain
     const slugError = validateSlug(payload.slug);
     if (slugError) {
       return { success: false, sitePath, checklist: [], error: slugError };
+    }
+
+    const domainError = validateDomain(payload.domain);
+    if (domainError) {
+      return { success: false, sitePath, checklist: [], error: domainError };
     }
 
     // 2. Check site doesn't already exist

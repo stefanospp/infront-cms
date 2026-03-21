@@ -33,7 +33,13 @@ export function componentOverridePlugin(siteRoot: string): Plugin {
         const fileName = source.slice(prefix.length);
 
         for (const ext of EXTENSIONS) {
-          const localPath = path.join(componentsDir, fileName + ext);
+          const localPath = path.resolve(componentsDir, fileName + ext);
+
+          // Prevent path traversal outside the components directory
+          if (!localPath.startsWith(componentsDir + path.sep) && localPath !== componentsDir) {
+            return null;
+          }
+
           if (fs.existsSync(localPath)) {
             return localPath;
           }
