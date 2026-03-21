@@ -8,7 +8,7 @@ A monorepo platform for running a solo web agency. Each client gets an Astro sit
 
 ```
 packages/ui          shared Astro components and layouts
-packages/config      shared TypeScript, ESLint, Tailwind, Prettier configs and types
+packages/config      shared TypeScript, ESLint, Prettier configs and types
 packages/utils       shared utilities (SEO, image helpers, Directus client, validation)
 sites/template       base site — copy for every new client
 sites/<client>/      per-client sites extending the template
@@ -18,8 +18,8 @@ tests/               Playwright e2e, Vitest integration, Lighthouse CI
 
 ## Tech stack
 
-- **Framework:** Astro (hybrid output — static by default, opt-in server routes)
-- **Styling:** Tailwind CSS (token-based, no hardcoded colours/fonts)
+- **Framework:** Astro 6 (static output with per-route `prerender = false` for server routes)
+- **Styling:** Tailwind CSS v4 (CSS-based config via `@theme` blocks, `@tailwindcss/vite` plugin)
 - **Islands:** React (for interactive components only — forms, mobile nav, cookie consent)
 - **CMS:** Directus 11 (PostgreSQL, Docker, deployed via Kamal)
 - **Hosting:** Cloudflare Pages (sites), Hetzner VPS (Directus)
@@ -57,7 +57,8 @@ tests/               Playwright e2e, Vitest integration, Lighthouse CI
 
 ### Site configuration
 - Each site has a `site.config.ts` — single source of truth for identity, contact, SEO, nav, footer, analytics, CMS, and theme settings
-- Each site has a `tailwind.config.mjs` extending `@agency/config/tailwind` with brand tokens
+- Each site defines brand tokens in `src/styles/global.css` via `@theme` blocks (Tailwind v4 CSS config)
+- Use `@source` directive in CSS to include shared component paths for Tailwind scanning
 
 ### File naming
 | Item | Convention | Example |
@@ -80,14 +81,14 @@ tests/               Playwright e2e, Vitest integration, Lighthouse CI
 
 ## Design system layers
 
-1. **Theme tokens** (`tailwind.config.mjs`) — colours, fonts, spacing per site
+1. **Theme tokens** (`src/styles/global.css` `@theme` block) — colours, fonts, spacing per site
 2. **Layout templates** (`packages/ui/src/layouts/`) — page structure (BaseLayout, SingleColumn, WithSidebar, FullWidth, BlogPost)
 3. **Component variants** — visual treatment via `variant` prop on shared components
 
 ## When building a new site
 
 1. Run the provisioning script (`infra/provisioning/new-site.sh`)
-2. Write `site.config.ts` and `tailwind.config.mjs` with client brand tokens
+2. Write `site.config.ts` and define brand tokens in `src/styles/global.css` `@theme` block
 3. Choose layouts for each page, pick component variants
 4. Compose pages from shared components
 5. Add custom components in `sites/<client>/src/components/` if needed

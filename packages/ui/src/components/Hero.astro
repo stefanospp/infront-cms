@@ -1,0 +1,162 @@
+---
+export interface Props {
+  variant: 'centered' | 'split' | 'fullscreen' | 'minimal';
+  heading: string;
+  subheading?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  backgroundImage?: string;
+  class?: string;
+}
+
+const {
+  variant,
+  heading,
+  subheading,
+  ctaText,
+  ctaHref,
+  backgroundImage,
+  class: className,
+} = Astro.props;
+---
+
+{
+  variant === 'centered' && (
+    <section
+      class:list={[
+        'px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36',
+        className,
+      ]}
+    >
+      <div class="mx-auto max-w-4xl text-center">
+        <h1 class="font-heading text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl lg:text-6xl">
+          {heading}
+        </h1>
+        {subheading && (
+          <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-neutral-600 sm:text-xl">
+            {subheading}
+          </p>
+        )}
+        {ctaText && ctaHref && (
+          <div class="mt-10">
+            <a
+              href={ctaHref}
+              class="inline-flex items-center rounded-lg bg-primary-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-colors"
+            >
+              {ctaText}
+            </a>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+{
+  variant === 'split' && (
+    <section
+      class:list={[
+        'px-4 py-16 sm:px-6 sm:py-24 lg:px-8',
+        className,
+      ]}
+    >
+      <div class="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2 lg:gap-16">
+        <div>
+          <h1 class="font-heading text-4xl font-bold tracking-tight text-neutral-900 sm:text-5xl">
+            {heading}
+          </h1>
+          {subheading && (
+            <p class="mt-6 text-lg leading-relaxed text-neutral-600">
+              {subheading}
+            </p>
+          )}
+          {ctaText && ctaHref && (
+            <div class="mt-8">
+              <a
+                href={ctaHref}
+                class="inline-flex items-center rounded-lg bg-primary-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-colors"
+              >
+                {ctaText}
+              </a>
+            </div>
+          )}
+        </div>
+        {backgroundImage && (
+          <div class="overflow-hidden rounded-2xl">
+            <img
+              src={backgroundImage}
+              alt=""
+              class="h-full w-full object-cover"
+              loading="eager"
+            />
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+{
+  variant === 'fullscreen' && (
+    <section
+      class:list={[
+        'relative flex min-h-screen items-center justify-center px-4 sm:px-6 lg:px-8',
+        className,
+      ]}
+    >
+      {backgroundImage && (
+        <div class="absolute inset-0 z-0">
+          <img
+            src={backgroundImage}
+            alt=""
+            class="h-full w-full object-cover"
+            loading="eager"
+          />
+          <div class="absolute inset-0 bg-neutral-900/60" />
+        </div>
+      )}
+      <div class="relative z-10 mx-auto max-w-4xl text-center">
+        <h1 class="font-heading text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          {heading}
+        </h1>
+        {subheading && (
+          <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-neutral-200 sm:text-xl">
+            {subheading}
+          </p>
+        )}
+        {ctaText && ctaHref && (
+          <div class="mt-10">
+            <a
+              href={ctaHref}
+              class="inline-flex items-center rounded-lg bg-primary-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-colors"
+            >
+              {ctaText}
+            </a>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+{
+  variant === 'minimal' && (
+    <section
+      class:list={[
+        'px-4 py-12 sm:px-6 sm:py-16 lg:px-8',
+        className,
+      ]}
+    >
+      <div class="mx-auto max-w-4xl">
+        <h1 class="font-heading text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
+          {heading}
+        </h1>
+        {subheading && (
+          <p class="mt-4 text-lg text-neutral-600">
+            {subheading}
+          </p>
+        )}
+      </div>
+    </section>
+  )
+}

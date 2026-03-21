@@ -1,0 +1,44 @@
+service: agency-directus
+image: directus/directus:11
+
+servers:
+  web:
+    - xxx.xxx.xxx.xxx
+
+registry:
+  server: ghcr.io
+  username:
+    - GITHUB_USERNAME
+  password:
+    - GITHUB_TOKEN
+
+env:
+  clear:
+    DB_CLIENT: pg
+    DB_HOST: agency-directus-db
+    DB_PORT: 5432
+    DB_DATABASE: directus
+    STORAGE_LOCATIONS: local
+    STORAGE_LOCAL_ROOT: /directus/uploads
+  secret:
+    - KEY
+    - SECRET
+    - DB_USER
+    - DB_PASSWORD
+    - ADMIN_EMAIL
+    - ADMIN_PASSWORD
+    - PUBLIC_URL
+
+accessories:
+  db:
+    image: postgis/postgis:16-3.4
+    host: xxx.xxx.xxx.xxx
+    port: "5432:5432"
+    env:
+      clear:
+        POSTGRES_DB: directus
+      secret:
+        - POSTGRES_USER
+        - POSTGRES_PASSWORD
+    volumes:
+      - db_data:/var/lib/postgresql/data

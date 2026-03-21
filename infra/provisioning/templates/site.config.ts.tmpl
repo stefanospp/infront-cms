@@ -1,0 +1,17 @@
+import { defineConfig } from "@agency/config";
+
+export default defineConfig({
+  client: {
+    name: "__CLIENT_NAME__",
+    slug: "__CLIENT_SLUG__",
+  },
+  domain: "__CLIENT_DOMAIN__",
+  tier: "__CLIENT_TIER__",
+  cms: {
+    url: "https://cms.__CLIENT_DOMAIN__",
+    token: "REPLACE_WITH_DIRECTUS_STATIC_TOKEN",
+  },
+  build: {
+    outDir: "dist",
+  },
+});

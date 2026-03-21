@@ -1,0 +1,54 @@
+---
+export interface TeamMember {
+  name: string;
+  role: string;
+  bio?: string;
+  photo?: string;
+  email?: string;
+}
+
+export interface Props {
+  members: TeamMember[];
+  class?: string;
+}
+
+const { members, class: className } = Astro.props;
+---
+
+<div class:list={['grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3', className]}>
+  {
+    members.map((member) => (
+      <div class="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
+        {member.photo && (
+          <div class="aspect-square overflow-hidden">
+            <img
+              src={member.photo}
+              alt={member.name}
+              class="h-full w-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        )}
+        <div class="p-6">
+          <h3 class="font-heading text-lg font-semibold text-neutral-900">
+            {member.name}
+          </h3>
+          <p class="mt-1 text-sm font-medium text-primary-600">{member.role}</p>
+          {member.bio && (
+            <p class="mt-3 text-sm leading-relaxed text-neutral-600">
+              {member.bio}
+            </p>
+          )}
+          {member.email && (
+            <a
+              href={`mailto:${member.email}`}
+              class="mt-4 inline-block text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+            >
+              {member.email}
+            </a>
+          )}
+        </div>
+      </div>
+    ))
+  }
+</div>

@@ -1,0 +1,17 @@
+name: Deploy Directus
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: gem install kamal
+      - run: kamal deploy

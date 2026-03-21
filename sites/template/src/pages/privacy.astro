@@ -1,0 +1,49 @@
+---
+import SingleColumn from '@agency/ui/layouts/SingleColumn.astro';
+import Section from '@agency/ui/components/Section.astro';
+import config from '../../site.config';
+
+const title = 'Privacy Policy';
+const description = `Privacy policy for ${config.name}.`;
+---
+
+<SingleColumn title={title} description={description} config={config}>
+  <Section>
+    <h1 class="text-4xl font-heading font-bold text-neutral-900 mb-6">Privacy Policy</h1>
+    <div class="prose prose-lg max-w-none text-neutral-700">
+      <p><strong>Last updated:</strong> [Date]</p>
+
+      <h2>Introduction</h2>
+      <p>
+        {config.name} ("we", "us", or "our") is committed to protecting your privacy. This policy
+        explains how we collect, use, and safeguard your information when you visit our website.
+      </p>
+
+      <h2>Information We Collect</h2>
+      <p>
+        We collect information you provide directly, such as when you fill out our contact form.
+        This may include your name, email address, and message content.
+      </p>
+
+      <h2>How We Use Your Information</h2>
+      <p>We use the information we collect to:</p>
+      <ul>
+        <li>Respond to your enquiries</li>
+        <li>Improve our website and services</li>
+        <li>Comply with legal obligations</li>
+      </ul>
+
+      <h2>Analytics</h2>
+      <p>
+        We use privacy-focused analytics to understand how visitors use our website. This data is
+        aggregated and does not identify individual visitors.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        If you have questions about this privacy policy, please contact us at{' '}
+        <a href={`mailto:${config.contact.email}`}>{config.contact.email}</a>.
+      </p>
+    </div>
+  </Section>
+</SingleColumn>

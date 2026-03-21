@@ -1,0 +1,88 @@
+---
+import type { SiteConfig } from '@agency/config';
+import MobileNav from '../islands/MobileNav';
+
+export interface Props {
+  config: SiteConfig;
+  class?: string;
+}
+
+const { config, class: className } = Astro.props;
+const { nav, name, theme } = config;
+
+const navPositionClass =
+  theme.navStyle === 'sticky'
+    ? 'sticky top-0 z-40'
+    : theme.navStyle === 'fixed'
+      ? 'fixed top-0 left-0 right-0 z-40'
+      : '';
+
+const borderRadiusClass =
+  theme.borderStyle === 'pill'
+    ? 'rounded-full'
+    : theme.borderStyle === 'rounded'
+      ? 'rounded-lg'
+      : 'rounded-none';
+---
+
+<header
+  class:list={[
+    'border-b border-neutral-200 bg-white/95 backdrop-blur-sm',
+    navPositionClass,
+    className,
+  ]}
+  data-testid="nav-header"
+>
+  <nav
+    class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8"
+    aria-label="Main navigation"
+    data-testid="main-nav"
+  >
+    <!-- Logo / Site Name -->
+    <a
+      href="/"
+      class="text-xl font-heading font-bold text-primary-700 hover:text-primary-800 transition-colors"
+      data-testid="nav-logo"
+    >
+      {name}
+    </a>
+
+    <!-- Desktop Nav Items -->
+    <div class="hidden items-center gap-8 md:flex" data-testid="desktop-nav">
+      {
+        nav.items.map((item) => (
+          <a
+            href={item.href}
+            class="text-sm font-medium text-neutral-600 hover:text-primary-600 transition-colors"
+            data-testid="nav-link"
+          >
+            {item.label}
+          </a>
+        ))
+      }
+      {
+        nav.cta && (
+          <a
+            href={nav.cta.href}
+            class:list={[
+              'inline-flex items-center px-5 py-2.5 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors',
+              borderRadiusClass,
+            ]}
+            data-testid="nav-cta"
+          >
+            {nav.cta.label}
+          </a>
+        )
+      }
+    </div>
+
+    <!-- Mobile Nav (React Island) -->
+    <div class="md:hidden">
+      <MobileNav
+        client:load
+        items={nav.items.map((item) => ({ label: item.label, href: item.href }))}
+        cta={nav.cta ? { label: nav.cta.label, href: nav.cta.href } : undefined}
+      />
+    </div>
+  </nav>
+</header>

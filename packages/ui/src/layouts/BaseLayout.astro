@@ -1,0 +1,93 @@
+---
+import type { SiteConfig } from '@agency/config';
+import SEOHead from '../components/SEOHead.astro';
+
+export interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  canonicalUrl?: string;
+  structuredData?: Record<string, unknown>;
+  noIndex?: boolean;
+  config: SiteConfig;
+}
+
+const {
+  title,
+  description,
+  ogImage,
+  ogType = 'website',
+  canonicalUrl,
+  structuredData,
+  noIndex = false,
+  config,
+} = Astro.props;
+
+const analyticsProvider = config.analytics?.provider;
+const analyticsSiteId = config.analytics?.siteId;
+---
+
+<!doctype html>
+<html lang={config.locale}>
+  <head>
+    <SEOHead
+      title={title}
+      description={description}
+      ogImage={ogImage}
+      ogType={ogType}
+      canonicalUrl={canonicalUrl}
+      structuredData={structuredData}
+      noIndex={noIndex}
+      siteUrl={config.url}
+    />
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen bg-neutral-50 font-body text-neutral-900 antialiased">
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:text-primary-700 focus:rounded"
+    >
+      Skip to main content
+    </a>
+
+    <slot />
+
+    {
+      analyticsProvider === 'plausible' && analyticsSiteId && (
+        <script
+          defer
+          data-domain={analyticsSiteId}
+          src="https://plausible.io/js/script.js"
+        />
+      )
+    }
+    {
+      analyticsProvider === 'fathom' && analyticsSiteId && (
+        <script
+          src="https://cdn.usefathom.com/script.js"
+          data-site={analyticsSiteId}
+          defer
+        />
+      )
+    }
+    {
+      analyticsProvider === 'google' && analyticsSiteId && (
+        <Fragment>
+          <script
+            async
+            src={`https://www.googletagmanager.com/gtag/js?id=${analyticsSiteId}`}
+          />
+          <script
+            set:html={`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${analyticsSiteId}');
+            `}
+          />
+        </Fragment>
+      )
+    }
+  </body>
+</html>

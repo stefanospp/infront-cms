@@ -1,0 +1,57 @@
+---
+export interface Props {
+  heading?: string;
+  subheading?: string;
+  background?: 'light' | 'dark' | 'primary';
+  class?: string;
+  id?: string;
+}
+
+const {
+  heading,
+  subheading,
+  background = 'light',
+  class: className,
+  id,
+} = Astro.props;
+
+const bgClass =
+  background === 'dark'
+    ? 'bg-neutral-900 text-neutral-100'
+    : background === 'primary'
+      ? 'bg-primary-50 text-neutral-900'
+      : 'bg-neutral-50 text-neutral-900';
+
+const headingColor =
+  background === 'dark' ? 'text-white' : 'text-neutral-900';
+
+const subheadingColor =
+  background === 'dark' ? 'text-neutral-300' : 'text-neutral-600';
+---
+
+<section class:list={[bgClass, 'px-4 py-16 sm:px-6 sm:py-24 lg:px-8', className]} id={id}>
+  <div class="mx-auto max-w-7xl">
+    {
+      (heading || subheading) && (
+        <div class="mx-auto mb-12 max-w-3xl text-center">
+          {heading && (
+            <h2
+              class:list={[
+                'font-heading text-3xl font-bold tracking-tight sm:text-4xl',
+                headingColor,
+              ]}
+            >
+              {heading}
+            </h2>
+          )}
+          {subheading && (
+            <p class:list={['mt-4 text-lg leading-relaxed', subheadingColor]}>
+              {subheading}
+            </p>
+          )}
+        </div>
+      )
+    }
+    <slot />
+  </div>
+</section>

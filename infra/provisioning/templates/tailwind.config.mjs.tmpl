@@ -1,0 +1,20 @@
+import baseConfig from "@agency/config/tailwind";
+
+/** @type {import('tailwindcss').Config} */
+export default {
+  presets: [baseConfig],
+  content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
+  theme: {
+    extend: {
+      colors: {
+        primary: "__PRIMARY_COLOR__",
+        secondary: "__SECONDARY_COLOR__",
+        accent: "__ACCENT_COLOR__",
+      },
+      fontFamily: {
+        heading: ["__HEADING_FONT__", "sans-serif"],
+        body: ["__BODY_FONT__", "sans-serif"],
+      },
+    },
+  },
+};

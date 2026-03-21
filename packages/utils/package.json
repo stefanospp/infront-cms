@@ -1,0 +1,17 @@
+{
+  "name": "@agency/utils",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@directus/sdk": "^17.0.0",
+    "zod": "^3.23.0"
+  },
+  "peerDependencies": {
+    "@agency/config": "*"
+  }
+}

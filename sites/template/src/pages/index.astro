@@ -1,0 +1,75 @@
+---
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import CardGrid from '@agency/ui/components/CardGrid.astro';
+import Section from '@agency/ui/components/Section.astro';
+import Testimonials from '@agency/ui/components/Testimonials.astro';
+import CTA from '@agency/ui/components/CTA.astro';
+import config from '../../site.config';
+---
+
+<FullWidth
+  title={config.seo.defaultTitle}
+  description={config.seo.defaultDescription}
+  config={config}
+>
+  <Hero
+    variant={config.theme.heroDefault}
+    heading={config.name}
+    subheading={config.tagline}
+    ctaText={config.nav.cta?.label ?? 'Get in Touch'}
+    ctaHref={config.nav.cta?.href ?? '/contact'}
+  />
+
+  <Section heading="Our Services" subheading="What we offer" id="services">
+    <CardGrid
+      variant="three-column"
+      cards={[
+        {
+          title: 'Web Design',
+          description: 'Beautiful, responsive websites tailored to your brand and audience.',
+          href: '/contact',
+        },
+        {
+          title: 'Development',
+          description: 'Fast, accessible, and SEO-optimised websites built with modern technology.',
+          href: '/contact',
+        },
+        {
+          title: 'Ongoing Support',
+          description: 'Content updates, maintenance, and performance monitoring to keep your site running smoothly.',
+          href: '/contact',
+        },
+      ]}
+    />
+  </Section>
+
+  <Section background="light">
+    <Testimonials
+      testimonials={[
+        {
+          quote: 'Working with this team transformed our online presence. The new site is fast, beautiful, and our enquiries have doubled.',
+          author: 'Jane Smith',
+          role: 'Managing Director, Example Ltd',
+        },
+        {
+          quote: 'Professional, responsive, and genuinely cared about getting the details right. Highly recommended.',
+          author: 'John Doe',
+          role: 'Founder, Another Company',
+        },
+        {
+          quote: 'Our website finally reflects the quality of our work. The whole process was seamless from start to finish.',
+          author: 'Sarah Johnson',
+          role: 'Creative Director, Design Co',
+        },
+      ]}
+    />
+  </Section>
+
+  <CTA
+    heading="Ready to get started?"
+    description="Let's talk about your project and see how we can help."
+    buttonText="Contact Us"
+    buttonHref="/contact"
+  />
+</FullWidth>

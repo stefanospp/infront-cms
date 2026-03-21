@@ -1,0 +1,52 @@
+---
+import SingleColumn from '@agency/ui/layouts/SingleColumn.astro';
+import Section from '@agency/ui/components/Section.astro';
+import TeamGrid from '@agency/ui/components/TeamGrid.astro';
+import CTA from '@agency/ui/components/CTA.astro';
+import config from '../../site.config';
+
+const title = 'About Us';
+const description = 'Learn more about our team and our approach to building great websites.';
+---
+
+<SingleColumn title={title} description={description} config={config}>
+  <Section>
+    <h1 class="text-4xl font-heading font-bold text-neutral-900 mb-6">About Us</h1>
+    <div class="prose prose-lg max-w-none text-neutral-700">
+      <p>
+        We are a web agency dedicated to building fast, accessible, and beautiful websites for
+        businesses of all sizes. Our approach combines modern technology with thoughtful design to
+        create sites that work hard for your business.
+      </p>
+      <p>
+        Every project starts with understanding your goals, your audience, and what makes your
+        business unique. From there, we craft a website that communicates your value clearly and
+        converts visitors into customers.
+      </p>
+    </div>
+  </Section>
+
+  <Section heading="Our Team" background="light">
+    <TeamGrid
+      members={[
+        {
+          name: 'Alex Thompson',
+          role: 'Founder & Lead Developer',
+          bio: 'Full-stack developer with a passion for performance and accessibility.',
+        },
+        {
+          name: 'Sam Williams',
+          role: 'Designer',
+          bio: 'Creating clean, user-focused designs that communicate clearly.',
+        },
+      ]}
+    />
+  </Section>
+
+  <CTA
+    heading="Want to work together?"
+    description="We would love to hear about your project."
+    buttonText="Get in Touch"
+    buttonHref="/contact"
+  />
+</SingleColumn>
