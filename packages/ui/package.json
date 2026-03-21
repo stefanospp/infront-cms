@@ -12,7 +12,7 @@
     "@agency/config": "*",
     "@agency/utils": "*",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^19.2.4"
   },
   "peerDependencies": {
     "astro": "^6.0.0",
