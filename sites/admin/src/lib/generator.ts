@@ -132,7 +132,7 @@ const config: SiteConfig = {
   nav: ${indent(navStr, 2)},
 
   footer: ${indent(footerStr, 2)},
-${analyticsStr ? `\n  analytics: ${indent(analyticsStr, 2)},\n` : ''}
+${analyticsStr ? `\n  analytics: ${indent(analyticsStr, 2)},\n` : ''}${payload.tier === 'cms' || payload.tier === 'interactive' ? `\n  cms: {\n    url: ${JSON.stringify(`https://cms.${payload.domain}`)},\n  },\n` : ''}
   theme: ${indent(themeStr, 2)},
 };
 
@@ -470,10 +470,30 @@ export async function generateSite(
       }
     }
 
-    // 7. Create empty src/components/ for site-specific overrides
+    // 7. Handle CMS vs static tier pages
+    if (payload.tier === 'cms' || payload.tier === 'interactive') {
+      // Replace generated about page with CMS-powered version
+      const cmsAboutSrc = path.join(pagesDir, 'about-cms.astro');
+      const aboutDest = path.join(pagesDir, 'about.astro');
+      try {
+        await fs.access(cmsAboutSrc);
+        try { await fs.unlink(aboutDest); } catch { /* may not exist */ }
+        await fs.rename(cmsAboutSrc, aboutDest);
+      } catch { /* no CMS about page in template */ }
+    } else {
+      // Static tier: remove CMS-only pages
+      try {
+        await fs.rm(path.join(pagesDir, 'blog'), { recursive: true, force: true });
+      } catch { /* directory may not exist */ }
+      try {
+        await fs.unlink(path.join(pagesDir, 'about-cms.astro'));
+      } catch { /* file may not exist */ }
+    }
+
+    // 8. Create empty src/components/ for site-specific overrides
     await fs.mkdir(path.join(sitePath, 'src', 'components'), { recursive: true });
 
-    // 8. Rewrite package.json
+    // 9. Rewrite package.json
     const pkgPath = path.join(sitePath, 'package.json');
     let pkgContent = await fs.readFile(pkgPath, 'utf-8');
     pkgContent = pkgContent.replace(
@@ -483,6 +503,13 @@ export async function generateSite(
     await fs.writeFile(pkgPath, pkgContent, 'utf-8');
 
     // 9. Generate site.config.ts
+    // Add Blog nav item for CMS-tier sites
+    if (payload.tier === 'cms' || payload.tier === 'interactive') {
+      const hasBlognav = payload.nav.items.some((item) => item.href === '/blog');
+      if (!hasBlognav) {
+        payload.nav.items.push({ label: 'Blog', href: '/blog' });
+      }
+    }
     const siteConfigContent = generateSiteConfigContent(payload);
     await fs.writeFile(
       path.join(sitePath, 'site.config.ts'),

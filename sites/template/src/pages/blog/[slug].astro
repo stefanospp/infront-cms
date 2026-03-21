@@ -1,0 +1,37 @@
+---
+import "../../styles/global.css";
+import BlogPost from '@agency/ui/layouts/BlogPost.astro';
+import { getDirectusImageUrl } from '@agency/utils';
+import { getPosts, getPostBySlug } from '../../lib/directus';
+import config from '../../../site.config';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post: any) => ({
+    params: { slug: post.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const post = await getPostBySlug(slug!);
+
+if (!post) {
+  return Astro.redirect('/blog');
+}
+
+const featuredImage = post.featured_image && config.cms?.url
+  ? getDirectusImageUrl(config.cms.url, post.featured_image, { width: 1200, format: 'webp' })
+  : undefined;
+---
+
+<BlogPost
+  title={post.seo_title ?? post.title}
+  description={post.seo_description ?? post.excerpt ?? ''}
+  ogImage={post.og_image && config.cms?.url ? getDirectusImageUrl(config.cms.url, post.og_image) : undefined}
+  author={post.author}
+  publishedDate={post.published_date}
+  featuredImage={featuredImage}
+  config={config}
+>
+  <Fragment set:html={post.content} />
+</BlogPost>

@@ -1,0 +1,38 @@
+---
+import "../../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import Section from '@agency/ui/components/Section.astro';
+import CardGrid from '@agency/ui/components/CardGrid.astro';
+import { getDirectusImageUrl } from '@agency/utils';
+import { getPosts } from '../../lib/directus';
+import config from '../../../site.config';
+
+const title = 'Blog';
+const description = `Latest news and articles from ${config.name}.`;
+
+const posts = await getPosts();
+
+const cards = posts.map((post: any) => ({
+  title: post.title,
+  description: post.excerpt ?? '',
+  image: post.featured_image && config.cms?.url
+    ? getDirectusImageUrl(config.cms.url, post.featured_image, { width: 600, format: 'webp' })
+    : undefined,
+  href: `/blog/${post.slug}`,
+}));
+---
+
+<FullWidth title={title} description={description} config={config}>
+  <Hero variant="minimal" heading="Blog" subheading={`Latest news and articles from ${config.name}`} />
+
+  <Section>
+    {cards.length > 0 ? (
+      <CardGrid variant="three-column" cards={cards} />
+    ) : (
+      <div class="text-center py-16">
+        <p class="text-lg text-neutral-500">No posts yet. Check back soon.</p>
+      </div>
+    )}
+  </Section>
+</FullWidth>

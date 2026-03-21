@@ -1,0 +1,49 @@
+---
+import "../styles/global.css";
+import SingleColumn from '@agency/ui/layouts/SingleColumn.astro';
+import Section from '@agency/ui/components/Section.astro';
+import TeamGrid from '@agency/ui/components/TeamGrid.astro';
+import CTA from '@agency/ui/components/CTA.astro';
+import { getDirectusImageUrl } from '@agency/utils';
+import { getTeamMembers } from '../lib/directus';
+import config from '../../site.config';
+
+const title = 'About Us';
+const description = `Learn more about ${config.name} and our team.`;
+
+const rawMembers = await getTeamMembers();
+const members = rawMembers.map((m: any) => ({
+  name: m.name,
+  role: m.role,
+  bio: m.bio ?? undefined,
+  photo: m.photo && config.cms?.url
+    ? getDirectusImageUrl(config.cms.url, m.photo, { width: 400, height: 400, fit: 'cover', format: 'webp' })
+    : undefined,
+  email: m.email ?? undefined,
+}));
+---
+
+<SingleColumn title={title} description={description} config={config}>
+  <Section>
+    <h1 class="text-4xl font-heading font-bold text-neutral-900 mb-6">About Us</h1>
+    <div class="prose prose-lg max-w-none text-neutral-700">
+      <p>
+        We are dedicated to delivering exceptional results for our clients. Our approach combines
+        expertise with a genuine commitment to understanding your needs and exceeding your expectations.
+      </p>
+    </div>
+  </Section>
+
+  {members.length > 0 && (
+    <Section heading="Our Team" background="light">
+      <TeamGrid members={members} />
+    </Section>
+  )}
+
+  <CTA
+    heading="Want to work together?"
+    description="We would love to hear about your project."
+    buttonText="Get in Touch"
+    buttonHref="/contact"
+  />
+</SingleColumn>
