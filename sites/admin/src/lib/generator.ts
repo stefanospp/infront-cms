@@ -155,7 +155,7 @@ export function generateGlobalCssContent(tokens: TemplateThemeTokens): string {
 
   return `@import "tailwindcss";
 
-@source "../../packages/ui/src/**/*.{astro,tsx}";
+@source "../../../../packages/ui/src/**/*.{astro,tsx}";
 @source "../components/**/*.{astro,tsx}";
 
 @theme {

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@source "../../packages/ui/src/**/*.{astro,tsx}";
+@source "../../../../packages/ui/src/**/*.{astro,tsx}";
 
 @theme {
   /* Primary — Blue */
