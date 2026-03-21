@@ -7,6 +7,10 @@ interface SiteInfo {
   tier: 'static' | 'cms';
   lastModified: string;
   isTemplate: boolean;
+  deployStatus?: 'pending' | 'building' | 'deploying' | 'live' | 'failed' | null;
+  stagingUrl?: string;
+  productionUrl?: string;
+  lastDeployAt?: string;
 }
 
 type LoadState = 'loading' | 'loaded' | 'error';
@@ -15,6 +19,16 @@ const tierBadge: Record<string, { bg: string; text: string; label: string }> = {
   static: { bg: 'bg-neutral-100', text: 'text-neutral-700', label: 'Static' },
   cms: { bg: 'bg-primary-100', text: 'text-primary-700', label: 'CMS' },
 };
+
+const deployStatusBadge: Record<string, { bg: string; text: string; label: string; pulse?: boolean }> = {
+  live: { bg: 'bg-green-100', text: 'text-green-700', label: 'Live' },
+  building: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Building', pulse: true },
+  deploying: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Deploying', pulse: true },
+  pending: { bg: 'bg-neutral-100', text: 'text-neutral-500', label: 'Pending' },
+  failed: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
+};
+
+const defaultDeployBadge = { bg: 'bg-neutral-100', text: 'text-neutral-400', label: 'Not deployed' };
 
 export default function SiteTable() {
   const [sites, setSites] = useState<SiteInfo[]>([]);
@@ -139,6 +153,12 @@ export default function SiteTable() {
               <th className="text-left px-6 py-3 font-medium text-neutral-500">
                 Tier
               </th>
+              <th className="text-left px-6 py-3 font-medium text-neutral-500">
+                Status
+              </th>
+              <th className="text-left px-6 py-3 font-medium text-neutral-500">
+                URL
+              </th>
               <th className="text-right px-6 py-3 font-medium text-neutral-500">
                 Actions
               </th>
@@ -147,6 +167,10 @@ export default function SiteTable() {
           <tbody className="divide-y divide-neutral-200">
             {sites.map((site) => {
               const badge = tierBadge[site.tier] ?? tierBadge.static;
+              const dBadge = site.deployStatus
+                ? deployStatusBadge[site.deployStatus] ?? defaultDeployBadge
+                : defaultDeployBadge;
+              const siteUrl = site.productionUrl || site.stagingUrl;
               return (
                 <tr
                   key={site.slug}
@@ -174,19 +198,49 @@ export default function SiteTable() {
                       {badge.label}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    {site.domain ? (
+                  <td className="px-6 py-4">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${dBadge.bg} ${dBadge.text} ${dBadge.pulse ? 'animate-pulse' : ''}`}
+                    >
+                      {dBadge.label}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {siteUrl ? (
                       <a
-                        href={`https://${site.domain}`}
+                        href={siteUrl.startsWith('http') ? siteUrl : `https://${siteUrl}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                        className="text-primary-600 hover:text-primary-700 text-sm underline truncate max-w-[200px] inline-block"
                       >
-                        View
+                        {siteUrl.replace(/^https?:\/\//, '')}
                       </a>
                     ) : (
                       <span className="text-neutral-300">—</span>
                     )}
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <a
+                        href={`/sites/${site.slug}`}
+                        className="text-primary-600 hover:text-primary-700 font-medium transition-colors text-sm"
+                      >
+                        Manage
+                      </a>
+                      {siteUrl && (
+                        <a
+                          href={siteUrl.startsWith('http') ? siteUrl : `https://${siteUrl}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-neutral-400 hover:text-neutral-600 transition-colors"
+                          title="Open site in new tab"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </a>
+                      )}
+                    </div>
                   </td>
                 </tr>
               );

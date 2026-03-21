@@ -5,7 +5,7 @@ import SiteTable from '@/islands/SiteTable';
 
 <AdminLayout title="Dashboard">
   <!-- Stats cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+  <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-8">
     <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
       <p class="text-sm font-medium text-neutral-500">Total Sites</p>
       <p class="mt-1 text-3xl font-bold text-neutral-900" id="stat-total">—</p>
@@ -18,6 +18,10 @@ import SiteTable from '@/islands/SiteTable';
       <p class="text-sm font-medium text-neutral-500">Static Sites</p>
       <p class="mt-1 text-3xl font-bold text-neutral-600" id="stat-static">—</p>
     </div>
+    <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+      <p class="text-sm font-medium text-neutral-500">Deployed</p>
+      <p class="mt-1 text-3xl font-bold text-green-600" id="stat-deployed">—</p>
+    </div>
   </div>
 
   <!-- Sites table -->
@@ -26,12 +30,15 @@ import SiteTable from '@/islands/SiteTable';
   <script>
     fetch('/api/sites')
       .then((res) => res.json())
-      .then((sites: { tier: string; isTemplate: boolean }[]) => {
+      .then((sites: { tier: string; isTemplate: boolean; deployStatus?: string }[]) => {
         const nonTemplate = sites.filter((s) => !s.isTemplate);
         const total = nonTemplate.length;
         const cms = nonTemplate.filter((s) => s.tier === 'cms').length;
         const staticCount = nonTemplate.filter(
           (s) => s.tier === 'static',
+        ).length;
+        const deployed = nonTemplate.filter(
+          (s) => s.deployStatus === 'live',
         ).length;
 
         const setEl = (id: string, value: number) => {
@@ -42,6 +49,7 @@ import SiteTable from '@/islands/SiteTable';
         setEl('stat-total', total);
         setEl('stat-cms', cms);
         setEl('stat-static', staticCount);
+        setEl('stat-deployed', deployed);
       })
       .catch(() => {
         // Stats will remain as "—" on error

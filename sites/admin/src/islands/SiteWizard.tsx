@@ -71,6 +71,13 @@ interface GeneratorResult {
   sitePath: string;
   checklist: string[];
   error?: string;
+  stagingUrl?: string;
+  deployStatus?: 'pending' | 'building' | 'deploying' | 'live' | 'failed';
+}
+
+interface DeployStatusResponse {
+  status: 'pending' | 'building' | 'deploying' | 'live' | 'failed';
+  error?: string;
 }
 
 interface FormData {
@@ -1304,45 +1311,148 @@ export default function SiteWizard({ initialTemplateId }: SiteWizardProps) {
     }
   };
 
-  // Success state
+  // Deploy progress polling
+  const [deployStatus, setDeployStatus] = useState<DeployStatusResponse | null>(null);
+
+  useEffect(() => {
+    if (!result?.success) return;
+
+    // Seed initial status from the creation response
+    setDeployStatus({ status: result.deployStatus ?? 'building' });
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/sites/${formData.slug}/deploy-status`);
+        if (!res.ok) return;
+        const data: DeployStatusResponse = await res.json();
+        setDeployStatus(data);
+        if (data.status === 'live' || data.status === 'failed') {
+          clearInterval(interval);
+        }
+      } catch {
+        // keep polling on transient errors
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [result?.success, formData.slug]);
+
+  const handleRetryDeploy = async () => {
+    setDeployStatus({ status: 'building' });
+    try {
+      await fetch(`/api/sites/${formData.slug}/redeploy`, { method: 'POST' });
+    } catch {
+      setDeployStatus({ status: 'failed', error: 'Failed to trigger redeploy.' });
+    }
+  };
+
+  // Success state — deploy progress
   if (result?.success) {
+    const status = deployStatus?.status ?? 'building';
+    const isBuildDone = status === 'deploying' || status === 'live';
+    const isDeployDone = status === 'live';
+    const isFailed = status === 'failed';
+
+    const CheckIcon = () => (
+      <svg className="w-5 h-5 text-green-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+      </svg>
+    );
+
+    const Spinner = () => (
+      <div className="w-5 h-5 shrink-0 rounded-full border-2 border-neutral-300 border-t-primary-600 animate-spin" />
+    );
+
+    const Waiting = () => (
+      <div className="w-5 h-5 shrink-0 rounded-full border-2 border-neutral-200" />
+    );
+
+    const steps = [
+      { label: 'Site files generated', done: true, active: false },
+      { label: 'Building site...', done: isBuildDone || isDeployDone, active: status === 'building' },
+      { label: 'Deploying to Cloudflare...', done: isDeployDone, active: status === 'deploying' },
+      { label: 'Setting up staging URL...', done: isDeployDone, active: status === 'deploying' },
+    ];
+
     return (
       <div className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-xl border border-neutral-200 p-8 text-center">
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-            </svg>
+        <div className="bg-white rounded-xl border border-neutral-200 p-8">
+          {/* Progress steps */}
+          <div className="space-y-4 mb-8">
+            {steps.map((step, i) => (
+              <div key={i} className="flex items-center gap-3">
+                {step.done ? <CheckIcon /> : step.active && !isFailed ? <Spinner /> : <Waiting />}
+                <span className={`text-sm ${step.done ? 'text-green-700 font-medium' : step.active && !isFailed ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                  {step.label}
+                </span>
+              </div>
+            ))}
           </div>
 
-          <h2 className="text-2xl font-bold text-neutral-900 mb-2">Site Created Successfully</h2>
-          <p className="text-neutral-600 mb-6">
-            Your new site has been generated at{' '}
-            <code className="text-sm bg-neutral-100 px-2 py-0.5 rounded">{result.sitePath}</code>
-          </p>
-
-          {result.checklist.length > 0 && (
-            <div className="text-left bg-neutral-50 rounded-xl border border-neutral-200 p-5 mb-6">
-              <h3 className="text-sm font-semibold text-neutral-900 mb-3">Remaining Steps</h3>
-              <ul className="space-y-2">
-                {result.checklist.map((item, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-neutral-700">
-                    <span className="mt-0.5 w-5 h-5 rounded-full border border-neutral-300 flex items-center justify-center text-xs text-neutral-400 shrink-0">
-                      {i + 1}
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
+          {/* Live state */}
+          {isDeployDone && (
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-neutral-900 mb-2">Your site is live!</h2>
+              <p className="text-neutral-600 mb-6">
+                <a
+                  href={`https://${formData.slug}.infront.cy`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary-600 hover:text-primary-700 font-medium underline"
+                >
+                  https://{formData.slug}.infront.cy
+                </a>
+              </p>
+              <div className="flex items-center justify-center gap-3">
+                <a
+                  href="/"
+                  className="inline-flex items-center justify-center px-6 py-2.5 rounded-lg border border-neutral-300 bg-white text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
+                >
+                  Go to Dashboard
+                </a>
+                <a
+                  href={`/sites/${formData.slug}`}
+                  className="inline-flex items-center justify-center px-6 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors"
+                >
+                  Manage Site
+                </a>
+              </div>
             </div>
           )}
 
-          <a
-            href="/"
-            className="inline-flex items-center justify-center px-6 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors"
-          >
-            Back to Dashboard
-          </a>
+          {/* Failed state */}
+          {isFailed && (
+            <div className="text-center">
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-neutral-900 mb-2">Deploy Failed</h2>
+              <p className="text-sm text-red-600 mb-6">
+                {deployStatus?.error ?? 'An unexpected error occurred during deployment.'}
+              </p>
+              <button
+                type="button"
+                onClick={handleRetryDeploy}
+                className="inline-flex items-center justify-center px-6 py-2.5 rounded-lg bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 transition-colors"
+              >
+                Retry Deploy
+              </button>
+            </div>
+          )}
+
+          {/* In-progress message */}
+          {!isDeployDone && !isFailed && (
+            <p className="text-center text-sm text-neutral-500">
+              This usually takes 30-60 seconds. You can safely leave this page.
+            </p>
+          )}
         </div>
       </div>
     );

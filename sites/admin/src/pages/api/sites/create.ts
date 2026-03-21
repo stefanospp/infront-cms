@@ -2,6 +2,8 @@ import type { APIRoute } from 'astro';
 import { z } from 'zod';
 import { generateSite } from '@/lib/generator';
 import type { CreateSitePayload } from '@/lib/generator';
+import { writeDeployMetadata, deployNewSite } from '@/lib/deploy';
+import type { DeployMetadata } from '@/lib/deploy';
 
 const addressSchema = z.object({
   street: z.string(),
@@ -161,10 +163,37 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    return new Response(JSON.stringify(result), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' },
+    // Write initial deploy metadata and kick off background deployment
+    const stagingUrl = `${payload.slug}.infront.cy`;
+    const initialMeta: DeployMetadata = {
+      projectName: payload.slug,
+      stagingUrl,
+      productionUrl: null,
+      pagesDevUrl: `${payload.slug}.pages.dev`,
+      lastDeployId: null,
+      lastDeployAt: null,
+      status: 'pending',
+      error: null,
+      dnsRecordId: null,
+    };
+    await writeDeployMetadata(payload.slug, initialMeta);
+
+    // Fire-and-forget: deploy in background
+    deployNewSite(payload.slug).catch((err) => {
+      console.error(`Background deploy failed for ${payload.slug}:`, err);
     });
+
+    return new Response(
+      JSON.stringify({
+        ...result,
+        stagingUrl: `https://${stagingUrl}`,
+        deployStatus: 'pending',
+      }),
+      {
+        status: 201,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
   } catch (err) {
     console.error('Site creation error:', err);
     return new Response(

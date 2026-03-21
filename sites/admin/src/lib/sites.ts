@@ -9,6 +9,10 @@ export interface SiteInfo {
   tier: 'static' | 'cms';
   lastModified: string;
   isTemplate: boolean;
+  deployStatus?: 'pending' | 'building' | 'deploying' | 'live' | 'failed' | null;
+  stagingUrl?: string | null;
+  productionUrl?: string | null;
+  lastDeployAt?: string | null;
 }
 
 /** Resolve the monorepo root from the current file location. */
@@ -103,6 +107,23 @@ export async function listSites(): Promise<SiteInfo[]> {
       }
     }
 
+    // Read deploy metadata if exists
+    let deployStatus: SiteInfo['deployStatus'] = null;
+    let stagingUrl: string | null = null;
+    let productionUrl: string | null = null;
+    let lastDeployAt: string | null = null;
+    try {
+      const deployPath = join(siteDir, '.deploy.json');
+      const deployContent = await readFile(deployPath, 'utf-8');
+      const deploy = JSON.parse(deployContent);
+      deployStatus = deploy.status ?? null;
+      stagingUrl = deploy.stagingUrl ?? null;
+      productionUrl = deploy.productionUrl ?? null;
+      lastDeployAt = deploy.lastDeployAt ?? null;
+    } catch {
+      // No deploy metadata — site not deployed
+    }
+
     sites.push({
       slug,
       name: config?.name ?? slug,
@@ -110,6 +131,10 @@ export async function listSites(): Promise<SiteInfo[]> {
       tier,
       lastModified,
       isTemplate,
+      deployStatus,
+      stagingUrl,
+      productionUrl,
+      lastDeployAt,
     });
   }
 

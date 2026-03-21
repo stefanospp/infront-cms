@@ -1,0 +1,10 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import SiteDetail from '@/islands/SiteDetail';
+
+const slug = Astro.params.slug!;
+---
+
+<AdminLayout title="Site Details">
+  <SiteDetail client:load slug={slug} />
+</AdminLayout>
