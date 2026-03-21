@@ -175,6 +175,7 @@ export const POST: APIRoute = async ({ request }) => {
       status: 'pending',
       error: null,
       dnsRecordId: null,
+      buildLog: null,
     };
     await writeDeployMetadata(payload.slug, initialMeta);
 

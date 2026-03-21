@@ -27,6 +27,7 @@ export interface DeployMetadata {
   status: 'pending' | 'building' | 'deploying' | 'live' | 'failed';
   error: string | null;
   dnsRecordId: string | null;
+  buildLog: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -129,20 +130,20 @@ export async function deployNewSite(slug: string): Promise<void> {
     status: 'building',
     error: null,
     dnsRecordId: null,
+    buildLog: null,
   };
 
   // ------ Step 1: Build ------
   try {
     await writeDeployMetadata(slug, meta);
   } catch {
-    // If we can't even write metadata, there's nothing useful we can do
     return;
   }
 
   const buildResult = await buildSite(slug);
 
   if (!buildResult.success) {
-    meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed' };
+    meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed', buildLog: buildResult.error ?? null };
     try {
       await writeDeployMetadata(slug, meta);
     } catch {
@@ -150,6 +151,9 @@ export async function deployNewSite(slug: string): Promise<void> {
     }
     return;
   }
+
+  // Store build success log
+  meta = { ...meta, buildLog: 'Build completed successfully' };
 
   // ------ Step 2: Deploy ------
   try {
