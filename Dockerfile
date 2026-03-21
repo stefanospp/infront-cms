@@ -28,4 +28,8 @@ EXPOSE 4321
 # Volume for generated client sites (persists across deploys)
 VOLUME /app/sites
 
-CMD ["node", "sites/admin/dist/server/entry.mjs"]
+# Entrypoint script writes runtime env vars to JSON then starts the server
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
