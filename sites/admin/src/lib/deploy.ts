@@ -155,19 +155,20 @@ export async function deployNewSite(slug: string): Promise<void> {
     meta = { ...meta, status: 'deploying' };
     await writeDeployMetadata(slug, meta);
 
-    // Create Pages project
+    // Create Pages project (returns actual subdomain from CF, e.g. "slug-abc.pages.dev")
     const { projectName, pagesDevUrl } = await createPagesProject(slug);
     meta = { ...meta, projectName, pagesDevUrl };
 
     // Upload assets via wrangler
     await wranglerDeploy(buildResult.distDir, projectName);
 
-    // Create DNS CNAME record: slug -> slug.pages.dev
-    const dnsRecordId = await createDnsRecord(slug, `${slug}.pages.dev`);
+    // Create a non-proxied CNAME record pointing to the Pages subdomain.
+    // Must NOT be proxied (orange cloud) to avoid "CNAME Cross-User Banned".
+    const stagingDomain = `${slug}.infront.cy`;
+    const dnsRecordId = await createDnsRecord(slug, pagesDevUrl);
     meta = { ...meta, dnsRecordId };
 
-    // Add the staging custom domain to the Pages project
-    const stagingDomain = `${slug}.infront.cy`;
+    // Register the subdomain as a custom domain on the Pages project for SSL.
     await addCustomDomain(projectName, stagingDomain);
 
     // All done

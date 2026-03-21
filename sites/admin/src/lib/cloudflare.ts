@@ -55,17 +55,20 @@ export async function createPagesProject(
     throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
   }
 
-  await cfFetch<unknown>(`/accounts/${accountId}/pages/projects`, {
-    method: 'POST',
-    body: JSON.stringify({
-      name: slug,
-      production_branch: 'main',
-    }),
-  });
+  const result = await cfFetch<{ name: string; subdomain: string }>(
+    `/accounts/${accountId}/pages/projects`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        name: slug,
+        production_branch: 'main',
+      }),
+    },
+  );
 
   return {
-    projectName: slug,
-    pagesDevUrl: `${slug}.pages.dev`,
+    projectName: result.name,
+    pagesDevUrl: result.subdomain,
   };
 }
 
@@ -139,8 +142,8 @@ export async function createDnsRecord(
         type: 'CNAME',
         name,
         content: target,
-        proxied: true,
-        ttl: 1,
+        proxied: false,
+        ttl: 300,
       }),
     },
   );
