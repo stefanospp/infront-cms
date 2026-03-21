@@ -66,8 +66,18 @@ function validateSlug(slug: string): string | null {
  * Generate the TypeScript source for site.config.ts.
  */
 export function generateSiteConfigContent(payload: CreateSitePayload): string {
-  const contactStr = JSON.stringify(payload.contact, null, 4);
-  const seoStr = JSON.stringify(payload.seo, null, 4);
+  // Apply fallback defaults for empty fields
+  const contact = { ...payload.contact };
+  if (!contact.email) contact.email = `info@${payload.domain}`;
+
+  const seo = { ...payload.seo };
+  if (!seo.defaultTitle) seo.defaultTitle = payload.name;
+  if (!seo.titleTemplate) seo.titleTemplate = `%s | ${payload.name}`;
+  if (!seo.defaultDescription) seo.defaultDescription = `Welcome to ${payload.name}`;
+  if (!seo.defaultOgImage) seo.defaultOgImage = '/og-default.jpg';
+
+  const contactStr = JSON.stringify(contact, null, 4);
+  const seoStr = JSON.stringify(seo, null, 4);
   const navStr = JSON.stringify(payload.nav, null, 4);
   const footerStr = JSON.stringify(payload.footer, null, 4);
   const themeStr = JSON.stringify(payload.theme, null, 4);

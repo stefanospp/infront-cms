@@ -1245,6 +1245,21 @@ export default function SiteWizard({ initialTemplateId }: SiteWizardProps) {
     setError(null);
 
     try {
+      // Clean up contact — strip empty address
+      const contact = { ...formData.contact };
+      if (contact.address && !contact.address.street && !contact.address.city && !contact.address.postcode) {
+        delete (contact as Record<string, unknown>).address;
+      }
+      if (!contact.email) {
+        contact.email = `info@${formData.domain}`;
+      }
+
+      // Fill in SEO defaults from site name
+      const seo = { ...formData.seo };
+      if (!seo.defaultTitle) seo.defaultTitle = formData.name;
+      if (!seo.titleTemplate) seo.titleTemplate = `%s | ${formData.name}`;
+      if (!seo.defaultDescription) seo.defaultDescription = `Welcome to ${formData.name}`;
+
       // Assemble the payload
       const payload: Record<string, unknown> = {
         slug: formData.slug,
@@ -1255,8 +1270,8 @@ export default function SiteWizard({ initialTemplateId }: SiteWizardProps) {
         templateId: formData.templateId,
         theme: formData.theme,
         tokens: formData.tokens,
-        contact: formData.contact,
-        seo: formData.seo,
+        contact,
+        seo,
         nav: formData.nav,
         footer: formData.footer,
       };

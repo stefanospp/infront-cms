@@ -4,10 +4,10 @@ import { generateSite } from '@/lib/generator';
 import type { CreateSitePayload } from '@/lib/generator';
 
 const addressSchema = z.object({
-  street: z.string().min(1),
-  city: z.string().min(1),
-  postcode: z.string().min(1),
-  country: z.string().min(1),
+  street: z.string(),
+  city: z.string(),
+  postcode: z.string(),
+  country: z.string(),
   region: z.string().optional(),
 });
 
@@ -57,14 +57,14 @@ const createSiteSchema = z.object({
     }),
   }),
   contact: z.object({
-    email: z.string().email(),
+    email: z.string().email().or(z.literal('')),
     phone: z.string().optional(),
     address: addressSchema.optional(),
   }),
   seo: z.object({
-    defaultTitle: z.string().min(1),
-    titleTemplate: z.string().min(1),
-    defaultDescription: z.string().min(1),
+    defaultTitle: z.string(),
+    titleTemplate: z.string(),
+    defaultDescription: z.string(),
     defaultOgImage: z.string(),
     structuredData: z
       .object({

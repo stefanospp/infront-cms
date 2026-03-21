@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from 'jose';
-import { compare } from 'bcryptjs';
+import bcryptjs from 'bcryptjs';
+const { compare } = bcryptjs;
 
 /**
  * Verify a plaintext password against a bcrypt hash.
