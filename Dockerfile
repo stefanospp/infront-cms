@@ -25,8 +25,8 @@ ENV HOST=0.0.0.0
 ENV PORT=4321
 EXPOSE 4321
 
-# Volume for generated client sites (persists across deploys)
-VOLUME /app/sites
+# Volume only for generated client sites (NOT admin or template)
+# The volume is mounted at /app/generated-sites in docker run
 
 # Entrypoint script writes runtime env vars to JSON then starts the server
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
