@@ -294,6 +294,22 @@ import FullWidth from '@agency/ui/layouts/FullWidth.astro';
 | "Add team photos" | `src/pages/about.astro` | Add `photo` prop to `TeamGrid` members |
 | "Remove the map" | `src/pages/contact.astro` | Delete the `<Map>` component |
 
+## Help manual maintenance
+
+The admin UI includes an in-app help manual at `sites/admin/src/data/help-content.ts`. This file contains all documentation articles.
+
+**When modifying platform functionality, always update the corresponding help article(s):**
+- Changed a shared component's props or variants → update its article in the `components` category
+- Changed site.config.ts schema or options → update the `configuration` category articles
+- Changed an API route → update the `api-reference` category article for that route
+- Changed deployment/infrastructure scripts → update the `deployment` or `infrastructure` category articles
+- Added/removed admin UI features → update the `admin-ui` category articles
+- Changed the site creation wizard or CLI provisioning → update the `site-creation` category articles
+- Changed testing setup or performance budgets → update the `testing` category articles
+- Changed security headers or validation → update the `security-accessibility` category articles
+
+If you add entirely new functionality that doesn't fit an existing article, create a new article entry in `help-content.ts` under the appropriate category.
+
 ## Admin UI
 
 - **Location:** `sites/admin/` — Astro 6 SSR with `@astrojs/node` adapter
