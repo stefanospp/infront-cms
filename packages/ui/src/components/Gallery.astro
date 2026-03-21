@@ -1,0 +1,65 @@
+---
+export interface GalleryItem {
+  image: string;
+  title?: string;
+  description?: string;
+  href?: string;
+}
+
+export interface Props {
+  variant?: 'grid' | 'masonry';
+  items: GalleryItem[];
+  class?: string;
+}
+
+const { variant = 'grid', items, class: className } = Astro.props;
+
+const gridClass =
+  variant === 'masonry'
+    ? 'columns-1 gap-4 space-y-4 sm:columns-2 lg:columns-3'
+    : 'grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3';
+---
+
+<div class:list={[gridClass, className]}>
+  {
+    items.map((item) => {
+      const content = (
+        <figure
+          class:list={[
+            'group relative overflow-hidden rounded-xl bg-neutral-100',
+            variant === 'masonry' ? 'break-inside-avoid' : '',
+          ]}
+        >
+          <img
+            src={item.image}
+            alt={item.title ?? ''}
+            class="w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+          {(item.title || item.description) && (
+            <figcaption class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-neutral-900/80 to-transparent p-4 pt-8">
+              {item.title && (
+                <h3 class="font-heading text-sm font-semibold text-white">
+                  {item.title}
+                </h3>
+              )}
+              {item.description && (
+                <p class="mt-1 text-xs text-neutral-200">
+                  {item.description}
+                </p>
+              )}
+            </figcaption>
+          )}
+        </figure>
+      );
+
+      return item.href ? (
+        <a href={item.href} class="block no-underline">
+          {content}
+        </a>
+      ) : (
+        content
+      );
+    })
+  }
+</div>

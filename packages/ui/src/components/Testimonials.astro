@@ -7,47 +7,112 @@ export interface TestimonialItem {
 }
 
 export interface Props {
+  variant?: 'default' | 'carousel' | 'featured';
   testimonials: TestimonialItem[];
   class?: string;
 }
 
-const { testimonials, class: className } = Astro.props;
+const { variant = 'default', testimonials, class: className } = Astro.props;
+
+const quoteIcon = `<svg class="mb-4 h-8 w-8 text-primary-300" fill="currentColor" viewBox="0 0 32 32" aria-hidden="true"><path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z"/></svg>`;
 ---
 
-<div class:list={['grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3', className]}>
-  {
-    testimonials.map((t) => (
-      <figure class="rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
-        <svg
-          class="mb-4 h-8 w-8 text-primary-300"
-          fill="currentColor"
-          viewBox="0 0 32 32"
-          aria-hidden="true"
-        >
-          <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
-        </svg>
-        <blockquote class="text-base leading-relaxed text-neutral-700">
-          {t.quote}
-        </blockquote>
-        <figcaption class="mt-6 flex items-center gap-4">
-          {t.image && (
-            <img
-              src={t.image}
-              alt={t.author}
-              class="h-12 w-12 rounded-full object-cover"
-              loading="lazy"
-            />
-          )}
-          <div>
-            <div class="font-heading text-sm font-semibold text-neutral-900">
-              {t.author}
-            </div>
-            {t.role && (
-              <div class="text-sm text-neutral-500">{t.role}</div>
+{
+  variant === 'default' && (
+    <div class:list={['grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3', className]}>
+      {testimonials.map((t) => (
+        <figure class="rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
+          <Fragment set:html={quoteIcon} />
+          <blockquote class="text-base leading-relaxed text-neutral-700">
+            {t.quote}
+          </blockquote>
+          <figcaption class="mt-6 flex items-center gap-4">
+            {t.image && (
+              <img
+                src={t.image}
+                alt={t.author}
+                class="h-12 w-12 rounded-full object-cover"
+                loading="lazy"
+              />
             )}
+            <div>
+              <div class="font-heading text-sm font-semibold text-neutral-900">
+                {t.author}
+              </div>
+              {t.role && <div class="text-sm text-neutral-500">{t.role}</div>}
+            </div>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  )
+}
+
+{
+  variant === 'featured' && testimonials[0] && (
+    <figure class:list={['mx-auto max-w-3xl text-center', className]}>
+      <svg
+        class="mx-auto mb-6 h-10 w-10 text-primary-300"
+        fill="currentColor"
+        viewBox="0 0 32 32"
+        aria-hidden="true"
+      >
+        <path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" />
+      </svg>
+      <blockquote class="font-heading text-xl leading-relaxed text-neutral-800 sm:text-2xl">
+        {testimonials[0].quote}
+      </blockquote>
+      <figcaption class="mt-8 flex items-center justify-center gap-4">
+        {testimonials[0].image && (
+          <img
+            src={testimonials[0].image}
+            alt={testimonials[0].author}
+            class="h-14 w-14 rounded-full object-cover"
+            loading="lazy"
+          />
+        )}
+        <div class="text-left">
+          <div class="font-heading text-base font-semibold text-neutral-900">
+            {testimonials[0].author}
           </div>
-        </figcaption>
-      </figure>
-    ))
-  }
-</div>
+          {testimonials[0].role && (
+            <div class="text-sm text-neutral-500">{testimonials[0].role}</div>
+          )}
+        </div>
+      </figcaption>
+    </figure>
+  )
+}
+
+{
+  variant === 'carousel' && (
+    <div class:list={['mx-auto max-w-3xl overflow-hidden', className]}>
+      <div class="flex snap-x snap-mandatory gap-8 overflow-x-auto pb-4 scrollbar-hide">
+        {testimonials.map((t) => (
+          <figure class="w-full flex-shrink-0 snap-center rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
+            <Fragment set:html={quoteIcon} />
+            <blockquote class="text-base leading-relaxed text-neutral-700">
+              {t.quote}
+            </blockquote>
+            <figcaption class="mt-6 flex items-center gap-4">
+              {t.image && (
+                <img
+                  src={t.image}
+                  alt={t.author}
+                  class="h-12 w-12 rounded-full object-cover"
+                  loading="lazy"
+                />
+              )}
+              <div>
+                <div class="font-heading text-sm font-semibold text-neutral-900">
+                  {t.author}
+                </div>
+                {t.role && <div class="text-sm text-neutral-500">{t.role}</div>}
+              </div>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  )
+}

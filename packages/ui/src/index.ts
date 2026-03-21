@@ -22,6 +22,14 @@
  *   import TeamGrid from '@agency/ui/components/TeamGrid.astro';
  *   import FAQ from '@agency/ui/components/FAQ.astro';
  *   import Map from '@agency/ui/components/Map.astro';
+ *   import ContactSection from '@agency/ui/components/ContactSection.astro';
+ *   import PricingTable from '@agency/ui/components/PricingTable.astro';
+ *   import Features from '@agency/ui/components/Features.astro';
+ *   import Gallery from '@agency/ui/components/Gallery.astro';
+ *   import Timeline from '@agency/ui/components/Timeline.astro';
+ *   import StatsCounter from '@agency/ui/components/StatsCounter.astro';
+ *   import LogoCloud from '@agency/ui/components/LogoCloud.astro';
+ *   import OpeningHours from '@agency/ui/components/OpeningHours.astro';
  *
  * Islands (React, use with client:load or client:visible):
  *   import ContactForm from '@agency/ui/islands/ContactForm';

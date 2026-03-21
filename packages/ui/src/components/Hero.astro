@@ -1,11 +1,12 @@
 ---
 export interface Props {
-  variant: 'centered' | 'split' | 'fullscreen' | 'minimal';
+  variant: 'centered' | 'split' | 'fullscreen' | 'minimal' | 'video';
   heading: string;
   subheading?: string;
   ctaText?: string;
   ctaHref?: string;
   backgroundImage?: string;
+  backgroundVideo?: string;
   class?: string;
 }
 
@@ -16,6 +17,7 @@ const {
   ctaText,
   ctaHref,
   backgroundImage,
+  backgroundVideo,
   class: className,
 } = Astro.props;
 ---
@@ -155,6 +157,52 @@ const {
           <p class="mt-4 text-lg text-neutral-600">
             {subheading}
           </p>
+        )}
+      </div>
+    </section>
+  )
+}
+
+{
+  variant === 'video' && (
+    <section
+      class:list={[
+        'relative flex min-h-[70vh] items-center justify-center px-4 sm:px-6 lg:px-8',
+        className,
+      ]}
+    >
+      <div class="absolute inset-0 z-0 overflow-hidden">
+        {backgroundVideo && (
+          <video
+            autoplay
+            muted
+            loop
+            playsinline
+            class="h-full w-full object-cover"
+          >
+            <source src={backgroundVideo} type="video/mp4" />
+          </video>
+        )}
+        <div class="absolute inset-0 bg-neutral-900/60" />
+      </div>
+      <div class="relative z-10 mx-auto max-w-4xl text-center">
+        <h1 class="font-heading text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+          {heading}
+        </h1>
+        {subheading && (
+          <p class="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-neutral-200 sm:text-xl">
+            {subheading}
+          </p>
+        )}
+        {ctaText && ctaHref && (
+          <div class="mt-10">
+            <a
+              href={ctaHref}
+              class="inline-flex items-center rounded-lg bg-primary-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-primary-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 transition-colors"
+            >
+              {ctaText}
+            </a>
+          </div>
         )}
       </div>
     </section>

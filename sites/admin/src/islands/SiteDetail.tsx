@@ -59,6 +59,7 @@ export default function SiteDetail({ slug }: { slug: string }) {
   const [domainInput, setDomainInput] = useState('');
   const [domainLoading, setDomainLoading] = useState(false);
   const [domainError, setDomainError] = useState<string | null>(null);
+  const [overrides, setOverrides] = useState<string[]>([]);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ---- Fetch helpers ----
@@ -84,9 +85,10 @@ export default function SiteDetail({ slug }: { slug: string }) {
 
     async function load() {
       try {
-        const [sitesRes, deployData] = await Promise.all([
+        const [sitesRes, deployData, overridesRes] = await Promise.all([
           fetch('/api/sites'),
           fetchDeployStatus(),
+          fetch(`/api/sites/${slug}/overrides`).catch(() => null),
         ]);
 
         if (cancelled) return;
@@ -96,6 +98,12 @@ export default function SiteDetail({ slug }: { slug: string }) {
         const match = allSites.find((s) => s.slug === slug) ?? null;
         setSite(match);
         setDeploy(deployData);
+
+        if (overridesRes?.ok) {
+          const data = await overridesRes.json();
+          setOverrides(data.files ?? []);
+        }
+
         setState('loaded');
       } catch {
         if (!cancelled) setState('error');
@@ -429,6 +437,31 @@ export default function SiteDetail({ slug }: { slug: string }) {
           )}
         </div>
       </div>
+
+      {/* Component Overrides */}
+      {overrides.length > 0 && (
+        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+          <h3 className="text-sm font-semibold text-neutral-900 mb-4">
+            Custom Component Overrides
+          </h3>
+          <p className="text-xs text-neutral-500 mb-3">
+            These components override the shared library versions for this site.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {overrides.map((file) => (
+              <span
+                key={file}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 border border-amber-200 px-3 py-1.5 text-xs font-medium text-amber-800"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                {file}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Custom Domain section */}
       {deploy && (

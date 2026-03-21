@@ -1,0 +1,54 @@
+---
+export interface StatItem {
+  value: string;
+  label: string;
+  prefix?: string;
+  suffix?: string;
+}
+
+export interface Props {
+  variant?: 'inline' | 'grid';
+  stats: StatItem[];
+  class?: string;
+}
+
+const { variant = 'inline', stats, class: className } = Astro.props;
+---
+
+{
+  variant === 'inline' && (
+    <div class:list={['flex flex-wrap justify-center gap-8 sm:gap-12 lg:gap-16', className]}>
+      {stats.map((stat) => (
+        <div class="text-center">
+          <div class="font-heading text-3xl font-bold text-neutral-900 sm:text-4xl">
+            {stat.prefix}
+            {stat.value}
+            {stat.suffix}
+          </div>
+          <div class="mt-2 text-sm font-medium text-neutral-600">
+            {stat.label}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+{
+  variant === 'grid' && (
+    <div class:list={['grid grid-cols-2 gap-8 lg:grid-cols-4', className]}>
+      {stats.map((stat) => (
+        <div class="rounded-xl border border-neutral-200 bg-white p-6 text-center shadow-sm">
+          <div class="font-heading text-3xl font-bold text-primary-600">
+            {stat.prefix}
+            {stat.value}
+            {stat.suffix}
+          </div>
+          <div class="mt-2 text-sm font-medium text-neutral-600">
+            {stat.label}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}

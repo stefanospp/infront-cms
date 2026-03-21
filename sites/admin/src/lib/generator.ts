@@ -4,6 +4,9 @@ import type {
   SiteConfig,
   TemplateDefinition,
   TemplateThemeTokens,
+  TemplateColorScale,
+  TemplatePageDefinition,
+  TemplateSectionDefinition,
   ThemeConfig,
   ContactConfig,
   SEOConfig,
@@ -122,9 +125,9 @@ export default config;
 export function generateGlobalCssContent(tokens: TemplateThemeTokens): string {
   const colorEntries = (
     group: string,
-    scale: Record<string, string>,
+    scale: TemplateColorScale,
   ): string => {
-    return Object.entries(scale)
+    return (Object.entries(scale) as [string, string][])
       .map(([step, value]) => `  --color-${group}-${step}: ${value};`)
       .join('\n');
   };
@@ -132,6 +135,7 @@ export function generateGlobalCssContent(tokens: TemplateThemeTokens): string {
   return `@import "tailwindcss";
 
 @source "../../packages/ui/src/**/*.{astro,tsx}";
+@source "../components/**/*.{astro,tsx}";
 
 @theme {
   /* Primary */
@@ -166,6 +170,204 @@ body {
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
 }
+`;
+}
+
+/**
+ * Generate the astro.config.mjs content with component override plugin.
+ */
+export function generateAstroConfigContent(domain: string): string {
+  return `import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
+import sitemap from '@astrojs/sitemap';
+import tailwindcss from '@tailwindcss/vite';
+import { componentOverridePlugin } from '@agency/utils';
+
+export default defineConfig({
+  site: 'https://${domain}',
+  output: 'static',
+  integrations: [
+    react(),
+    sitemap(),
+  ],
+  vite: {
+    plugins: [
+      tailwindcss(),
+      componentOverridePlugin(import.meta.dirname),
+    ],
+  },
+  image: {
+    domains: ['cms.${domain}'],
+  },
+});
+`;
+}
+
+// ---------------------------------------------------------------------------
+// Page generation from template definitions
+// ---------------------------------------------------------------------------
+
+/** Components that need `config` passed as a prop */
+const CONFIG_COMPONENTS = new Set(['ContactSection', 'Nav', 'Footer']);
+
+/** Pages that are kept from the template scaffold (not generated) */
+const STATIC_PAGES = new Set(['privacy', 'terms', '404']);
+
+/**
+ * Resolve the import path for a component.
+ * Islands live in @agency/ui/islands/, everything else in @agency/ui/components/.
+ */
+function getComponentImportPath(section: TemplateSectionDefinition): string {
+  if (section.isIsland) {
+    return `@agency/ui/islands/${section.component}`;
+  }
+  return `@agency/ui/components/${section.component}.astro`;
+}
+
+/**
+ * Collect all unique component imports from a sections tree (including children).
+ * Returns a Map of componentName → importPath.
+ */
+function collectImports(
+  sections: TemplateSectionDefinition[],
+): Map<string, string> {
+  const imports = new Map<string, string>();
+  for (const section of sections) {
+    if (!imports.has(section.component)) {
+      imports.set(section.component, getComponentImportPath(section));
+    }
+    if (section.children) {
+      const childImports = collectImports(section.children);
+      for (const [name, path] of childImports) {
+        if (!imports.has(name)) imports.set(name, path);
+      }
+    }
+  }
+  return imports;
+}
+
+/**
+ * Serialize a JavaScript value into a string suitable for Astro template expressions.
+ * Objects and arrays become `{...}` expressions; strings become quoted literals.
+ */
+function serializePropValue(value: unknown): string {
+  if (typeof value === 'string') {
+    // Check for config references like {config.seo.defaultTitle}
+    if (value.startsWith('{') && value.endsWith('}')) {
+      return value;
+    }
+    return JSON.stringify(value);
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return `{${value}}`;
+  }
+  if (value === null || value === undefined) {
+    return '{undefined}';
+  }
+  // Arrays and objects — use JSON.stringify and wrap in expression
+  return `{${JSON.stringify(value, null, 2)}}`;
+}
+
+/**
+ * Render a single section as an Astro component invocation string.
+ */
+function renderSection(
+  section: TemplateSectionDefinition,
+  indentLevel: number,
+): string {
+  const pad = '  '.repeat(indentLevel);
+  const tag = section.component;
+  const attrs: string[] = [];
+
+  // Add variant prop
+  if (section.variant) {
+    attrs.push(`variant="${section.variant}"`);
+  }
+
+  // Add client directive for islands
+  if (section.isIsland && section.clientDirective) {
+    attrs.push(`client:${section.clientDirective}`);
+  }
+
+  // Add config prop if the component needs it
+  if (CONFIG_COMPONENTS.has(section.component)) {
+    attrs.push('{...{ config }}');
+  }
+
+  // Add remaining props
+  for (const [key, value] of Object.entries(section.props)) {
+    const serialized = serializePropValue(value);
+    if (serialized.startsWith('{')) {
+      attrs.push(`${key}=${serialized}`);
+    } else {
+      attrs.push(`${key}=${serialized}`);
+    }
+  }
+
+  const attrStr = attrs.length > 0 ? ' ' + attrs.join(' ') : '';
+
+  // Self-closing if no children
+  if (!section.children || section.children.length === 0) {
+    return `${pad}<${tag}${attrStr} />`;
+  }
+
+  // With children
+  const childrenStr = section.children
+    .map((child) => renderSection(child, indentLevel + 1))
+    .join('\n');
+
+  return `${pad}<${tag}${attrStr}>\n${childrenStr}\n${pad}</${tag}>`;
+}
+
+/**
+ * Generate the full .astro file content for a template page definition.
+ */
+export function generatePageFile(page: TemplatePageDefinition): string {
+  // Skip static pages
+  if (STATIC_PAGES.has(page.slug)) {
+    return '';
+  }
+
+  // Collect imports
+  const layoutImportName = page.layout;
+  const layoutImportPath = `@agency/ui/layouts/${page.layout}.astro`;
+  const componentImports = collectImports(page.sections);
+
+  // Build import statements
+  const importLines: string[] = [
+    `import ${layoutImportName} from '${layoutImportPath}';`,
+  ];
+
+  for (const [name, importPath] of componentImports) {
+    importLines.push(`import ${name} from '${importPath}';`);
+  }
+
+  importLines.push(`import config from '../../site.config';`);
+
+  // Resolve title and description (may reference config)
+  const titleExpr = page.title.startsWith('{')
+    ? `const title = ${page.title.slice(1, -1)};`
+    : `const title = ${JSON.stringify(page.title)};`;
+
+  const descExpr = page.description.startsWith('{')
+    ? `const description = ${page.description.slice(1, -1)};`
+    : `const description = ${JSON.stringify(page.description)};`;
+
+  // Render sections
+  const sectionsStr = page.sections
+    .map((s) => renderSection(s, 1))
+    .join('\n\n');
+
+  return `---
+${importLines.join('\n')}
+
+${titleExpr}
+${descExpr}
+---
+
+<${layoutImportName} title={title} description={description} config={config}>
+${sectionsStr}
+</${layoutImportName}>
 `;
 }
 
@@ -222,7 +424,33 @@ export async function generateSite(
       },
     });
 
-    // 5. Rewrite package.json
+    // 5. Delete hardcoded page files (will be regenerated from template)
+    const pagesDir = path.join(sitePath, 'src', 'pages');
+    const pagesToDelete = ['index.astro', 'about.astro', 'contact.astro'];
+    for (const pageFile of pagesToDelete) {
+      try {
+        await fs.unlink(path.join(pagesDir, pageFile));
+      } catch {
+        // File may not exist — that's fine
+      }
+    }
+
+    // 6. Generate pages from template definition
+    for (const page of template.pages) {
+      if (STATIC_PAGES.has(page.slug)) continue;
+      const pageContent = generatePageFile(page);
+      if (pageContent) {
+        const pagePath = page.slug === 'index'
+          ? path.join(pagesDir, 'index.astro')
+          : path.join(pagesDir, `${page.slug}.astro`);
+        await fs.writeFile(pagePath, pageContent, 'utf-8');
+      }
+    }
+
+    // 7. Create empty src/components/ for site-specific overrides
+    await fs.mkdir(path.join(sitePath, 'src', 'components'), { recursive: true });
+
+    // 8. Rewrite package.json
     const pkgPath = path.join(sitePath, 'package.json');
     let pkgContent = await fs.readFile(pkgPath, 'utf-8');
     pkgContent = pkgContent.replace(
@@ -231,7 +459,7 @@ export async function generateSite(
     );
     await fs.writeFile(pkgPath, pkgContent, 'utf-8');
 
-    // 6. Generate site.config.ts
+    // 9. Generate site.config.ts
     const siteConfigContent = generateSiteConfigContent(payload);
     await fs.writeFile(
       path.join(sitePath, 'site.config.ts'),
@@ -239,7 +467,7 @@ export async function generateSite(
       'utf-8',
     );
 
-    // 7. Generate src/styles/global.css
+    // 10. Generate src/styles/global.css
     const globalCssContent = generateGlobalCssContent(payload.tokens);
     await fs.mkdir(path.join(sitePath, 'src', 'styles'), { recursive: true });
     await fs.writeFile(
@@ -248,22 +476,18 @@ export async function generateSite(
       'utf-8',
     );
 
-    // 8. Update astro.config.mjs
+    // 11. Update astro.config.mjs (site URL + component override plugin)
     const astroConfigPath = path.join(sitePath, 'astro.config.mjs');
-    let astroConfig = await fs.readFile(astroConfigPath, 'utf-8');
-    astroConfig = astroConfig.replace(
-      'https://example.com',
-      `https://${payload.domain}`,
-    );
-    await fs.writeFile(astroConfigPath, astroConfig, 'utf-8');
+    const astroConfigContent = generateAstroConfigContent(payload.domain);
+    await fs.writeFile(astroConfigPath, astroConfigContent, 'utf-8');
 
-    // 9. Update public/robots.txt
+    // 12. Update public/robots.txt
     const robotsPath = path.join(sitePath, 'public', 'robots.txt');
     let robotsContent = await fs.readFile(robotsPath, 'utf-8');
     robotsContent = robotsContent.replace(/example\.com/g, payload.domain);
     await fs.writeFile(robotsPath, robotsContent, 'utf-8');
 
-    // 10. Write CLAUDE.md
+    // 13. Write CLAUDE.md
     const claudeMd = `# ${payload.name} — Claude Code Reference
 
 Client site generated from template "${template.name}" on ${new Date().toISOString().split('T')[0]}.
@@ -287,7 +511,7 @@ ${payload.tier === 'cms' || payload.tier === 'interactive' ? '- CMS powered by D
 `;
     await fs.writeFile(path.join(sitePath, 'CLAUDE.md'), claudeMd, 'utf-8');
 
-    // 11. If tier is 'cms' or 'interactive': copy docker template
+    // 14. If tier is 'cms' or 'interactive': copy docker template
     if (payload.tier === 'cms' || payload.tier === 'interactive') {
       const dockerTemplatePath = path.join(
         root,
@@ -318,7 +542,7 @@ ${payload.tier === 'cms' || payload.tier === 'interactive' ? '- CMS powered by D
       }
     }
 
-    // 12. Build checklist
+    // 15. Build checklist
     checklist.push(`Run 'pnpm install' from monorepo root`);
     checklist.push(
       `Run 'pnpm dev --filter @agency/${payload.slug}' to start dev server`,

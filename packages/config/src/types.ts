@@ -96,10 +96,18 @@ export interface TemplateSectionDefinition {
   component: string;
   variant?: string;
   props: Record<string, unknown>;
+  /** Nested child sections (e.g. CardGrid inside Section) */
+  children?: TemplateSectionDefinition[];
+  /** Whether this component is a React island (lives in islands/ not components/) */
+  isIsland?: boolean;
+  /** Astro client directive for islands: 'visible' | 'idle' | 'load' */
+  clientDirective?: 'visible' | 'idle' | 'load';
 }
 
 export interface TemplatePageDefinition {
   slug: string;
+  title: string;
+  description: string;
   layout: string;
   sections: TemplateSectionDefinition[];
 }
@@ -137,6 +145,8 @@ export interface TemplateDefinition {
   description: string;
   screenshot: string;
   category: string;
+  /** Key features for display in the template gallery */
+  features?: string[];
   pages: TemplatePageDefinition[];
   defaultTheme: ThemeConfig;
   defaultTokens: TemplateThemeTokens;

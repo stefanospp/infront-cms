@@ -5,42 +5,56 @@ export interface FAQItem {
 }
 
 export interface Props {
+  variant?: 'default' | 'two-column';
   items: FAQItem[];
   class?: string;
 }
 
-const { items, class: className } = Astro.props;
+const { variant = 'default', items, class: className } = Astro.props;
+
+const plusIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
 ---
 
-<div class:list={['mx-auto max-w-3xl divide-y divide-neutral-200', className]}>
-  {
-    items.map((item) => (
-      <details class="group py-6">
-        <summary class="flex cursor-pointer list-none items-center justify-between text-left">
-          <h3 class="font-heading text-base font-semibold text-neutral-900 pr-4">
-            {item.question}
-          </h3>
-          <span class="ml-4 flex-shrink-0 text-neutral-400 transition-transform duration-200 group-open:rotate-45">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <line x1="12" y1="5" x2="12" y2="19" />
-              <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-          </span>
-        </summary>
-        <div class="mt-4 text-sm leading-relaxed text-neutral-600">
-          <p>{item.answer}</p>
-        </div>
-      </details>
-    ))
-  }
-</div>
+{
+  variant === 'default' && (
+    <div class:list={['mx-auto max-w-3xl divide-y divide-neutral-200', className]}>
+      {items.map((item) => (
+        <details class="group py-6">
+          <summary class="flex cursor-pointer list-none items-center justify-between text-left">
+            <h3 class="font-heading text-base font-semibold text-neutral-900 pr-4">
+              {item.question}
+            </h3>
+            <span class="ml-4 flex-shrink-0 text-neutral-400 transition-transform duration-200 group-open:rotate-45">
+              <Fragment set:html={plusIcon} />
+            </span>
+          </summary>
+          <div class="mt-4 text-sm leading-relaxed text-neutral-600">
+            <p>{item.answer}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  )
+}
+
+{
+  variant === 'two-column' && (
+    <div class:list={['mx-auto grid max-w-5xl grid-cols-1 gap-x-12 gap-y-0 md:grid-cols-2', className]}>
+      {items.map((item) => (
+        <details class="group border-b border-neutral-200 py-6">
+          <summary class="flex cursor-pointer list-none items-center justify-between text-left">
+            <h3 class="font-heading text-base font-semibold text-neutral-900 pr-4">
+              {item.question}
+            </h3>
+            <span class="ml-4 flex-shrink-0 text-neutral-400 transition-transform duration-200 group-open:rotate-45">
+              <Fragment set:html={plusIcon} />
+            </span>
+          </summary>
+          <div class="mt-4 text-sm leading-relaxed text-neutral-600">
+            <p>{item.answer}</p>
+          </div>
+        </details>
+      ))}
+    </div>
+  )
+}

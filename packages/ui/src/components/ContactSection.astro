@@ -1,20 +1,22 @@
 ---
-import "../styles/global.css";
-import SingleColumn from '@agency/ui/layouts/SingleColumn.astro';
-import Section from '@agency/ui/components/Section.astro';
-import ContactForm from '@agency/ui/islands/ContactForm';
-import Map from '@agency/ui/components/Map.astro';
-import config from '../../site.config';
+import type { SiteConfig } from '@agency/config';
+import ContactForm from '../islands/ContactForm';
+import Map from './Map.astro';
 
-const title = 'Contact Us';
-const description = `Get in touch with ${config.name}. We'd love to hear from you.`;
+export interface Props {
+  config: SiteConfig;
+  class?: string;
+}
+
+const { config, class: className } = Astro.props;
+
 const address = config.contact.address
   ? `${config.contact.address.street}, ${config.contact.address.city}, ${config.contact.address.postcode}`
   : '';
 ---
 
-<SingleColumn title={title} description={description} config={config}>
-  <Section>
+<section class:list={['px-4 py-16 sm:px-6 sm:py-24 lg:px-8', className]}>
+  <div class="mx-auto max-w-7xl">
     <h1 class="text-4xl font-heading font-bold text-neutral-900 mb-6">Contact Us</h1>
     <div class="grid gap-12 lg:grid-cols-2">
       <div>
@@ -60,5 +62,5 @@ const address = config.contact.address
         {address && <Map address={address} />}
       </div>
     </div>
-  </Section>
-</SingleColumn>
+  </div>
+</section>

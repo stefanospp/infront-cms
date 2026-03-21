@@ -1,0 +1,65 @@
+---
+export interface LogoItem {
+  name: string;
+  image: string;
+  href?: string;
+}
+
+export interface Props {
+  variant?: 'grid' | 'scrolling';
+  logos: LogoItem[];
+  heading?: string;
+  class?: string;
+}
+
+const { variant = 'grid', logos, heading, class: className } = Astro.props;
+---
+
+<div class:list={[className]}>
+  {heading && (
+    <p class="mb-8 text-center text-sm font-medium text-neutral-500">
+      {heading}
+    </p>
+  )}
+
+  {
+    variant === 'grid' && (
+      <div class="flex flex-wrap items-center justify-center gap-x-12 gap-y-8">
+        {logos.map((logo) => {
+          const img = (
+            <img
+              src={logo.image}
+              alt={logo.name}
+              class="h-8 w-auto object-contain opacity-60 grayscale transition-all hover:opacity-100 hover:grayscale-0"
+              loading="lazy"
+            />
+          );
+          return logo.href ? (
+            <a href={logo.href} class="block" title={logo.name}>
+              {img}
+            </a>
+          ) : (
+            img
+          );
+        })}
+      </div>
+    )
+  }
+
+  {
+    variant === 'scrolling' && (
+      <div class="overflow-hidden">
+        <div class="flex animate-scroll gap-12">
+          {[...logos, ...logos].map((logo) => (
+            <img
+              src={logo.image}
+              alt={logo.name}
+              class="h-8 w-auto flex-shrink-0 object-contain opacity-60 grayscale"
+              loading="lazy"
+            />
+          ))}
+        </div>
+      </div>
+    )
+  }
+</div>

@@ -1,38 +1,116 @@
 ---
 export interface Props {
+  variant?: 'default' | 'split' | 'minimal';
   heading: string;
   description?: string;
   buttonText: string;
   buttonHref: string;
+  image?: string;
   class?: string;
 }
 
-const { heading, description, buttonText, buttonHref, class: className } =
-  Astro.props;
+const {
+  variant = 'default',
+  heading,
+  description,
+  buttonText,
+  buttonHref,
+  image,
+  class: className,
+} = Astro.props;
 ---
 
-<section
-  class:list={[
-    'bg-primary-600 px-4 py-16 sm:px-6 sm:py-20 lg:px-8',
-    className,
-  ]}
->
-  <div class="mx-auto max-w-3xl text-center">
-    <h2 class="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
-      {heading}
-    </h2>
-    {description && (
-      <p class="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-primary-100">
-        {description}
-      </p>
-    )}
-    <div class="mt-8">
-      <a
-        href={buttonHref}
-        class="inline-flex items-center rounded-lg border-2 border-white bg-white px-8 py-3.5 text-base font-semibold text-primary-700 shadow-sm hover:bg-primary-50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-      >
-        {buttonText}
-      </a>
-    </div>
-  </div>
-</section>
+{
+  variant === 'default' && (
+    <section
+      class:list={[
+        'bg-primary-600 px-4 py-16 sm:px-6 sm:py-20 lg:px-8',
+        className,
+      ]}
+    >
+      <div class="mx-auto max-w-3xl text-center">
+        <h2 class="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          {heading}
+        </h2>
+        {description && (
+          <p class="mx-auto mt-4 max-w-xl text-lg leading-relaxed text-primary-100">
+            {description}
+          </p>
+        )}
+        <div class="mt-8">
+          <a
+            href={buttonHref}
+            class="inline-flex items-center rounded-lg border-2 border-white bg-white px-8 py-3.5 text-base font-semibold text-primary-700 shadow-sm hover:bg-primary-50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            {buttonText}
+          </a>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+{
+  variant === 'split' && (
+    <section
+      class:list={[
+        'bg-primary-600 px-4 py-16 sm:px-6 sm:py-20 lg:px-8',
+        className,
+      ]}
+    >
+      <div class="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2">
+        <div>
+          <h2 class="font-heading text-3xl font-bold tracking-tight text-white sm:text-4xl">
+            {heading}
+          </h2>
+          {description && (
+            <p class="mt-4 text-lg leading-relaxed text-primary-100">
+              {description}
+            </p>
+          )}
+          <div class="mt-8">
+            <a
+              href={buttonHref}
+              class="inline-flex items-center rounded-lg border-2 border-white bg-white px-8 py-3.5 text-base font-semibold text-primary-700 shadow-sm hover:bg-primary-50 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              {buttonText}
+            </a>
+          </div>
+        </div>
+        {image && (
+          <div class="overflow-hidden rounded-xl">
+            <img src={image} alt="" class="h-full w-full object-cover" loading="lazy" />
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
+
+{
+  variant === 'minimal' && (
+    <section
+      class:list={[
+        'border-t border-neutral-200 bg-neutral-50 px-4 py-16 sm:px-6 sm:py-20 lg:px-8',
+        className,
+      ]}
+    >
+      <div class="mx-auto flex max-w-4xl flex-col items-center gap-6 sm:flex-row sm:justify-between">
+        <div>
+          <h2 class="font-heading text-2xl font-bold text-neutral-900 sm:text-3xl">
+            {heading}
+          </h2>
+          {description && (
+            <p class="mt-2 text-base text-neutral-600">{description}</p>
+          )}
+        </div>
+        <a
+          href={buttonHref}
+          class="inline-flex flex-shrink-0 items-center rounded-lg bg-primary-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+        >
+          {buttonText}
+        </a>
+      </div>
+    </section>
+  )
+}

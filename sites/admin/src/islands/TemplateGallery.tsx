@@ -6,18 +6,26 @@ interface TemplateDefinition {
   description: string;
   screenshot: string;
   category: string;
+  features?: string[];
+  pages?: { slug: string }[];
 }
 
 const categoryColors: Record<string, string> = {
   business: 'bg-blue-100 text-blue-700',
-  portfolio: 'bg-purple-100 text-purple-700',
+  hospitality: 'bg-red-100 text-red-700',
+  creative: 'bg-purple-100 text-purple-700',
+  technology: 'bg-cyan-100 text-cyan-700',
+  services: 'bg-amber-100 text-amber-700',
   ecommerce: 'bg-green-100 text-green-700',
   blog: 'bg-orange-100 text-orange-700',
 };
 
 const categoryBgColors: Record<string, string> = {
   business: 'bg-blue-600',
-  portfolio: 'bg-purple-600',
+  hospitality: 'bg-red-600',
+  creative: 'bg-purple-600',
+  technology: 'bg-cyan-600',
+  services: 'bg-amber-600',
   ecommerce: 'bg-green-600',
   blog: 'bg-orange-600',
 };
@@ -109,18 +117,38 @@ export default function TemplateGallery() {
               <h3 className="text-lg font-semibold text-neutral-900">
                 {template.name}
               </h3>
-              <span
-                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium shrink-0 ${
-                  categoryColors[template.category] || 'bg-neutral-100 text-neutral-700'
-                }`}
-              >
-                {template.category}
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                {template.pages && (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-neutral-100 text-neutral-600">
+                    {template.pages.length} pages
+                  </span>
+                )}
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    categoryColors[template.category] || 'bg-neutral-100 text-neutral-700'
+                  }`}
+                >
+                  {template.category}
+                </span>
+              </div>
             </div>
 
-            <p className="text-sm text-neutral-600 leading-relaxed mb-4 flex-1">
+            <p className="text-sm text-neutral-600 leading-relaxed mb-3 flex-1">
               {template.description}
             </p>
+
+            {template.features && template.features.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {template.features.map((feature) => (
+                  <span
+                    key={feature}
+                    className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-neutral-50 text-neutral-600 border border-neutral-200"
+                  >
+                    {feature}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <a
               href={`/sites/new?template=${template.id}`}
