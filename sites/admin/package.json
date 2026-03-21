@@ -19,6 +19,8 @@
     "bcryptjs": "^2.4.3",
     "jose": "^6.0.0",
     "react": "^18.3.0",
+    "send": "^1.1.0",
+    "server-destroy": "^1.0.1",
     "react-dom": "^18.3.0",
     "tailwindcss": "^4.2.0",
     "wrangler": "^4.0.0",
