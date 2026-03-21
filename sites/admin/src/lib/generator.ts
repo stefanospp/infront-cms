@@ -51,13 +51,15 @@ export interface GeneratorResult {
  * In dev (built): sites/admin/dist/server/chunks -> go up 5 levels
  */
 export function getMonorepoRoot(): string {
-  // Docker: always /app
-  if (fs.existsSync('/app/package.json')) {
+  // Docker: check if /app/package.json exists
+  try {
+    fs.readFileSync('/app/package.json');
     return '/app';
+  } catch {
+    // Not in Docker — resolve from source file location
+    const thisFile = new URL(import.meta.url).pathname;
+    return path.resolve(path.dirname(thisFile), '..', '..', '..', '..');
   }
-  // Local dev: resolve from source file location
-  const thisFile = new URL(import.meta.url).pathname;
-  return path.resolve(path.dirname(thisFile), '..', '..', '..', '..');
 }
 
 const SLUG_RE = /^[a-z][a-z0-9-]{1,}$/;
