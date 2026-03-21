@@ -2,8 +2,8 @@
 # Deploy with: kamal deploy -c infra/admin/deploy.yml
 #
 # Architecture:
-#   Cloudflare (SSL + Zero Trust) -> VPS:8443 -> admin container:4321
-#   Cloudflare DNS: web.infront.cy -> VPS IP (proxied)
+#   Cloudflare Tunnel (cloudflared) -> localhost:4321 -> admin container
+#   No ports exposed to the internet. Tunnel handles SSL + routing.
 
 service: infront-admin
 
@@ -12,10 +12,10 @@ image: infront-admin
 servers:
   web:
     hosts:
-      - xxx.xxx.xxx.xxx    # Replace with your Hetzner VPS IP
+      - 49.12.4.77
     options:
       publish:
-        - "8443:4321"      # Port 8443 — Cloudflare-supported HTTPS port, avoids Coolify conflict on 80/443
+        - "127.0.0.1:4321:4321"    # Only exposed to localhost — tunnel connects here
       volume:
         - infront-admin-sites:/app/sites
 
@@ -30,7 +30,7 @@ builder:
   dockerfile: Dockerfile
   context: .
 
-# No Kamal proxy/traefik — Cloudflare handles SSL and routing
+# No Kamal proxy — Cloudflare Tunnel handles everything
 proxy:
   disabled: true
 
