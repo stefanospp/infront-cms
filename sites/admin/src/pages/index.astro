@@ -1,0 +1,50 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import SiteTable from '@/islands/SiteTable';
+---
+
+<AdminLayout title="Dashboard">
+  <!-- Stats cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+      <p class="text-sm font-medium text-neutral-500">Total Sites</p>
+      <p class="mt-1 text-3xl font-bold text-neutral-900" id="stat-total">—</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+      <p class="text-sm font-medium text-neutral-500">CMS Sites</p>
+      <p class="mt-1 text-3xl font-bold text-primary-600" id="stat-cms">—</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+      <p class="text-sm font-medium text-neutral-500">Static Sites</p>
+      <p class="mt-1 text-3xl font-bold text-neutral-600" id="stat-static">—</p>
+    </div>
+  </div>
+
+  <!-- Sites table -->
+  <SiteTable client:load />
+
+  <script>
+    fetch('/api/sites')
+      .then((res) => res.json())
+      .then((sites: { tier: string; isTemplate: boolean }[]) => {
+        const nonTemplate = sites.filter((s) => !s.isTemplate);
+        const total = nonTemplate.length;
+        const cms = nonTemplate.filter((s) => s.tier === 'cms').length;
+        const staticCount = nonTemplate.filter(
+          (s) => s.tier === 'static',
+        ).length;
+
+        const setEl = (id: string, value: number) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = String(value);
+        };
+
+        setEl('stat-total', total);
+        setEl('stat-cms', cms);
+        setEl('stat-static', staticCount);
+      })
+      .catch(() => {
+        // Stats will remain as "—" on error
+      });
+  </script>
+</AdminLayout>

@@ -1,0 +1,10 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import SiteWizard from '@/islands/SiteWizard';
+
+const templateParam = Astro.url.searchParams.get('template') ?? undefined;
+---
+
+<AdminLayout title="Create New Site">
+  <SiteWizard client:load initialTemplateId={templateParam} />
+</AdminLayout>

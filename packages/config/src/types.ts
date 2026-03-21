@@ -89,3 +89,58 @@ export interface SiteConfig {
   cms?: CMSConfig;
   theme: ThemeConfig;
 }
+
+// Template system types
+
+export interface TemplateSectionDefinition {
+  component: string;
+  variant?: string;
+  props: Record<string, unknown>;
+}
+
+export interface TemplatePageDefinition {
+  slug: string;
+  layout: string;
+  sections: TemplateSectionDefinition[];
+}
+
+export interface TemplateColorScale {
+  50: string;
+  100: string;
+  200: string;
+  300: string;
+  400: string;
+  500: string;
+  600: string;
+  700: string;
+  800: string;
+  900: string;
+  950: string;
+}
+
+export interface TemplateThemeTokens {
+  colors: {
+    primary: TemplateColorScale;
+    secondary: TemplateColorScale;
+    accent: TemplateColorScale;
+    neutral: TemplateColorScale;
+  };
+  fonts: {
+    heading: string;
+    body: string;
+  };
+}
+
+export interface TemplateDefinition {
+  id: string;
+  name: string;
+  description: string;
+  screenshot: string;
+  category: string;
+  pages: TemplatePageDefinition[];
+  defaultTheme: ThemeConfig;
+  defaultTokens: TemplateThemeTokens;
+  defaultNav: NavConfig;
+  defaultFooter: FooterConfig;
+  defaultSeo: Partial<SEOConfig>;
+}

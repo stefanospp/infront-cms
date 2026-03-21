@@ -1,0 +1,14 @@
+---
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import TemplateGallery from '@/islands/TemplateGallery';
+---
+
+<AdminLayout title="Templates">
+  <div class="mb-6">
+    <p class="text-neutral-600">
+      Browse available templates for new client sites
+    </p>
+  </div>
+
+  <TemplateGallery client:load />
+</AdminLayout>

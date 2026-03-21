@@ -12,4 +12,11 @@ export type {
   CMSConfig,
   ThemeConfig,
   SiteConfig,
+  TemplateSectionDefinition,
+  TemplatePageDefinition,
+  TemplateColorScale,
+  TemplateThemeTokens,
+  TemplateDefinition,
 } from './types.js';
+
+export { templates, getTemplate, listTemplates } from './templates.js';

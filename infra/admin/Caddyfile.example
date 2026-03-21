@@ -1,0 +1,6 @@
+# Add this to your Caddy configuration on the Hetzner VPS
+# Caddy automatically handles SSL via Let's Encrypt
+
+admin.youragency.com {
+  reverse_proxy 127.0.0.1:4320
+}
