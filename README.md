@@ -86,9 +86,18 @@ There are two ways to create a site:
    - **Step 3 — Theme:** Pick brand colours, fonts, nav/footer/hero styles
    - **Step 4 — Configuration:** Contact info, nav items, SEO defaults, analytics
    - **Step 5 — Review & Create:** Confirm and generate
-5. The wizard creates all files in `sites/<slug>/`
-6. Run `npm install` to register the new workspace
-7. Run `npm run dev --workspace=sites/<slug>` to start developing
+5. The site is **automatically built and deployed** to Cloudflare Pages
+6. A staging URL is created at `https://<slug>.infront.cy`
+7. The wizard shows real-time deploy progress (building → deploying → live)
+8. Once live, you can add a custom production domain via the site management page
+
+**What happens behind the scenes:**
+- Site files are generated in `sites/<slug>/`
+- `npm install` + `npm run build` runs automatically
+- A Cloudflare Pages project is created via API
+- Built files are deployed via `wrangler pages deploy`
+- A DNS CNAME record is created: `<slug>.infront.cy` → `<slug>.pages.dev`
+- SSL is provisioned automatically by Cloudflare
 
 ### Option B: CLI script
 
@@ -225,9 +234,10 @@ The admin is an Astro 6 SSR site at `sites/admin/` with a Node.js adapter (needs
 | Route | Purpose |
 |-------|---------|
 | `/login` | Password authentication |
-| `/` | Dashboard — lists all client sites with tier badges |
+| `/` | Dashboard — lists all sites with deploy status, tier badges, staging URLs |
 | `/templates` | Template gallery — browse available templates |
-| `/sites/new` | Site creation wizard (5-step form) |
+| `/sites/new` | Site creation wizard (5-step form) with auto-deploy |
+| `/sites/<slug>` | Site management — redeploy, add custom domain |
 
 ### Admin UI setup
 
@@ -240,6 +250,11 @@ node -e "import('bcryptjs').then(b => b.default.hash('yourpassword', 10).then(co
 # Escape $ signs in the hash with backslashes
 ADMIN_PASSWORD_HASH=\$2a\$10\$...rest-of-hash...
 SESSION_SECRET=generate-a-random-64-char-hex-string
+
+# Cloudflare (required for auto-deploy)
+CLOUDFLARE_API_TOKEN=...     # Permissions: Account/Pages/Edit + Zone/DNS/Edit
+CLOUDFLARE_ACCOUNT_ID=...    # From Cloudflare dashboard sidebar
+CLOUDFLARE_ZONE_ID=...       # Zone ID for infront.cy
 ```
 
 2. Start the admin:
@@ -267,9 +282,63 @@ pm2 start infra/admin/ecosystem.config.cjs
 |--------|-------|---------|
 | POST | `/api/auth/login` | Verify password, set session cookie |
 | POST | `/api/auth/logout` | Clear session cookie |
-| GET | `/api/sites` | List all sites from filesystem |
-| POST | `/api/sites/create` | Generate a new site from wizard data |
+| GET | `/api/sites` | List all sites with deploy metadata |
+| POST | `/api/sites/create` | Generate site + trigger auto-deploy |
+| GET | `/api/sites/<slug>/deploy-status` | Poll deploy progress |
+| POST | `/api/sites/<slug>/redeploy` | Trigger rebuild + redeploy |
+| POST | `/api/sites/<slug>/custom-domain` | Add production custom domain |
+| DELETE | `/api/sites/<slug>/custom-domain` | Remove production custom domain |
 | GET | `/api/templates` | List available templates |
+
+### Auto-deploy pipeline
+
+When a site is created through the wizard, the following happens automatically in the background:
+
+```
+Create Site clicked
+    |
+    v
+1. Generate site files in sites/<slug>/
+    |
+    v
+2. npm install + npm run build (Astro build)
+    |                                          UI polls /deploy-status
+    v                                          every 3 seconds
+3. Create Cloudflare Pages project via API
+    |
+    v
+4. wrangler pages deploy (upload built files)
+    |
+    v
+5. Create DNS CNAME: <slug>.infront.cy -> <slug>.pages.dev
+    |
+    v
+6. Register custom domain on Pages project (SSL provisioning)
+    |
+    v
+Site live at https://<slug>.infront.cy
+```
+
+**Staging vs Production:**
+- **Staging URL** (`<slug>.infront.cy`) — auto-assigned on creation, always available
+- **Production URL** (custom domain) — added later via the site management page (`/sites/<slug>`)
+
+**Deploy metadata** is stored in `sites/<slug>/.deploy.json`:
+```json
+{
+  "projectName": "client-slug",
+  "stagingUrl": "client-slug.infront.cy",
+  "productionUrl": null,
+  "pagesDevUrl": "client-slug-7m3.pages.dev",
+  "status": "live",
+  "lastDeployAt": "2026-03-21T12:58:32.953Z",
+  "dnsRecordId": "..."
+}
+```
+
+**Redeploying:** Click "Redeploy" on the site management page or `POST /api/sites/<slug>/redeploy`. Rebuilds the site and pushes updated files to Cloudflare Pages.
+
+**Custom domains:** Add a client's real domain (e.g., `clientsite.com`) via the site management page. The client needs to point their domain's DNS to the Pages URL. Cloudflare handles SSL.
 
 ---
 

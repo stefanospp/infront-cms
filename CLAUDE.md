@@ -94,9 +94,9 @@ tests/               Playwright e2e, Vitest integration, Lighthouse CI
 ### Via admin UI (recommended)
 1. Go to http://localhost:4321/sites/new (or deployed admin URL)
 2. Walk through the 5-step wizard (details, template, theme, config, create)
-3. Run `npm install` to register the new workspace
-4. Customise pages and content in `sites/<slug>/`
-5. Test locally, deploy to preview, iterate, launch
+3. Site auto-builds and deploys to Cloudflare Pages in the background
+4. Live at `https://<slug>.infront.cy` within ~30 seconds
+5. Add custom production domain via `/sites/<slug>` management page
 
 ### Via CLI
 1. Run `./infra/provisioning/new-site.sh <slug> <tier> <domain>`
@@ -111,12 +111,22 @@ tests/               Playwright e2e, Vitest integration, Lighthouse CI
 
 - **Location:** `sites/admin/` — Astro 6 SSR with `@astrojs/node` adapter
 - **Auth:** bcrypt password + JWT session cookie (24h expiry)
-- **Env vars:** `ADMIN_PASSWORD_HASH` (escaped bcrypt hash), `SESSION_SECRET` (64-char hex)
-- **Dashboard:** lists all sites from `sites/` directory with tier badges
+- **Env vars:** `ADMIN_PASSWORD_HASH`, `SESSION_SECRET`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_ZONE_ID`
+- **Dashboard:** lists all sites with deploy status badges, staging/production URLs
 - **Templates:** gallery of predefined templates from `packages/config/src/templates.ts`
-- **Wizard:** 5-step form that generates a complete site folder
+- **Wizard:** 5-step form → auto-builds and deploys to Cloudflare Pages → live at `<slug>.infront.cy`
+- **Site management** (`/sites/<slug>`): redeploy, add/remove custom domain
 - **Deployment:** PM2 on Hetzner VPS behind Caddy reverse proxy
-- **Adding templates:** add a `TemplateDefinition` object to the `templates` array in `packages/config/src/templates.ts`
+
+## Auto-deploy pipeline
+
+- Sites auto-deploy on creation: generate → build → wrangler deploy → DNS CNAME → SSL
+- Deploy metadata stored in `sites/<slug>/.deploy.json`
+- UI polls `/api/sites/<slug>/deploy-status` every 3s for progress
+- Staging: `<slug>.infront.cy` (auto-assigned)
+- Production: custom domain added via site management page
+- Redeploy: POST `/api/sites/<slug>/redeploy`
+- CNAME uses `proxied: false` to avoid Cloudflare error 1014
 
 ## When adding shared components
 
