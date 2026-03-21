@@ -352,6 +352,7 @@ export function generatePageFile(page: TemplatePageDefinition): string {
 
   // Build import statements
   const importLines: string[] = [
+    `import "../styles/global.css";`,
     `import ${layoutImportName} from '${layoutImportPath}';`,
   ];
 
