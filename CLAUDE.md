@@ -7,12 +7,16 @@ A monorepo platform for running a solo web agency. Each client gets an Astro sit
 ## Monorepo structure
 
 ```
+packages/config      shared TypeScript types, ESLint, Prettier configs, template registry
 packages/ui          shared Astro components and layouts
-packages/config      shared TypeScript, ESLint, Prettier configs and types
 packages/utils       shared utilities (SEO, image helpers, Directus client, validation)
+sites/admin          web-based admin UI (dashboard, template gallery, site wizard)
 sites/template       base site — copy for every new client
-sites/<client>/      per-client sites extending the template
-infra/               Kamal config, Docker Compose files, backup scripts, provisioning
+sites/<client>/      generated client sites
+infra/admin          PM2 + Caddy config for admin deployment
+infra/docker         Directus Docker Compose files (one per CMS client)
+infra/backups        database and upload backup scripts
+infra/provisioning   CLI provisioning script (alternative to admin UI)
 tests/               Playwright e2e, Vitest integration, Lighthouse CI
 ```
 
@@ -87,13 +91,32 @@ tests/               Playwright e2e, Vitest integration, Lighthouse CI
 
 ## When building a new site
 
-1. Run the provisioning script (`infra/provisioning/new-site.sh`)
-2. Write `site.config.ts` and define brand tokens in `src/styles/global.css` `@theme` block
+### Via admin UI (recommended)
+1. Go to http://localhost:4321/sites/new (or deployed admin URL)
+2. Walk through the 5-step wizard (details, template, theme, config, create)
+3. Run `npm install` to register the new workspace
+4. Customise pages and content in `sites/<slug>/`
+5. Test locally, deploy to preview, iterate, launch
+
+### Via CLI
+1. Run `./infra/provisioning/new-site.sh <slug> <tier> <domain>`
+2. Edit `site.config.ts` and `src/styles/global.css` with client brand
 3. Choose layouts for each page, pick component variants
 4. Compose pages from shared components
 5. Add custom components in `sites/<client>/src/components/` if needed
 6. Connect Directus data for CMS clients
 7. Test locally, deploy to preview, iterate, launch
+
+## Admin UI
+
+- **Location:** `sites/admin/` — Astro 6 SSR with `@astrojs/node` adapter
+- **Auth:** bcrypt password + JWT session cookie (24h expiry)
+- **Env vars:** `ADMIN_PASSWORD_HASH` (escaped bcrypt hash), `SESSION_SECRET` (64-char hex)
+- **Dashboard:** lists all sites from `sites/` directory with tier badges
+- **Templates:** gallery of predefined templates from `packages/config/src/templates.ts`
+- **Wizard:** 5-step form that generates a complete site folder
+- **Deployment:** PM2 on Hetzner VPS behind Caddy reverse proxy
+- **Adding templates:** add a `TemplateDefinition` object to the `templates` array in `packages/config/src/templates.ts`
 
 ## When adding shared components
 
@@ -136,26 +159,31 @@ tests/               Playwright e2e, Vitest integration, Lighthouse CI
 
 ```bash
 # Development
-npm run dev --workspace=sites/<client>
+npm run dev --workspace=sites/<client>      # client site
+npm run dev --workspace=sites/admin         # admin UI
 
 # Build
 npm run build --workspace=sites/<client>
+npm run build --workspace=sites/admin
 
-# Preview built site
-npm run preview --workspace=sites/<client>
-
-# Lint
+# Code quality
 npm run lint
-
-# Type check
 npm run typecheck
+npm run format
 
 # Tests
 npx vitest run                    # integration tests
 npx playwright test               # e2e tests
 lhci autorun                      # lighthouse CI
 
-# Directus schema
+# Provisioning (CLI)
+./infra/provisioning/new-site.sh <slug> <tier> <domain>
+
+# Directus
 npx directus schema snapshot      # export
 npx directus schema apply         # import
+
+# Admin deployment
+pm2 start infra/admin/ecosystem.config.cjs
+pm2 restart agency-admin
 ```
