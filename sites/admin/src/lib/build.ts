@@ -33,8 +33,8 @@ export async function buildSite(slug: string): Promise<BuildResult> {
 
   try {
     // Step 1: Install dependencies so the new workspace is registered
-    logs.push('[install] Starting npm install...');
-    const installResult = await execFileAsync('npm', ['install'], {
+    logs.push('[install] Starting pnpm install...');
+    const installResult = await execFileAsync('pnpm', ['install'], {
       cwd: root,
       timeout: 120_000,
       maxBuffer: 10 * 1024 * 1024,
@@ -47,8 +47,8 @@ export async function buildSite(slug: string): Promise<BuildResult> {
     // Step 2: Build the site workspace
     logs.push('[build] Starting astro build...');
     const buildResult = await execFileAsync(
-      'npm',
-      ['run', 'build', `--workspace=sites/${slug}`],
+      'pnpm',
+      ['run', 'build', '--filter', `@agency/${slug}`],
       {
         cwd: root,
         timeout: 180_000,
