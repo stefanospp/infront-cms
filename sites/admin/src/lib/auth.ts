@@ -77,7 +77,7 @@ export async function getSessionPayload(
     const key = new TextEncoder().encode(secret);
     const { payload } = await jwtVerify(token, key, { issuer: 'agency-admin' });
     return {
-      role: (payload.role as UserRole) ?? 'admin',
+      role: (payload.role as UserRole) ?? 'client',
       allowedSites: payload.allowedSites as string[] | undefined,
     };
   } catch {

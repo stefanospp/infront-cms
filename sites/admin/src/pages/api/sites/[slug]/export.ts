@@ -139,10 +139,7 @@ export const POST: APIRoute = async ({ params, request }) => {
         type: 'static',
         slug,
         fileCount: files.length,
-        files: files.map((f) => ({
-          path: f,
-          fullPath: path.join(distDir, f),
-        })),
+        files: files.map((f) => ({ path: f })),
         instructions: [
           'These are the built static files.',
           'Upload to any static hosting provider (Netlify, Vercel, S3, etc.).',
@@ -199,14 +196,8 @@ export default defineConfig({
       slug,
       siteFileCount: siteFiles.length,
       sharedFileCount: sharedFiles.length,
-      siteFiles: siteFiles.map((f) => ({
-        path: f,
-        fullPath: path.join(siteDir, f),
-      })),
-      sharedFiles: sharedFiles.map((f) => ({
-        path: f.dest,
-        fullPath: f.src,
-      })),
+      siteFiles: siteFiles.map((f) => ({ path: f })),
+      sharedFiles: sharedFiles.map((f) => ({ path: f.dest })),
       generatedFiles: {
         'package.json': JSON.stringify(packageJson, null, 2),
         'astro.config.mjs': standaloneConfig,

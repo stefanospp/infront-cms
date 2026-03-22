@@ -85,7 +85,7 @@ const seoSchema = z.object({
 const themeSchema = z.object({
   navStyle: z.enum(['sticky', 'fixed', 'static']),
   footerStyle: z.enum(['simple', 'multi-column', 'minimal']),
-  heroDefault: z.enum(['centered', 'split', 'fullscreen', 'minimal']),
+  heroDefault: z.enum(['centered', 'split', 'fullscreen', 'minimal', 'video']),
   borderStyle: z.enum(['sharp', 'rounded', 'pill']),
 });
 
@@ -182,9 +182,7 @@ async function writeSiteConfig(
 
   const content = `import type { SiteConfig } from '@agency/config';
 
-const config: SiteConfig = ${JSON.stringify(config, null, 2)};
-
-export default config;
+export default ${JSON.stringify(config, null, 2)} satisfies SiteConfig;
 `;
 
   await fs.writeFile(configPath, content, 'utf-8');

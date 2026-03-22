@@ -26,10 +26,9 @@ export default function EditorToolbar({
   async function handlePublish() {
     setIsPublishing(true);
     try {
-      onPublish();
+      await onPublish();
     } finally {
-      // Parent controls the actual publish flow; reset after a delay
-      setTimeout(() => setIsPublishing(false), 3000);
+      setIsPublishing(false);
     }
   }
 

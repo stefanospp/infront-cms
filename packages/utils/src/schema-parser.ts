@@ -228,6 +228,10 @@ function extractAttributes(
     }
   }
 
+  // Strip editor bridge attributes that the compiler adds for inline editing
+  delete attrs['data-section-id'];
+  delete attrs['data-component'];
+
   return attrs;
 }
 
@@ -305,14 +309,39 @@ function parseTopLevelComponents(template: string): SectionSchema[] {
       continue;
     }
 
-    // Match component opening tag
+    // Match component opening tag OR div wrapper with data-section-id
     const componentMatch = trimmed.match(/^<([A-Z]\w*)/);
-    if (!componentMatch) {
+    const divWrapperMatch = !componentMatch
+      ? trimmed.match(/^<div\s+data-section-id="([^"]*)"/)
+      : null;
+
+    if (!componentMatch && !divWrapperMatch) {
       i++;
       continue;
     }
 
-    const componentName = componentMatch[1]!;
+    // If this is a <div> wrapper, skip it and parse the inner component
+    if (divWrapperMatch) {
+      // Find the inner component inside the div
+      i++;
+      while (i < lines.length) {
+        const innerTrimmed = lines[i]!.trim();
+        if (innerTrimmed.startsWith('</div>')) {
+          i++;
+          break;
+        }
+        const innerMatch = innerTrimmed.match(/^<([A-Z]\w*)/);
+        if (innerMatch) {
+          // Process this inner component as the actual section
+          // Push it back and let the normal flow handle it
+          break;
+        }
+        i++;
+      }
+      continue;
+    }
+
+    const componentName = componentMatch![1]!;
 
     // Collect the full tag (may span multiple lines)
     let tagContent = '';

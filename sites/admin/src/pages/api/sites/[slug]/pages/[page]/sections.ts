@@ -8,6 +8,7 @@ import { addSection, removeSection } from '@/lib/page-schemas';
 export const prerender = false;
 
 const SLUG_PATTERN = /^[a-z0-9][a-z0-9-]*[a-z0-9]$/;
+const PAGE_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
 
 const json = (body: Record<string, unknown>, status: number) =>
   new Response(JSON.stringify(body), {
@@ -64,6 +65,10 @@ export const POST: APIRoute = async ({ params, request }) => {
   const validationError = await validateSiteExists(slug);
   if (validationError) return validationError;
 
+  if (!PAGE_PATTERN.test(page)) {
+    return json({ error: 'Invalid page name format' }, 400);
+  }
+
   let body: unknown;
   try {
     body = await request.json();
@@ -106,6 +111,10 @@ export const DELETE: APIRoute = async ({ params, request }) => {
 
   const validationError = await validateSiteExists(slug);
   if (validationError) return validationError;
+
+  if (!PAGE_PATTERN.test(page)) {
+    return json({ error: 'Invalid page name format' }, 400);
+  }
 
   let body: unknown;
   try {
