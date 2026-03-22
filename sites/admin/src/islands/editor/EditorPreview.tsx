@@ -54,6 +54,14 @@ export default function EditorPreview({
     }
   }, [iframeSrc]);
 
+  // Update iframe when page changes
+  useEffect(() => {
+    if (devServerStatus === 'running' && iframeRef.current && iframeSrc) {
+      setBridgeReady(false);
+      iframeRef.current.src = iframeSrc;
+    }
+  }, [currentPage, devServerStatus, iframeSrc]);
+
   // Listen for postMessage from the editor bridge in the iframe
   useEffect(() => {
     function handleMessage(e: MessageEvent) {
