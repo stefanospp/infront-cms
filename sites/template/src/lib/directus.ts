@@ -42,3 +42,59 @@ export async function getTeamMembers() {
     sort: ['sort_order'],
   });
 }
+
+export async function getServices() {
+  if (!client) return [];
+  return getPublishedItems(client, 'services', {
+    fields: ['id', 'title', 'description', 'icon', 'image', 'href', 'sort_order'],
+    sort: ['sort_order'],
+  });
+}
+
+export async function getTestimonials() {
+  if (!client) return [];
+  return getPublishedItems(client, 'testimonials', {
+    fields: ['id', 'quote', 'author', 'role', 'image', 'sort_order'],
+    sort: ['sort_order'],
+  });
+}
+
+export async function getFaqs() {
+  if (!client) return [];
+  return getPublishedItems(client, 'faqs', {
+    fields: ['id', 'question', 'answer', 'sort_order'],
+    sort: ['sort_order'],
+  });
+}
+
+export async function getGalleryItems() {
+  if (!client) return [];
+  return getPublishedItems(client, 'gallery', {
+    fields: ['id', 'title', 'description', 'image', 'href', 'sort_order'],
+    sort: ['sort_order'],
+  });
+}
+
+export async function getClients() {
+  if (!client) return [];
+  return getPublishedItems(client, 'clients', {
+    fields: ['id', 'name', 'logo', 'href', 'sort_order'],
+    sort: ['sort_order'],
+  });
+}
+
+export async function getStats() {
+  if (!client) return [];
+  return getPublishedItems(client, 'stats', {
+    fields: ['id', 'value', 'label', 'prefix', 'suffix', 'sort_order'],
+    sort: ['sort_order'],
+  });
+}
+
+export async function getComparisons() {
+  if (!client) return [];
+  return getPublishedItems(client, 'comparisons', {
+    fields: ['id', 'name', 'price', 'period', 'description', 'features', 'cta_text', 'cta_href', 'highlighted', 'sort_order'],
+    sort: ['sort_order'],
+  });
+}

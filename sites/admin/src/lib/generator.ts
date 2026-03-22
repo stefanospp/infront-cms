@@ -471,26 +471,28 @@ export async function generateSite(
     }
 
     // 7. Handle CMS vs static tier pages
+    const cmsOnlyPages = ['about-cms.astro', 'index-cms.astro', 'gallery.astro', 'faq.astro', 'compare.astro', '[...slug].astro'];
     if (payload.tier === 'cms' || payload.tier === 'interactive') {
-      // Replace generated about page with CMS-powered version
-      const cmsAboutSrc = path.join(pagesDir, 'about-cms.astro');
-      const aboutDest = path.join(pagesDir, 'about.astro');
-      try {
-        await fs.access(cmsAboutSrc);
-        try { await fs.unlink(aboutDest); } catch { /* may not exist */ }
-        await fs.rename(cmsAboutSrc, aboutDest);
-      } catch { /* no CMS about page in template */ }
+      // Replace generated pages with CMS-powered versions
+      const swaps = [
+        { src: 'about-cms.astro', dest: 'about.astro' },
+        { src: 'index-cms.astro', dest: 'index.astro' },
+      ];
+      for (const { src, dest } of swaps) {
+        try {
+          await fs.access(path.join(pagesDir, src));
+          try { await fs.unlink(path.join(pagesDir, dest)); } catch { /* may not exist */ }
+          await fs.rename(path.join(pagesDir, src), path.join(pagesDir, dest));
+        } catch { /* CMS page not in template */ }
+      }
     } else {
-      // Static tier: remove CMS-only pages
+      // Static tier: remove all CMS-only pages
+      for (const file of cmsOnlyPages) {
+        try { await fs.unlink(path.join(pagesDir, file)); } catch { /* may not exist */ }
+      }
       try {
         await fs.rm(path.join(pagesDir, 'blog'), { recursive: true, force: true });
       } catch { /* directory may not exist */ }
-      try {
-        await fs.unlink(path.join(pagesDir, 'about-cms.astro'));
-      } catch { /* file may not exist */ }
-      try {
-        await fs.unlink(path.join(pagesDir, '[...slug].astro'));
-      } catch { /* file may not exist */ }
     }
 
     // 8. Create empty src/components/ for site-specific overrides
@@ -506,11 +508,17 @@ export async function generateSite(
     await fs.writeFile(pkgPath, pkgContent, 'utf-8');
 
     // 9. Generate site.config.ts
-    // Add Blog nav item for CMS-tier sites
+    // Add CMS page nav items for CMS-tier sites
     if (payload.tier === 'cms' || payload.tier === 'interactive') {
-      const hasBlognav = payload.nav.items.some((item) => item.href === '/blog');
-      if (!hasBlognav) {
-        payload.nav.items.push({ label: 'Blog', href: '/blog' });
+      const cmsNavItems = [
+        { label: 'Gallery', href: '/gallery' },
+        { label: 'FAQ', href: '/faq' },
+        { label: 'Blog', href: '/blog' },
+      ];
+      for (const item of cmsNavItems) {
+        if (!payload.nav.items.some((n) => n.href === item.href)) {
+          payload.nav.items.push(item);
+        }
       }
     }
     const siteConfigContent = generateSiteConfigContent(payload);
