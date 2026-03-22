@@ -1,16 +1,19 @@
 FROM node:22-slim
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
 WORKDIR /app
 
 # Copy package files first for better layer caching
-COPY package.json package-lock.json .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY packages/config/package.json packages/config/
 COPY packages/utils/package.json packages/utils/
 COPY packages/ui/package.json packages/ui/
 COPY sites/admin/package.json sites/admin/
 COPY sites/template/package.json sites/template/
 
-RUN npm ci
+RUN pnpm install --frozen-lockfile
 
 # Copy source files
 COPY packages/ packages/
@@ -19,7 +22,7 @@ COPY infra/ infra/
 COPY tsconfig.base.json ./
 
 # Build the admin site
-RUN npm run build --workspace=sites/admin
+RUN pnpm --filter @agency/admin run build
 
 ENV HOST=0.0.0.0
 ENV PORT=4321
