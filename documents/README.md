@@ -15,6 +15,7 @@ Comprehensive documentation for the Infront CMS agency platform.
 | 07 | [Auth & Security](07-auth-and-security.md) | JWT auth, roles, input validation, file upload security |
 | 08 | [Development Guide](08-development-guide.md) | Setup, commands, testing, troubleshooting |
 | 09 | [Changelog](09-changelog.md) | Chronological record of all changes |
+| 10 | [CMS Infrastructure](10-cms-infrastructure.md) | Directus provisioning, collections, backups, Docker setup |
 
 ## Quick Start
 

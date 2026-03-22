@@ -29,4 +29,5 @@ npm-debug.log*
 # Directus
 directus_uploads/
 db_data/
+**/.api-token
 sites/athena-institute/
