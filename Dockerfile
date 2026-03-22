@@ -14,8 +14,8 @@ RUN npm ci
 
 # Copy source files
 COPY packages/ packages/
-COPY sites/admin/ sites/admin/
-COPY sites/template/ sites/template/
+COPY sites/ sites/
+COPY infra/ infra/
 COPY tsconfig.base.json ./
 
 # Build the admin site
@@ -25,8 +25,10 @@ ENV HOST=0.0.0.0
 ENV PORT=4321
 EXPOSE 4321
 
-# Volume only for generated client sites (NOT admin or template)
-# The volume is mounted at /app/generated-sites in docker run
+# Stage baked-in sites and infra so the entrypoint can sync them into the
+# volume at startup. This ensures sites added via git are not masked by
+# the persistent Docker volume mounted at /app/sites.
+RUN cp -r /app/sites /app/_baked-sites && cp -r /app/infra /app/_baked-infra
 
 # Entrypoint script writes runtime env vars to JSON then starts the server
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
