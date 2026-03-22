@@ -4,9 +4,9 @@ import * as path from 'node:path';
 import { readDeployMetadata } from '@/lib/deploy';
 import { getMonorepoRoot } from '@/lib/generator';
 import {
-  removeCustomDomain,
+  removeWorkerCustomDomain,
   deleteDnsRecord,
-  deletePagesProject,
+  deleteWorker,
 } from '@/lib/cloudflare';
 
 export const prerender = false;
@@ -53,7 +53,7 @@ export const DELETE: APIRoute = async ({ params }) => {
   // 1. Remove production custom domain
   if (meta?.productionUrl && meta.projectName) {
     try {
-      await removeCustomDomain(meta.projectName, meta.productionUrl);
+      await removeWorkerCustomDomain(meta.projectName, meta.productionUrl);
     } catch (err) {
       warnings.push(
         `Failed to remove production domain: ${err instanceof Error ? err.message : String(err)}`,
@@ -72,10 +72,10 @@ export const DELETE: APIRoute = async ({ params }) => {
     }
   }
 
-  // 3. Remove staging custom domain from Pages project
+  // 3. Remove staging custom domain from Worker
   if (meta?.stagingUrl && meta.projectName) {
     try {
-      await removeCustomDomain(meta.projectName, meta.stagingUrl);
+      await removeWorkerCustomDomain(meta.projectName, meta.stagingUrl);
     } catch (err) {
       warnings.push(
         `Failed to remove staging domain: ${err instanceof Error ? err.message : String(err)}`,
@@ -83,13 +83,13 @@ export const DELETE: APIRoute = async ({ params }) => {
     }
   }
 
-  // 4. Delete the Pages project
+  // 4. Delete the Worker
   if (meta?.projectName) {
     try {
-      await deletePagesProject(meta.projectName);
+      await deleteWorker(meta.projectName);
     } catch (err) {
       warnings.push(
-        `Failed to delete Pages project: ${err instanceof Error ? err.message : String(err)}`,
+        `Failed to delete Worker: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
   }

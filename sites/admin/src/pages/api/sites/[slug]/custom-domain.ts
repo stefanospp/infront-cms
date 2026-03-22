@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { readDeployMetadata, writeDeployMetadata } from '@/lib/deploy';
-import { addCustomDomain, removeCustomDomain } from '@/lib/cloudflare';
+import { addWorkerCustomDomain, removeWorkerCustomDomain } from '@/lib/cloudflare';
 
 export const POST: APIRoute = async ({ params, request }) => {
   const slug = params.slug!;
@@ -35,7 +35,7 @@ export const POST: APIRoute = async ({ params, request }) => {
   }
 
   try {
-    await addCustomDomain(meta.projectName, domain);
+    await addWorkerCustomDomain(meta.projectName, domain);
 
     meta.productionUrl = domain;
     await writeDeployMetadata(slug, meta);
@@ -84,7 +84,7 @@ export const DELETE: APIRoute = async ({ params, request }) => {
   }
 
   try {
-    await removeCustomDomain(meta.projectName, domain ?? meta.productionUrl ?? '');
+    await removeWorkerCustomDomain(meta.projectName, domain ?? meta.productionUrl ?? '');
 
     meta.productionUrl = null;
     await writeDeployMetadata(slug, meta);

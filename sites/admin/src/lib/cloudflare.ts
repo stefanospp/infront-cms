@@ -1,6 +1,6 @@
 import { env } from '@/lib/env';
 // ---------------------------------------------------------------------------
-// Cloudflare API wrapper for Pages, DNS, and custom domains
+// Cloudflare API wrapper for Workers, DNS, and custom domains
 // ---------------------------------------------------------------------------
 
 const CF_API_BASE = 'https://api.cloudflare.com/client/v4';
@@ -42,95 +42,80 @@ async function cfFetch<T>(path: string, options?: RequestInit): Promise<T> {
 }
 
 // ---------------------------------------------------------------------------
-// Pages projects
+// Workers
 // ---------------------------------------------------------------------------
 
 /**
- * Create a new Cloudflare Pages project (Direct Upload, no git connection).
+ * Delete a Cloudflare Worker.
  */
-export async function createPagesProject(
-  slug: string,
-): Promise<{ projectName: string; pagesDevUrl: string }> {
-  const accountId = env('CLOUDFLARE_ACCOUNT_ID');
-  if (!accountId) {
-    throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
-  }
-
-  const result = await cfFetch<{ name: string; subdomain: string }>(
-    `/accounts/${accountId}/pages/projects`,
-    {
-      method: 'POST',
-      body: JSON.stringify({
-        name: slug,
-        production_branch: 'main',
-      }),
-    },
-  );
-
-  return {
-    projectName: result.name,
-    pagesDevUrl: result.subdomain,
-  };
-}
-
-/**
- * Delete a Cloudflare Pages project.
- */
-export async function deletePagesProject(projectName: string): Promise<void> {
+export async function deleteWorker(workerName: string): Promise<void> {
   const accountId = env('CLOUDFLARE_ACCOUNT_ID');
   if (!accountId) {
     throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
   }
 
   await cfFetch<unknown>(
-    `/accounts/${accountId}/pages/projects/${projectName}`,
+    `/accounts/${accountId}/workers/scripts/${workerName}`,
     { method: 'DELETE' },
   );
 }
 
 // ---------------------------------------------------------------------------
-// Custom domains
+// Workers Custom Domains (for SSL on custom domains)
 // ---------------------------------------------------------------------------
 
 /**
- * Add a custom domain to a Pages project (for SSL provisioning).
+ * Add a custom domain to a Worker for automatic SSL provisioning.
+ * Uses the Workers Custom Domains API.
  */
-export async function addCustomDomain(
-  projectName: string,
+export async function addWorkerCustomDomain(
+  workerName: string,
   domain: string,
 ): Promise<void> {
   const accountId = env('CLOUDFLARE_ACCOUNT_ID');
-  if (!accountId) {
-    throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
-  }
+  const zoneId = env('CLOUDFLARE_ZONE_ID');
+  if (!accountId) throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
+  if (!zoneId) throw new Error('CLOUDFLARE_ZONE_ID is not set');
 
   await cfFetch<unknown>(
-    `/accounts/${accountId}/pages/projects/${projectName}/domains`,
+    `/accounts/${accountId}/workers/domains`,
     {
-      method: 'POST',
-      body: JSON.stringify({ name: domain }),
+      method: 'PUT',
+      body: JSON.stringify({
+        hostname: domain,
+        service: workerName,
+        zone_id: zoneId,
+        environment: 'production',
+      }),
     },
   );
 }
 
 /**
- * Remove a custom domain from a Pages project.
+ * Remove a custom domain from a Worker.
  */
-export async function removeCustomDomain(
-  projectName: string,
+export async function removeWorkerCustomDomain(
+  _workerName: string,
   domain: string,
 ): Promise<void> {
   const accountId = env('CLOUDFLARE_ACCOUNT_ID');
-  if (!accountId) {
-    throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
-  }
+  if (!accountId) throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
 
-  await cfFetch<unknown>(
-    `/accounts/${accountId}/pages/projects/${projectName}/domains/${domain}`,
-    {
-      method: 'DELETE',
-    },
+  // List all Worker custom domains to find the ID for the given hostname
+  const domains = await cfFetch<{ id: string; hostname: string }[]>(
+    `/accounts/${accountId}/workers/domains`,
   );
+
+  const match = Array.isArray(domains)
+    ? domains.find((d) => d.hostname === domain)
+    : undefined;
+
+  if (match) {
+    await cfFetch<unknown>(
+      `/accounts/${accountId}/workers/domains/${match.id}`,
+      { method: 'DELETE' },
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

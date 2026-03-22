@@ -543,6 +543,10 @@ export async function generateSite(
     const astroConfigContent = generateAstroConfigContent(payload.domain);
     await fs.writeFile(astroConfigPath, astroConfigContent, 'utf-8');
 
+    // 11b. Generate wrangler.toml for Workers deployment
+    const wranglerToml = `name = "${payload.slug}"\ncompatibility_date = "2026-03-22"\n\n[assets]\ndirectory = "./dist"\n`;
+    await fs.writeFile(path.join(sitePath, 'wrangler.toml'), wranglerToml, 'utf-8');
+
     // 12. Update public/robots.txt
     const robotsPath = path.join(sitePath, 'public', 'robots.txt');
     let robotsContent = await fs.readFile(robotsPath, 'utf-8');
@@ -618,7 +622,7 @@ ${payload.tier === 'cms' || payload.tier === 'interactive' ? '- CMS powered by D
       );
     }
     checklist.push('Set up DNS for ' + payload.domain);
-    checklist.push('Configure Cloudflare Pages deployment');
+    checklist.push('Cloudflare Workers deployment configured via wrangler.toml');
 
     return { success: true, sitePath, checklist };
   } catch (err) {

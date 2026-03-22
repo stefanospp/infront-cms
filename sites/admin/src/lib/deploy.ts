@@ -9,7 +9,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { getMonorepoRoot } from './generator';
 import { buildSite } from './build';
-import { createPagesProject, addCustomDomain, createDnsRecord } from './cloudflare';
+import { createDnsRecord, addWorkerCustomDomain } from './cloudflare';
 
 const execFileAsync = promisify(execFile);
 
@@ -21,7 +21,7 @@ export interface DeployMetadata {
   projectName: string;
   stagingUrl: string;
   productionUrl: string | null;
-  pagesDevUrl: string;
+  workersDevUrl: string;
   lastDeployId: string | null;
   lastDeployAt: string | null;
   status: 'pending' | 'building' | 'deploying' | 'live' | 'failed';
@@ -68,37 +68,15 @@ export async function writeDeployMetadata(
 // ---------------------------------------------------------------------------
 
 /**
- * Resolve the correct dist directory for Cloudflare Pages.
- * Astro with the cloudflare adapter puts client assets in dist/client.
+ * Deploy a site to Cloudflare Workers via wrangler.
+ * Reads wrangler.toml from the site directory.
  */
-async function resolveDistDir(baseDist: string): Promise<string> {
-  const clientDir = path.join(baseDist, 'client');
-  try {
-    const stat = await fs.stat(clientDir);
-    if (stat.isDirectory()) {
-      return clientDir;
-    }
-  } catch {
-    // dist/client doesn't exist — fall back to dist
-  }
-  return baseDist;
-}
-
-/**
- * Deploy built assets to Cloudflare Pages via wrangler.
- */
-async function wranglerDeploy(
-  distDir: string,
-  projectName: string,
-): Promise<void> {
-  const root = getMonorepoRoot();
-  const deployDir = await resolveDistDir(distDir);
-
+async function wranglerDeploy(siteDir: string): Promise<void> {
   await execFileAsync(
     'npx',
-    ['wrangler', 'pages', 'deploy', deployDir, '--project-name', projectName],
+    ['wrangler', 'deploy'],
     {
-      cwd: root,
+      cwd: siteDir,
       timeout: 120_000,
       env: {
         ...globalThis.process?.env,
@@ -119,12 +97,15 @@ async function wranglerDeploy(
  * step so the admin UI can poll for status.
  */
 export async function deployNewSite(slug: string): Promise<void> {
+  const root = getMonorepoRoot();
+  const siteDir = path.join(root, 'sites', slug);
+
   // Initial metadata skeleton
   let meta: DeployMetadata = {
     projectName: slug,
     stagingUrl: '',
     productionUrl: null,
-    pagesDevUrl: '',
+    workersDevUrl: '',
     lastDeployId: null,
     lastDeployAt: null,
     status: 'building',
@@ -155,26 +136,24 @@ export async function deployNewSite(slug: string): Promise<void> {
   // Store build log
   meta = { ...meta, buildLog: buildResult.buildLog ?? 'Build completed successfully' };
 
-  // ------ Step 2: Deploy ------
+  // ------ Step 2: Deploy to Workers ------
   try {
     meta = { ...meta, status: 'deploying' };
     await writeDeployMetadata(slug, meta);
 
-    // Create Pages project (returns actual subdomain from CF, e.g. "slug-abc.pages.dev")
-    const { projectName, pagesDevUrl } = await createPagesProject(slug);
-    meta = { ...meta, projectName, pagesDevUrl };
+    // Deploy to Workers (creates worker automatically from wrangler.toml)
+    await wranglerDeploy(siteDir);
 
-    // Upload assets via wrangler
-    await wranglerDeploy(buildResult.distDir, projectName);
+    const workersDevUrl = `${slug}.workers.dev`;
+    meta = { ...meta, workersDevUrl };
 
-    // Create a non-proxied CNAME record pointing to the Pages subdomain.
-    // Must NOT be proxied (orange cloud) to avoid "CNAME Cross-User Banned".
+    // Create a CNAME DNS record pointing to the Workers subdomain
     const stagingDomain = `${slug}.infront.cy`;
-    const dnsRecordId = await createDnsRecord(slug, pagesDevUrl);
+    const dnsRecordId = await createDnsRecord(slug, workersDevUrl);
     meta = { ...meta, dnsRecordId };
 
-    // Register the subdomain as a custom domain on the Pages project for SSL.
-    await addCustomDomain(projectName, stagingDomain);
+    // Add Workers Custom Domain for SSL on the staging domain
+    await addWorkerCustomDomain(slug, stagingDomain);
 
     // All done
     meta = {
@@ -204,6 +183,9 @@ export async function deployNewSite(slug: string): Promise<void> {
  * Reads the existing .deploy.json for project details.
  */
 export async function redeploySite(slug: string): Promise<void> {
+  const root = getMonorepoRoot();
+  const siteDir = path.join(root, 'sites', slug);
+
   let meta = await readDeployMetadata(slug);
   if (!meta) {
     throw new Error(
@@ -231,13 +213,13 @@ export async function redeploySite(slug: string): Promise<void> {
     return;
   }
 
-  // ------ Step 2: Deploy ------
+  // ------ Step 2: Deploy to Workers ------
   try {
     meta = { ...meta, status: 'deploying', buildLog: buildResult.buildLog ?? 'Build completed successfully' };
     await writeDeployMetadata(slug, meta);
 
-    // Upload new assets — project already exists
-    await wranglerDeploy(buildResult.distDir, meta.projectName);
+    // Upload new assets — wrangler deploy updates the existing Worker
+    await wranglerDeploy(siteDir);
 
     // Update metadata
     meta = {

@@ -169,7 +169,7 @@ export const POST: APIRoute = async ({ request }) => {
       projectName: payload.slug,
       stagingUrl,
       productionUrl: null,
-      pagesDevUrl: `${payload.slug}.pages.dev`,
+      workersDevUrl: `${payload.slug}.workers.dev`,
       lastDeployId: null,
       lastDeployAt: null,
       status: 'pending',

@@ -17,7 +17,7 @@ interface DeployMetadata {
   projectName: string;
   stagingUrl: string;
   productionUrl: string | null;
-  pagesDevUrl: string;
+  workersDevUrl: string;
   lastDeployId: string | null;
   lastDeployAt: string | null;
   status: 'pending' | 'building' | 'deploying' | 'live' | 'failed';
@@ -564,11 +564,11 @@ export default function SiteDetail({ slug }: { slug: string }) {
                 </button>
               </form>
               <p className="mt-3 text-xs text-neutral-500">
-                Point your domain's DNS to your Cloudflare Pages URL
-                {deploy.pagesDevUrl ? (
+                Point your domain's DNS to your Cloudflare Workers URL
+                {deploy.workersDevUrl ? (
                   <>
                     {' '}
-                    (<code className="text-neutral-700">{deploy.pagesDevUrl}</code>)
+                    (<code className="text-neutral-700">{deploy.workersDevUrl}</code>)
                   </>
                 ) : null}{' '}
                 using a CNAME record before adding it here.
