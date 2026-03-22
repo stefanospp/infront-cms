@@ -36,8 +36,10 @@ export default function SiteEditor({ slug }: { slug: string }) {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
   const [showMedia, setShowMedia] = useState(false);
+  const [isFullPreview, setIsFullPreview] = useState(false);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Current page schema
   const currentPageSchema = pages.find((p) => p.page === currentPage);
@@ -235,6 +237,21 @@ export default function SiteEditor({ slug }: { slug: string }) {
     );
   }
 
+  // ---- Auto-save on change (debounced) ----
+
+  useEffect(() => {
+    if (!hasUnsavedChanges || isSaving) return;
+
+    if (autoSaveRef.current) clearTimeout(autoSaveRef.current);
+    autoSaveRef.current = setTimeout(() => {
+      handleSave();
+    }, 1500);
+
+    return () => {
+      if (autoSaveRef.current) clearTimeout(autoSaveRef.current);
+    };
+  }, [hasUnsavedChanges, pages, currentPage]);
+
   // ---- Save ----
 
   async function handleSave() {
@@ -328,6 +345,8 @@ export default function SiteEditor({ slug }: { slug: string }) {
         onPublish={handlePublish}
         onOpenConfig={() => setShowConfig(true)}
         onOpenMedia={() => setShowMedia(true)}
+        isFullPreview={isFullPreview}
+        onTogglePreview={() => setIsFullPreview((p) => !p)}
       />
 
       {/* Site config editor modal */}
@@ -347,17 +366,19 @@ export default function SiteEditor({ slug }: { slug: string }) {
       {/* Three-panel layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left panel: pages + sections */}
-        <EditorSidebar
-          pages={pages}
-          currentPage={currentPage}
-          sections={sections}
-          selectedSectionId={selectedSectionId}
-          onPageSelect={handlePageSelect}
-          onSectionSelect={handleSectionSelect}
-          onSectionRemove={handleSectionRemove}
-          onSectionMove={handleSectionMove}
-          onSectionAdd={handleSectionAdd}
-        />
+        {!isFullPreview && (
+          <EditorSidebar
+            pages={pages}
+            currentPage={currentPage}
+            sections={sections}
+            selectedSectionId={selectedSectionId}
+            onPageSelect={handlePageSelect}
+            onSectionSelect={handleSectionSelect}
+            onSectionRemove={handleSectionRemove}
+            onSectionMove={handleSectionMove}
+            onSectionAdd={handleSectionAdd}
+          />
+        )}
 
         {/* Center: preview iframe */}
         <EditorPreview
@@ -370,10 +391,12 @@ export default function SiteEditor({ slug }: { slug: string }) {
         />
 
         {/* Right panel: properties */}
-        <EditorProperties
-          section={selectedSection}
-          onUpdate={handleSectionUpdate}
-        />
+        {!isFullPreview && (
+          <EditorProperties
+            section={selectedSection}
+            onUpdate={handleSectionUpdate}
+          />
+        )}
       </div>
     </div>
   );

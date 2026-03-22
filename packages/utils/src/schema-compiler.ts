@@ -60,7 +60,8 @@ function renderComponentTag(
 
   // Variant
   if (section.variant) {
-    attrs.push(`variant="${section.variant}"`);
+    const variantVal = serializePropValue(section.variant);
+    attrs.push(`variant=${variantVal}`);
   }
 
   // Client directive for islands
