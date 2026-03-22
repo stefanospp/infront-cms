@@ -73,6 +73,21 @@ export async function createPagesProject(
   };
 }
 
+/**
+ * Delete a Cloudflare Pages project.
+ */
+export async function deletePagesProject(projectName: string): Promise<void> {
+  const accountId = env('CLOUDFLARE_ACCOUNT_ID');
+  if (!accountId) {
+    throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
+  }
+
+  await cfFetch<unknown>(
+    `/accounts/${accountId}/pages/projects/${projectName}`,
+    { method: 'DELETE' },
+  );
+}
+
 // ---------------------------------------------------------------------------
 // Custom domains
 // ---------------------------------------------------------------------------

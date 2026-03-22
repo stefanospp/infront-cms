@@ -60,6 +60,9 @@ export default function SiteDetail({ slug }: { slug: string }) {
   const [domainLoading, setDomainLoading] = useState(false);
   const [domainError, setDomainError] = useState<string | null>(null);
   const [overrides, setOverrides] = useState<string[]>([]);
+  const [deleteConfirmSlug, setDeleteConfirmSlug] = useState('');
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // ---- Fetch helpers ----
@@ -212,6 +215,34 @@ export default function SiteDetail({ slug }: { slug: string }) {
       setDomainError('Network error');
     } finally {
       setDomainLoading(false);
+    }
+  }
+
+  // ---- Delete site ----
+
+  async function handleDeleteSite() {
+    if (deleteConfirmSlug !== slug) return;
+
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      const res = await fetch(`/api/sites/${slug}/delete`, {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setDeleteError(data.error ?? 'Failed to delete site');
+        setDeleting(false);
+        return;
+      }
+
+      window.location.href = '/?deleted=' + encodeURIComponent(slug);
+    } catch {
+      setDeleteError('Network error');
+      setDeleting(false);
     }
   }
 
@@ -544,6 +575,61 @@ export default function SiteDetail({ slug }: { slug: string }) {
               </p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Danger Zone */}
+      {!site.isTemplate && (
+        <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
+          <h3 className="text-sm font-semibold text-red-600 mb-2">
+            Danger Zone
+          </h3>
+          <p className="text-sm text-neutral-600 mb-4">
+            Permanently delete this site and all associated Cloudflare resources.
+            This action cannot be undone.
+          </p>
+
+          {deleteError && (
+            <div className="mb-4 rounded-lg bg-red-50 border border-red-200 p-3">
+              <p className="text-xs font-medium text-red-800">{deleteError}</p>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <label className="block text-sm text-neutral-700">
+              Type <code className="font-mono font-semibold text-neutral-900">{slug}</code> to confirm:
+            </label>
+            <input
+              type="text"
+              value={deleteConfirmSlug}
+              onChange={(e) => setDeleteConfirmSlug(e.target.value)}
+              placeholder={slug}
+              disabled={deleting}
+              className="w-full max-w-xs rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition-colors"
+            />
+            <div>
+              <button
+                onClick={handleDeleteSite}
+                disabled={deleting || deleteConfirmSlug !== slug || isInProgress}
+                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {deleting ? (
+                  <>
+                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Site Permanently
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

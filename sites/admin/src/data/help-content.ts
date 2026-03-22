@@ -639,6 +639,51 @@ A redeploy is blocked if a build/deploy is already in progress (returns 409 Conf
 The bottom of the page lists any custom component overrides in \`sites/<slug>/src/components/\`. These files replace shared components from \`@agency/ui\` for this specific site.
 `,
   },
+  {
+    id: 'deleting-a-site',
+    title: 'Deleting a Site',
+    description: 'Permanently removing a site and all its associated resources.',
+    category: 'admin-ui',
+    tags: ['delete', 'remove', 'cleanup', 'danger zone', 'permanent'],
+    relatedArticles: ['site-management-page', 'auto-deploy-pipeline'],
+    body: `
+## Overview
+
+Sites can be permanently deleted from the site management page (\`/sites/<slug>\`). Deletion removes **all** associated resources and **cannot be undone**.
+
+## What gets deleted
+
+| Resource | Location |
+|----------|----------|
+| Cloudflare Pages project | Cloudflare account |
+| Staging DNS record | \`<slug>.infront.cy\` CNAME on Cloudflare |
+| Staging custom domain | Pages project domain registration |
+| Production custom domain | Pages project domain registration (if set) |
+| Site source files | \`sites/<slug>/\` directory |
+| CMS Docker infrastructure | \`infra/docker/<slug>/\` directory (if CMS tier) |
+
+## How to delete
+
+1. Navigate to the site management page at \`/sites/<slug>\`
+2. Scroll to the **Danger Zone** section at the bottom
+3. Type the site slug into the confirmation input
+4. Click **Delete Site Permanently**
+
+The deletion is synchronous — you will see either a success (redirect to dashboard) or an error message.
+
+## Restrictions
+
+- The **template** site cannot be deleted
+- You cannot delete a site while a build or deploy is in progress
+- If some Cloudflare resources fail to clean up, the site files are still deleted and any cleanup failures are returned as warnings
+
+## API
+
+\`DELETE /api/sites/<slug>/delete\`
+
+Returns \`{ success: true }\` on success, optionally with a \`warnings\` array if any Cloudflare cleanup steps failed.
+`,
+  },
 
   // =========================================================================
   // SITE CREATION
