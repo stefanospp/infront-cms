@@ -599,12 +599,13 @@ Editor changes
 - Prop updates from inline editing flow back to editor state
 - Auto-disables when not in iframe (production safe)
 
-### Phase 4: Admin Enhancements
-- Site config editor page
-- Media library
-- CMS content management (Directus embed)
-- Post-creation setup checklist
-- Publish flow (build + deploy from editor)
+### Phase 4: Admin Enhancements (In Progress)
+- Site config editor modal with tabbed UI (general, contact, SEO, nav, theme) — Complete
+- Config API route (GET/PUT /api/sites/[slug]/config) with full zod validation — Complete
+- Settings button in editor toolbar — Complete
+- Media library — Pending
+- CMS content management (Directus embed) — Pending
+- Post-creation setup checklist — Pending
 
 ### Phase 5: Polish & Infrastructure
 - Auth & user management (admin + client roles)

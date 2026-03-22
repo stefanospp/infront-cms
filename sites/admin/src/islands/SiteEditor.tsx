@@ -4,6 +4,7 @@ import EditorToolbar from './editor/EditorToolbar';
 import EditorSidebar from './editor/EditorSidebar';
 import EditorPreview from './editor/EditorPreview';
 import EditorProperties from './editor/EditorProperties';
+import EditorConfig from './editor/EditorConfig';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -32,6 +33,7 @@ export default function SiteEditor({ slug }: { slug: string }) {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [loadState, setLoadState] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [showConfig, setShowConfig] = useState(false);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -320,6 +322,14 @@ export default function SiteEditor({ slug }: { slug: string }) {
         isSaving={isSaving}
         onSave={handleSave}
         onPublish={handlePublish}
+        onOpenConfig={() => setShowConfig(true)}
+      />
+
+      {/* Site config editor modal */}
+      <EditorConfig
+        slug={slug}
+        isOpen={showConfig}
+        onClose={() => setShowConfig(false)}
       />
 
       {/* Three-panel layout */}
