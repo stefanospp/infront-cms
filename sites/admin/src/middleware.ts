@@ -1,14 +1,9 @@
 import { defineMiddleware } from 'astro:middleware';
 import { verifySessionToken } from './lib/auth';
-import { readFileSync } from 'node:fs';
+import { env } from './lib/env';
 
 function getSessionSecret(): string | undefined {
-  try {
-    const data = JSON.parse(readFileSync('/app/runtime-env.json', 'utf-8'));
-    return data['SESSION_SECRET'];
-  } catch {
-    return undefined;
-  }
+  return env('SESSION_SECRET');
 }
 
 const PUBLIC_PATHS = ['/login'];

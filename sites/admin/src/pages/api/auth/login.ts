@@ -1,14 +1,6 @@
 import type { APIRoute } from 'astro';
 import { verifyPassword, createSessionToken } from '@/lib/auth';
-import { readFileSync } from 'node:fs';
-
-function getRuntimeEnv(): Record<string, string> {
-  try {
-    return JSON.parse(readFileSync('/app/runtime-env.json', 'utf-8'));
-  } catch {
-    return {};
-  }
-}
+import { env } from '@/lib/env';
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
@@ -22,9 +14,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
     }
 
-    const runtimeEnv = getRuntimeEnv();
-    const passwordHash = runtimeEnv['ADMIN_PASSWORD_HASH'];
-    const sessionSecret = runtimeEnv['SESSION_SECRET'];
+    const passwordHash = env('ADMIN_PASSWORD_HASH');
+    const sessionSecret = env('SESSION_SECRET');
 
     if (!passwordHash || !sessionSecret) {
       console.error('Missing ADMIN_PASSWORD_HASH or SESSION_SECRET env vars');
