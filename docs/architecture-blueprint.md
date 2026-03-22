@@ -609,11 +609,14 @@ Editor changes
 - 9 checklist items across 3 categories (setup, content, deploy)
 - CMS content management via Directus URL in site config (embed ready)
 
-### Phase 5: Polish & Infrastructure
-- Auth & user management (admin + client roles)
-- Deployment strategy (staging → production promotion, rollback)
-- Site export functionality (static + source + CMS)
-- Content versioning (auto-commit on save, version history panel)
+### Phase 5: Polish & Infrastructure (Complete)
+- Auth with roles: UserRole (admin/client), SessionPayload with allowedSites, canAccessSite/isAdmin helpers
+- getSessionPayload extracts JWT claims; createSessionToken accepts role payload
+- Deployment promotion: POST /api/sites/[slug]/promote (staging → production)
+- Site export: POST /api/sites/[slug]/export (static dist or standalone source with inlined shared components)
+- Content versioning: autoCommitSite, getVersionHistory, revertToVersion
+- Versions API: GET/POST /api/sites/[slug]/versions (history + save/revert actions)
+- Commit hash validation, safe git checkout for reverts (no destructive resets)
 
 ---
 
