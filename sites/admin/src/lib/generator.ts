@@ -202,7 +202,7 @@ export function generateAstroConfigContent(domain: string): string {
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
-import { componentOverridePlugin } from '@agency/utils';
+import { componentOverridePlugin, editorBridgePlugin } from '@agency/utils';
 
 export default defineConfig({
   site: 'https://${domain}',
@@ -215,6 +215,7 @@ export default defineConfig({
     plugins: [
       tailwindcss(),
       componentOverridePlugin(import.meta.dirname),
+      editorBridgePlugin(),
     ],
   },
   image: {

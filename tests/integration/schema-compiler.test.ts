@@ -71,8 +71,11 @@ describe('compilePageSchema', () => {
     // Should import Section
     expect(result).toContain("import Section from '@agency/ui/components/Section.astro';");
 
-    // Should wrap in Section
-    expect(result).toContain('<Section heading="Our Features" subheading="What makes us different" background="light">');
+    // Should wrap in Section with bridge attributes
+    expect(result).toContain('data-section-id="features-1"');
+    expect(result).toContain('heading="Our Features"');
+    expect(result).toContain('subheading="What makes us different"');
+    expect(result).toContain('background="light"');
     expect(result).toContain('</Section>');
 
     // Inner component should be indented more

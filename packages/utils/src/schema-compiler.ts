@@ -107,12 +107,17 @@ function renderSection(section: SectionSchema, indent: number): string {
     section.background != null ||
     section.sectionId != null;
 
+  // Editor bridge data attributes for inline editing
+  const bridgeAttrs = `data-section-id="${section.id}" data-component="${section.component}"`;
+
   if (!needsWrapper) {
-    return renderComponentTag(section, indent);
+    // Wrap in a div with bridge attributes so the editor can target it
+    const inner = renderComponentTag(section, indent + 1);
+    return `${pad}<div ${bridgeAttrs}>\n${inner}\n${pad}</div>`;
   }
 
   // Build Section wrapper attributes
-  const wrapperAttrs: string[] = [];
+  const wrapperAttrs: string[] = [bridgeAttrs];
   if (section.heading) {
     wrapperAttrs.push(`heading="${section.heading}"`);
   }

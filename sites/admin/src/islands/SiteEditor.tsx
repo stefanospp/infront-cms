@@ -180,6 +180,18 @@ export default function SiteEditor({ slug }: { slug: string }) {
     setSelectedSectionId(id);
   }
 
+  function handlePreviewSectionSelect(id: string) {
+    setSelectedSectionId(id);
+  }
+
+  function handlePreviewPropUpdate(sectionId: string, propPath: string, value: string) {
+    updateCurrentPageSections((prev) =>
+      prev.map((s) =>
+        s.id === sectionId ? { ...s, props: { ...s.props, [propPath]: value } } : s,
+      ),
+    );
+  }
+
   function handleSectionRemove(id: string) {
     updateCurrentPageSections((prev) => prev.filter((s) => s.id !== id));
     if (selectedSectionId === id) {
@@ -330,6 +342,9 @@ export default function SiteEditor({ slug }: { slug: string }) {
           currentPage={currentPage}
           devServerPort={devServerPort}
           devServerStatus={devServerStatus}
+          selectedSectionId={selectedSectionId}
+          onSectionSelect={handlePreviewSectionSelect}
+          onPropUpdate={handlePreviewPropUpdate}
         />
 
         {/* Right panel: properties */}

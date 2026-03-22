@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -8,6 +8,9 @@ interface EditorPreviewProps {
   currentPage: string;
   devServerPort: number | null;
   devServerStatus: 'starting' | 'running' | 'stopped' | 'error';
+  selectedSectionId: string | null;
+  onSectionSelect?: (sectionId: string) => void;
+  onPropUpdate?: (sectionId: string, propPath: string, value: string) => void;
 }
 
 type DeviceMode = 'desktop' | 'tablet' | 'mobile';
@@ -32,8 +35,12 @@ export default function EditorPreview({
   currentPage,
   devServerPort,
   devServerStatus,
+  selectedSectionId,
+  onSectionSelect,
+  onPropUpdate,
 }: EditorPreviewProps) {
   const [device, setDevice] = useState<DeviceMode>('desktop');
+  const [bridgeReady, setBridgeReady] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const pagePath = currentPage === 'index' ? '/' : `/${currentPage}`;
@@ -41,10 +48,48 @@ export default function EditorPreview({
     devServerPort !== null ? `http://localhost:${devServerPort}${pagePath}` : '';
 
   const handleRefresh = useCallback(() => {
+    setBridgeReady(false);
     if (iframeRef.current) {
       iframeRef.current.src = iframeSrc;
     }
   }, [iframeSrc]);
+
+  // Listen for postMessage from the editor bridge in the iframe
+  useEffect(() => {
+    function handleMessage(e: MessageEvent) {
+      const msg = e.data;
+      if (!msg || typeof msg.type !== 'string') return;
+
+      switch (msg.type) {
+        case 'editor-bridge:ready':
+          setBridgeReady(true);
+          break;
+        case 'editor-bridge:section-select':
+          if (msg.sectionId && onSectionSelect) {
+            onSectionSelect(msg.sectionId);
+          }
+          break;
+        case 'editor-bridge:prop-update':
+          if (msg.sectionId && msg.propPath && onPropUpdate) {
+            onPropUpdate(msg.sectionId, msg.propPath, msg.value);
+          }
+          break;
+      }
+    }
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onSectionSelect, onPropUpdate]);
+
+  // Highlight the selected section in the iframe when selection changes
+  useEffect(() => {
+    if (bridgeReady && selectedSectionId && iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage(
+        { type: 'editor-bridge:highlight-section', sectionId: selectedSectionId },
+        '*',
+      );
+    }
+  }, [bridgeReady, selectedSectionId]);
 
   // Loading state
   if (devServerStatus === 'starting') {

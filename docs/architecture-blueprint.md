@@ -581,19 +581,23 @@ Editor changes
 - Port allocation upper bound (4400-4500)
 - Concurrent-safe ID generation in schema parser
 
-### Phase 2: Editor MVP (Next)
+### Phase 2: Editor MVP (Complete)
 - Page schema API routes (CRUD for page schemas)
 - Editor page layout (three-panel React island)
 - Section management panel (add/remove/reorder)
 - Live preview iframe (connects to dev server)
 - Right panel with section settings (variant picker, prop editing)
 - Save → regenerate → HMR flow
+- Type-safety fixes: aligned editor components with config types
 
-### Phase 3: Inline Editing
-- Editor bridge script (Vite plugin)
-- Click-to-select in iframe
-- Inline text editing
-- Image picker integration
+### Phase 3: Inline Editing (Complete)
+- Editor bridge Vite plugin (`editorBridgePlugin`) — injects bridge script in dev mode
+- Schema compiler generates `data-section-id` and `data-component` attributes
+- Click-to-select: clicking in iframe selects section in sidebar via postMessage
+- Inline text editing: double-click text to edit in-place (contenteditable)
+- Bidirectional communication: sidebar selection highlights in preview, preview clicks update sidebar
+- Prop updates from inline editing flow back to editor state
+- Auto-disables when not in iframe (production safe)
 
 ### Phase 4: Admin Enhancements
 - Site config editor page
