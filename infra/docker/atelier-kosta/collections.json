@@ -1,0 +1,147 @@
+{
+  "commonFields": [
+    {
+      "field": "status",
+      "type": "string",
+      "schema": { "default_value": "draft", "is_nullable": false },
+      "meta": {
+        "interface": "select-dropdown",
+        "options": {
+          "choices": [
+            { "text": "Published", "value": "published" },
+            { "text": "Draft", "value": "draft" },
+            { "text": "Archived", "value": "archived" }
+          ]
+        },
+        "display": "labels",
+        "display_options": {
+          "choices": [
+            { "text": "Published", "value": "published", "foreground": "#FFFFFF", "background": "#2ecda7" },
+            { "text": "Draft", "value": "draft", "foreground": "#FFFFFF", "background": "#d3dae4" },
+            { "text": "Archived", "value": "archived", "foreground": "#FFFFFF", "background": "#a2b5cd" }
+          ]
+        },
+        "width": "full"
+      }
+    },
+    {
+      "field": "sort_order",
+      "type": "integer",
+      "schema": { "is_nullable": true },
+      "meta": { "interface": "input", "hidden": true }
+    }
+  ],
+  "collections": [
+    {
+      "collection": "pages",
+      "meta": { "icon": "description", "note": "CMS-managed pages", "sort_field": "sort_order" },
+      "fields": [
+        { "field": "title", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "full", "required": true } },
+        { "field": "slug", "type": "string", "schema": { "is_nullable": true, "is_unique": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "content", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-rich-text-html", "width": "full" } },
+        { "field": "seo_title", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "seo_description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "half" } },
+        { "field": "og_image", "type": "uuid", "schema": { "is_nullable": true }, "meta": { "interface": "file-image", "special": ["file"], "width": "half" } }
+      ]
+    },
+    {
+      "collection": "posts",
+      "meta": { "icon": "article", "note": "Blog posts", "sort_field": "sort_order" },
+      "fields": [
+        { "field": "title", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "full", "required": true } },
+        { "field": "slug", "type": "string", "schema": { "is_nullable": true, "is_unique": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "content", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-rich-text-html", "width": "full" } },
+        { "field": "excerpt", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "featured_image", "type": "uuid", "schema": { "is_nullable": true }, "meta": { "interface": "file-image", "special": ["file"], "width": "half" } },
+        { "field": "published_date", "type": "timestamp", "schema": { "is_nullable": true }, "meta": { "interface": "datetime", "width": "half" } },
+        { "field": "author", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "seo_title", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "seo_description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "half" } },
+        { "field": "og_image", "type": "uuid", "schema": { "is_nullable": true }, "meta": { "interface": "file-image", "special": ["file"], "width": "half" } }
+      ]
+    },
+    {
+      "collection": "team",
+      "meta": { "icon": "people", "note": "Team member profiles", "sort_field": "sort_order" },
+      "fields": [
+        { "field": "name", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "half", "required": true } },
+        { "field": "role", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "bio", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "photo", "type": "uuid", "schema": { "is_nullable": true }, "meta": { "interface": "file-image", "special": ["file"], "width": "half" } },
+        { "field": "email", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } }
+      ]
+    },
+    {
+      "collection": "services",
+      "meta": { "icon": "build", "note": "Services offered", "sort_field": "sort_order" },
+      "fields": [
+        { "field": "title", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "half", "required": true } },
+        { "field": "description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "icon", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "image", "type": "uuid", "schema": { "is_nullable": true }, "meta": { "interface": "file-image", "special": ["file"], "width": "half" } },
+        { "field": "href", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } }
+      ]
+    },
+    {
+      "collection": "testimonials",
+      "meta": { "icon": "format_quote", "note": "Client testimonials", "sort_field": "sort_order" },
+      "fields": [
+        { "field": "quote", "type": "text", "schema": { "is_nullable": false }, "meta": { "interface": "input-multiline", "width": "full", "required": true } },
+        { "field": "author", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "half", "required": true } },
+        { "field": "role", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "image", "type": "uuid", "schema": { "is_nullable": true }, "meta": { "interface": "file-image", "special": ["file"], "width": "half" } }
+      ]
+    },
+    {
+      "collection": "faqs",
+      "meta": { "icon": "help", "note": "Frequently asked questions", "sort_field": "sort_order" },
+      "fields": [
+        { "field": "question", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "full", "required": true } },
+        { "field": "answer", "type": "text", "schema": { "is_nullable": false }, "meta": { "interface": "input-rich-text-html", "width": "full", "required": true } }
+      ]
+    },
+    {
+      "collection": "gallery",
+      "meta": { "icon": "photo_library", "note": "Gallery items", "sort_field": "sort_order" },
+      "fields": [
+        { "field": "title", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "image", "type": "uuid", "schema": { "is_nullable": true }, "meta": { "interface": "file-image", "special": ["file"], "width": "half" } },
+        { "field": "href", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } }
+      ]
+    },
+    {
+      "collection": "clients",
+      "meta": { "icon": "business", "note": "Client logos", "sort_field": "sort_order" },
+      "fields": [
+        { "field": "name", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "half", "required": true } },
+        { "field": "logo", "type": "uuid", "schema": { "is_nullable": true }, "meta": { "interface": "file-image", "special": ["file"], "width": "half" } },
+        { "field": "href", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } }
+      ]
+    },
+    {
+      "collection": "stats",
+      "meta": { "icon": "bar_chart", "note": "Statistics and counters", "sort_field": "sort_order" },
+      "fields": [
+        { "field": "value", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "quarter", "required": true } },
+        { "field": "label", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "quarter", "required": true } },
+        { "field": "prefix", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "quarter" } },
+        { "field": "suffix", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "quarter" } }
+      ]
+    },
+    {
+      "collection": "comparisons",
+      "meta": { "icon": "compare", "note": "Pricing/comparison plans", "sort_field": "sort_order" },
+      "fields": [
+        { "field": "name", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "half", "required": true } },
+        { "field": "price", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "quarter" } },
+        { "field": "period", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "quarter" } },
+        { "field": "description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "features", "type": "json", "schema": { "is_nullable": true }, "meta": { "interface": "tags", "special": ["json"], "width": "full" } },
+        { "field": "cta_text", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "cta_href", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "highlighted", "type": "boolean", "schema": { "default_value": false, "is_nullable": true }, "meta": { "interface": "boolean", "width": "half" } }
+      ]
+    }
+  ]
+}

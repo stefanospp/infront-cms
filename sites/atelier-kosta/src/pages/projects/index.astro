@@ -1,0 +1,84 @@
+---
+import "../../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import { getDirectusImageUrl } from '@agency/utils';
+import { getProjects } from '../../lib/directus';
+import config from '../../../site.config';
+
+const title = 'Projects';
+const description = 'Architecture and interior design projects by Atelier Kosta. Residential, commercial, and interior work across Cyprus.';
+
+const rawProjects = await getProjects();
+const projects = rawProjects.map((p: any) => ({
+  title: p.title,
+  slug: p.slug,
+  location: p.location,
+  year: p.year,
+  projectType: p.project_type,
+  image: p.featured_image && config.cms?.url
+    ? getDirectusImageUrl(config.cms.url, p.featured_image, { width: 800, height: 1000, fit: 'cover', format: 'webp' })
+    : undefined,
+}));
+
+function formatProjectType(type: string | null | undefined): string {
+  if (!type) return '';
+  return type.charAt(0).toUpperCase() + type.slice(1);
+}
+---
+
+<FullWidth title={title} description={description} config={config}>
+  <Hero
+    variant="minimal"
+    heading="Projects"
+    subheading="A selection of residential, commercial, and interior projects across Cyprus and the Eastern Mediterranean."
+  />
+
+  <section class="px-6 pb-24 sm:px-12 lg:px-20">
+    <div class="mx-auto max-w-7xl">
+      {projects.length > 0 ? (
+        <div class="columns-1 gap-6 sm:columns-2 lg:columns-3">
+          {projects.map((project, i) => (
+            <a
+              href={`/projects/${project.slug}`}
+              class="group relative mb-6 block break-inside-avoid overflow-hidden"
+            >
+              {project.image ? (
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  class="w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  loading={i < 3 ? 'eager' : 'lazy'}
+                />
+              ) : (
+                <div class="aspect-[3/4] w-full bg-neutral-200" />
+              )}
+              {/* Hover overlay */}
+              <div class="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-neutral-900/80 via-neutral-900/20 to-transparent p-6 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                {project.projectType && (
+                  <p class="text-[10px] font-medium uppercase tracking-[0.3em] text-primary-300">
+                    {formatProjectType(project.projectType)}
+                  </p>
+                )}
+                <h2 class="mt-2 font-heading text-2xl font-light text-white">{project.title}</h2>
+                <p class="mt-1 text-sm text-neutral-300">
+                  {project.location}{project.year ? `, ${project.year}` : ''}
+                </p>
+              </div>
+            </a>
+          ))}
+        </div>
+      ) : (
+        <div class="py-24 text-center">
+          <h2 class="font-heading text-3xl font-light text-neutral-900">Projects Coming Soon</h2>
+          <p class="mx-auto mt-4 max-w-md text-neutral-600">
+            Our portfolio is being curated. Contact us to discuss your project.
+          </p>
+          <a href="/contact" class="mt-8 inline-flex items-center gap-2 border border-neutral-900 px-8 py-4 text-sm font-medium uppercase tracking-[0.2em] text-neutral-900 transition-all hover:bg-neutral-900 hover:text-white">
+            Get in Touch
+          </a>
+        </div>
+      )}
+    </div>
+  </section>
+</FullWidth>

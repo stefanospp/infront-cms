@@ -1,0 +1,12 @@
+{
+  "projectName": "atelier-kosta",
+  "stagingUrl": "https://atelier-kosta.stepet.workers.dev",
+  "productionUrl": null,
+  "workersDevUrl": "https://atelier-kosta.stepet.workers.dev",
+  "lastDeployId": null,
+  "lastDeployAt": "2026-03-23T00:54:33.000Z",
+  "status": "live",
+  "error": null,
+  "dnsRecordId": null,
+  "buildLog": null
+}

@@ -1,0 +1,12 @@
+{
+  "projectName": "meridian-properties",
+  "stagingUrl": "https://meridian-properties.stepet.workers.dev",
+  "productionUrl": null,
+  "workersDevUrl": "https://meridian-properties.stepet.workers.dev",
+  "lastDeployId": null,
+  "lastDeployAt": "2026-03-22T20:26:27.816Z",
+  "status": "live",
+  "error": null,
+  "dnsRecordId": null,
+  "buildLog": null
+}

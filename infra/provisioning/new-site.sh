@@ -80,18 +80,18 @@ echo "  Name:   ${CLIENT_NAME}"
 echo ""
 
 # 1. Copy template site
-echo "[1/6] Copying site template..."
+echo "[1/7] Copying site template..."
 cp -r "${TEMPLATE_SITE}" "${SITE_DIR}"
 
 # 2. Update package.json name
-echo "[2/6] Updating package.json..."
+echo "[2/7] Updating package.json..."
 if [ -f "${SITE_DIR}/package.json" ]; then
   sed -i.bak "s/\"name\": \"@agency\/template\"/\"name\": \"@agency\/${CLIENT_SLUG}\"/" "${SITE_DIR}/package.json"
   rm -f "${SITE_DIR}/package.json.bak"
 fi
 
 # 3. Generate site.config.ts from template
-echo "[3/6] Generating site.config.ts..."
+echo "[3/7] Generating site.config.ts..."
 if [ -f "${TEMPLATES_DIR}/site.config.ts.tmpl" ]; then
   sed \
     -e "s/__CLIENT_NAME__/${CLIENT_NAME}/g" \
@@ -122,7 +122,7 @@ SITECONF
 fi
 
 # 4. Generate tailwind.config.mjs from template
-echo "[4/6] Generating tailwind.config.mjs..."
+echo "[4/7] Generating tailwind.config.mjs..."
 if [ -f "${TEMPLATES_DIR}/tailwind.config.mjs.tmpl" ]; then
   sed \
     -e "s/__PRIMARY_COLOR__/#1a1a2e/g" \
@@ -147,7 +147,7 @@ TWCONF
 fi
 
 # 5. Write CLAUDE.md for the site
-echo "[5/6] Writing CLAUDE.md..."
+echo "[5/7] Writing CLAUDE.md..."
 cat > "${SITE_DIR}/CLAUDE.md" <<CLAUDEMD
 # ${CLIENT_NAME} Site
 
@@ -178,9 +178,26 @@ $(if [ "${TIER}" = "cms" ] || [ "${TIER}" = "interactive" ]; then
 fi)
 CLAUDEMD
 
-# 6. If CMS or interactive tier, copy Docker template
+# 6. Write .deploy.json for admin dashboard registration
+echo "[6/7] Writing .deploy.json..."
+cat > "${SITE_DIR}/.deploy.json" <<DEPLOYJSON
+{
+  "projectName": "${CLIENT_SLUG}",
+  "stagingUrl": "",
+  "productionUrl": null,
+  "workersDevUrl": "",
+  "lastDeployId": null,
+  "lastDeployAt": null,
+  "status": "pending",
+  "error": null,
+  "dnsRecordId": null,
+  "buildLog": null
+}
+DEPLOYJSON
+
+# 7. If CMS or interactive tier, copy Docker template
 if [ "${TIER}" = "cms" ] || [ "${TIER}" = "interactive" ]; then
-  echo "[6/6] Setting up CMS Docker config..."
+  echo "[7/7] Setting up CMS Docker config..."
   DOCKER_CLIENT_DIR="${REPO_ROOT}/infra/docker/${CLIENT_SLUG}"
 
   if [ -d "${DOCKER_TEMPLATE}" ]; then
@@ -190,7 +207,7 @@ if [ "${TIER}" = "cms" ] || [ "${TIER}" = "interactive" ]; then
     echo "  Warning: Docker template not found at ${DOCKER_TEMPLATE}, skipping."
   fi
 else
-  echo "[6/6] Static tier -- skipping CMS Docker setup."
+  echo "[7/7] Static tier -- skipping CMS Docker setup."
 fi
 
 # --- Create git branch ---

@@ -1,0 +1,80 @@
+---
+import "../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import ContactForm from '@agency/ui/islands/ContactForm';
+import config from '../../site.config';
+
+const title = 'Contact';
+const description = 'Get in touch with Atelier Kosta. Book a consultation for your architecture or interior design project.';
+---
+
+<FullWidth title={title} description={description} config={config}>
+  <Hero
+    variant="minimal"
+    heading="Contact"
+    subheading="We'd love to hear about your project."
+  />
+
+  <section class="px-6 pb-24 sm:px-12 lg:px-20">
+    <div class="mx-auto max-w-6xl">
+      <div class="grid gap-16 lg:grid-cols-[1fr_380px]">
+        {/* Form */}
+        <div>
+          <h2 class="mb-8 text-xs font-medium uppercase tracking-[0.3em] text-neutral-500">Send us a message</h2>
+          <ContactForm client:visible />
+        </div>
+
+        {/* Contact info sidebar */}
+        <aside>
+          <div class="border-l border-neutral-200 pl-8">
+            <div class="space-y-8">
+              <div>
+                <h3 class="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-400">Studio</h3>
+                <p class="mt-2 text-sm text-neutral-800">
+                  {config.contact.address?.street}<br />
+                  {config.contact.address?.city}, {config.contact.address?.postcode}<br />
+                  {config.contact.address?.country}
+                </p>
+              </div>
+
+              <div>
+                <h3 class="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-400">Email</h3>
+                <a href={`mailto:${config.contact.email}`} class="mt-2 block text-sm text-neutral-800 transition-colors hover:text-primary-600">
+                  {config.contact.email}
+                </a>
+              </div>
+
+              {config.contact.phone && (
+                <div>
+                  <h3 class="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-400">Phone</h3>
+                  <a href={`tel:${config.contact.phone}`} class="mt-2 block text-sm text-neutral-800 transition-colors hover:text-primary-600">
+                    {config.contact.phone}
+                  </a>
+                </div>
+              )}
+
+              <div>
+                <h3 class="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-400">Office Hours</h3>
+                <p class="mt-2 text-sm text-neutral-800">
+                  Monday — Friday<br />
+                  09:00 — 18:00
+                </p>
+                <p class="mt-1 text-sm text-neutral-500">
+                  Closed on public holidays
+                </p>
+              </div>
+
+              <div>
+                <h3 class="text-[10px] font-medium uppercase tracking-[0.3em] text-neutral-400">Consultations</h3>
+                <p class="mt-2 text-sm font-light leading-relaxed text-neutral-600">
+                  Initial consultations are complimentary. We'll discuss your vision, site, and timeline to determine if we're a good fit for your project.
+                </p>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</FullWidth>
