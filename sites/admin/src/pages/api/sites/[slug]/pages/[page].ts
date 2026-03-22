@@ -21,7 +21,10 @@ const sectionSchemaZod: z.ZodType<unknown> = z.lazy(() =>
     component: z.string().min(1),
     variant: z.string().optional(),
     props: z.record(z.unknown()),
-    children: z.array(sectionSchemaZod).optional(),
+    background: z.enum(['light', 'dark', 'primary']).optional(),
+    heading: z.string().optional(),
+    subheading: z.string().optional(),
+    sectionId: z.string().optional(),
     isIsland: z.boolean().optional(),
     clientDirective: z.enum(['visible', 'idle', 'load']).optional(),
   }),
@@ -30,9 +33,14 @@ const sectionSchemaZod: z.ZodType<unknown> = z.lazy(() =>
 const pageSchemaZod = z.object({
   page: z.string().min(1),
   title: z.string().min(1),
-  description: z.string(),
   layout: z.string().min(1),
+  seo: z.object({
+    title: z.string().optional(),
+    description: z.string().optional(),
+    ogImage: z.string().optional(),
+  }),
   sections: z.array(sectionSchemaZod),
+  cmsCollections: z.array(z.string()).optional(),
 });
 
 export const GET: APIRoute = async ({ params }) => {

@@ -40,10 +40,16 @@ async function collectFiles(
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      // Skip node_modules, .git, dist
+      // Skip build artifacts, dependencies, and version control
       if (['node_modules', '.git', 'dist', '.astro'].includes(entry.name)) continue;
       await collectFiles(fullPath, rootDir, result);
     } else {
+      // Skip sensitive and metadata files
+      const name = entry.name.toLowerCase();
+      if (name === '.env' || name.startsWith('.env.') || name === '.deploy.json' ||
+          name === 'runtime-env.json' || name.endsWith('.key') || name.endsWith('.pem')) {
+        continue;
+      }
       result.push(path.relative(rootDir, fullPath));
     }
   }

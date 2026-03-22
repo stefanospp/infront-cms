@@ -205,6 +205,26 @@ describe('Editor Type Compatibility (Phase 2)', () => {
       expect(source).toContain('schema.page !== page');
     });
 
+    it('page API zod schema includes seo object (not top-level description)', () => {
+      const source = readSource(PAGE_API_PATH);
+      expect(source).toContain('seo: z.object');
+      // The pageSchemaZod should NOT have a top-level description field
+      // (description lives inside the seo object)
+      const pageSchemaBlock = source.slice(
+        source.indexOf('const pageSchemaZod'),
+        source.indexOf('export const GET'),
+      );
+      // Should not have description directly on the page schema level
+      expect(pageSchemaBlock).not.toMatch(/page:.*\n.*title:.*\n.*description: z\.string\(\),/);
+    });
+
+    it('section zod schema includes Section wrapper fields', () => {
+      const source = readSource(PAGE_API_PATH);
+      expect(source).toContain("background: z.enum(['light', 'dark', 'primary'])");
+      expect(source).toContain('heading: z.string()');
+      expect(source).toContain('subheading: z.string()');
+    });
+
     it('sections API zod schema uses correct field names matching SectionSchema', () => {
       const source = readSource(SECTIONS_API_PATH);
       // The zod schema should use `component` not `componentId`

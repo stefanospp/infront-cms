@@ -2,8 +2,7 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import type { PageSchema, SectionSchema } from '@agency/config';
 import { getMonorepoRoot } from './generator';
-import { compilePageSchema } from '../../../../packages/utils/src/schema-compiler';
-import { parseAstroToSchema } from '../../../../packages/utils/src/schema-parser';
+import { compilePageSchema, parseAstroToSchema } from '@agency/utils';
 
 // ---------------------------------------------------------------------------
 // Path helpers
