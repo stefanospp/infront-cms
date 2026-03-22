@@ -5,6 +5,7 @@ import EditorSidebar from './editor/EditorSidebar';
 import EditorPreview from './editor/EditorPreview';
 import EditorProperties from './editor/EditorProperties';
 import EditorConfig from './editor/EditorConfig';
+import MediaLibrary from './editor/MediaLibrary';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -34,6 +35,7 @@ export default function SiteEditor({ slug }: { slug: string }) {
   const [loadState, setLoadState] = useState<'loading' | 'loaded' | 'error'>('loading');
   const [loadError, setLoadError] = useState<string | null>(null);
   const [showConfig, setShowConfig] = useState(false);
+  const [showMedia, setShowMedia] = useState(false);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -323,6 +325,7 @@ export default function SiteEditor({ slug }: { slug: string }) {
         onSave={handleSave}
         onPublish={handlePublish}
         onOpenConfig={() => setShowConfig(true)}
+        onOpenMedia={() => setShowMedia(true)}
       />
 
       {/* Site config editor modal */}
@@ -330,6 +333,13 @@ export default function SiteEditor({ slug }: { slug: string }) {
         slug={slug}
         isOpen={showConfig}
         onClose={() => setShowConfig(false)}
+      />
+
+      {/* Media library modal */}
+      <MediaLibrary
+        slug={slug}
+        isOpen={showMedia}
+        onClose={() => setShowMedia(false)}
       />
 
       {/* Three-panel layout */}

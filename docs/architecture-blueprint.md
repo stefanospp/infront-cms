@@ -599,13 +599,15 @@ Editor changes
 - Prop updates from inline editing flow back to editor state
 - Auto-disables when not in iframe (production safe)
 
-### Phase 4: Admin Enhancements (In Progress)
-- Site config editor modal with tabbed UI (general, contact, SEO, nav, theme) — Complete
-- Config API route (GET/PUT /api/sites/[slug]/config) with full zod validation — Complete
-- Settings button in editor toolbar — Complete
-- Media library — Pending
-- CMS content management (Directus embed) — Pending
-- Post-creation setup checklist — Pending
+### Phase 4: Admin Enhancements (Complete)
+- Site config editor modal with tabbed UI (general, contact, SEO, nav, theme)
+- Config API route (GET/PUT /api/sites/[slug]/config) with full zod validation
+- Settings and Media buttons in editor toolbar
+- Media library: upload/list/delete images (GET/POST/DELETE /api/sites/[slug]/media)
+- MediaLibrary modal with grid view, upload, delete, image picker mode
+- Setup checklist API (GET /api/sites/[slug]/checklist) — inspects site state
+- 9 checklist items across 3 categories (setup, content, deploy)
+- CMS content management via Directus URL in site config (embed ready)
 
 ### Phase 5: Polish & Infrastructure
 - Auth & user management (admin + client roles)
