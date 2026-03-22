@@ -4,3 +4,5 @@ export { createDirectusClient, getPublishedItems, getItemBySlug } from './direct
 export { formatDate } from './date.js';
 export { ContactSchema, type ContactFormData } from './validation.js';
 export { componentOverridePlugin } from './vite-component-override.js';
+export { compilePageSchema } from './schema-compiler.js';
+export { parseAstroToSchema } from './schema-parser.js';

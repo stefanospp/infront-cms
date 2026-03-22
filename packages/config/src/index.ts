@@ -20,3 +20,21 @@ export type {
 } from './types.js';
 
 export { templates, getTemplate, listTemplates } from './templates.js';
+
+export type { SectionSchema, PageSchema } from './page-schema.js';
+
+export type {
+  PropDefinition,
+  ComponentCategory,
+  ComponentDefinition,
+} from './component-registry.js';
+
+export {
+  componentRegistry,
+  getComponent,
+  listComponentsByCategory,
+  listAstroComponents,
+  listIslandComponents,
+  listComponentsWithVariants,
+  getComponentVariants,
+} from './component-registry.js';

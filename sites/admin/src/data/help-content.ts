@@ -3914,6 +3914,97 @@ Array of template definitions:
 - Always returns 200, even if empty
 `,
   },
+  {
+    id: 'api-dev-server',
+    title: 'Dev Server Management API',
+    description: 'Start, stop, and monitor Astro dev servers for individual sites.',
+    category: 'api-reference',
+    tags: ['dev-server', 'preview', 'development', 'visual-editor'],
+    relatedArticles: ['api-deploy-status', 'api-redeploy'],
+    body: `
+## Per-site dev server
+
+### GET /api/sites/[slug]/dev-server
+
+Returns the current status of the dev server for a site.
+
+**Response (200 OK)**
+
+\`\`\`json
+{
+  "running": true,
+  "server": {
+    "slug": "my-site",
+    "port": 4400,
+    "pid": 12345,
+    "startedAt": "2026-03-22T10:00:00.000Z",
+    "lastAccessed": "2026-03-22T10:05:00.000Z",
+    "status": "running"
+  }
+}
+\`\`\`
+
+### POST /api/sites/[slug]/dev-server
+
+Start or stop the dev server.
+
+**Request body:**
+
+\`\`\`json
+{ "action": "start" }
+\`\`\`
+
+or
+
+\`\`\`json
+{ "action": "stop" }
+\`\`\`
+
+**Response (200 OK) — start:**
+
+\`\`\`json
+{
+  "message": "Dev server for \\"my-site\\" is running",
+  "server": { "slug": "my-site", "port": 4400, "status": "running", ... }
+}
+\`\`\`
+
+**Response (200 OK) — stop:**
+
+\`\`\`json
+{ "message": "Dev server for \\"my-site\\" stopped" }
+\`\`\`
+
+## All dev servers
+
+### GET /api/dev-servers
+
+Returns all running dev servers.
+
+\`\`\`json
+{
+  "count": 2,
+  "servers": [...]
+}
+\`\`\`
+
+### POST /api/dev-servers
+
+\`\`\`json
+{ "action": "stop-all" }
+\`\`\`
+
+Stops all running dev servers.
+
+## Notes
+
+- Ports are allocated dynamically starting from 4400
+- Only one dev server per site is allowed
+- Servers auto-shutdown after 30 minutes of inactivity
+- Returns 404 if the site directory does not exist
+- Returns 400 for invalid action values
+`,
+  },
 
   // =========================================================================
   // DEVELOPER WORKFLOWS

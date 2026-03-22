@@ -1,0 +1,26 @@
+---
+export const prerender = false;
+
+import SiteEditor from '@/islands/SiteEditor';
+
+const slug = Astro.params.slug!;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Editor — {slug}</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <SiteEditor client:load slug={slug} />
+  </body>
+</html>
