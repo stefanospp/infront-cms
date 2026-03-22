@@ -107,11 +107,12 @@ export default function SiteEditor({ slug }: { slug: string }) {
           return;
         }
 
-        const data: DevServerResponse = await res.json();
+        const data = await res.json();
+        const server = data.server as DevServerResponse | undefined;
 
-        if (data.status === 'running' && data.port) {
+        if (server?.status === 'running' && server.port) {
           if (!cancelled) {
-            setDevServerPort(data.port);
+            setDevServerPort(server.port);
             setDevServerStatus('running');
           }
           return;
@@ -122,16 +123,17 @@ export default function SiteEditor({ slug }: { slug: string }) {
           try {
             const pollRes = await fetch(`/api/sites/${slug}/dev-server`);
             if (!pollRes.ok) return;
-            const pollData: DevServerResponse = await pollRes.json();
+            const pollData = await pollRes.json();
+            const pollServer = pollData.server as DevServerResponse | undefined;
 
-            if (pollData.status === 'running' && pollData.port) {
+            if (pollServer?.status === 'running' && pollServer.port) {
               if (!cancelled) {
-                setDevServerPort(pollData.port);
+                setDevServerPort(pollServer.port);
                 setDevServerStatus('running');
               }
               if (pollRef.current) clearInterval(pollRef.current);
               pollRef.current = null;
-            } else if (pollData.status === 'error') {
+            } else if (pollServer?.status === 'error') {
               if (!cancelled) setDevServerStatus('error');
               if (pollRef.current) clearInterval(pollRef.current);
               pollRef.current = null;
