@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 
+import '@/styles/global.css';
 import SiteEditor from '@/islands/SiteEditor';
 
 const slug = Astro.params.slug!;
@@ -11,7 +12,7 @@ const slug = Astro.params.slug!;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Editor — {slug}</title>
-    <style>
+    <style is:global>
       html, body {
         margin: 0;
         padding: 0;

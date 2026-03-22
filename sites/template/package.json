@@ -10,9 +10,9 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@agency/config": "*",
-    "@agency/ui": "*",
-    "@agency/utils": "*",
+    "@agency/config": "workspace:*",
+    "@agency/ui": "workspace:*",
+    "@agency/utils": "workspace:*",
     "@astrojs/react": "^5.0.0",
     "@astrojs/sitemap": "^3.7.0",
     "@tailwindcss/vite": "^4.2.0",

@@ -329,7 +329,7 @@ function PropInput({
     case 'select':
       return <SelectInput prop={prop} value={(value as string) ?? ''} onChange={onChange} />;
     case 'array':
-      return <ArrayInput prop={prop} value={(value as unknown[]) ?? []} onChange={onChange} />;
+      return <ArrayInput prop={prop} value={Array.isArray(value) ? value : []} onChange={onChange} />;
     default:
       return null;
   }
