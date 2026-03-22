@@ -1,0 +1,48 @@
+---
+import "../styles/global.css";
+import SingleColumn from '@agency/ui/layouts/SingleColumn.astro';
+import Section from '@agency/ui/components/Section.astro';
+import config from '../../site.config';
+
+const title = 'Terms of Service';
+const description = `Terms of service for ${config.name}.`;
+---
+
+<SingleColumn title={title} description={description} config={config}>
+  <Section>
+    <h1 class="text-4xl font-heading font-bold text-neutral-900 mb-6">Terms of Service</h1>
+    <div class="prose prose-lg max-w-none text-neutral-700">
+      <p><strong>Last updated:</strong> [Date]</p>
+
+      <h2>Agreement to Terms</h2>
+      <p>
+        By accessing and using the {config.name} website, you agree to be bound by these terms of
+        service.
+      </p>
+
+      <h2>Intellectual Property</h2>
+      <p>
+        All content on this website, including text, images, and design, is the property of{' '}
+        {config.name} and is protected by applicable intellectual property laws.
+      </p>
+
+      <h2>Limitation of Liability</h2>
+      <p>
+        {config.name} provides this website on an "as is" basis. We make no warranties, expressed or
+        implied, regarding the accuracy or reliability of the content.
+      </p>
+
+      <h2>Governing Law</h2>
+      <p>
+        These terms are governed by the laws of England and Wales. Any disputes will be subject to
+        the exclusive jurisdiction of the courts of England and Wales.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        For questions about these terms, please contact us at{' '}
+        <a href={`mailto:${config.contact.email}`}>{config.contact.email}</a>.
+      </p>
+    </div>
+  </Section>
+</SingleColumn>

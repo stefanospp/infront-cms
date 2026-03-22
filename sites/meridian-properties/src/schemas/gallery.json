@@ -1,0 +1,31 @@
+{
+  "page": "gallery",
+  "title": "Gallery",
+  "layout": "FullWidth",
+  "seo": {
+    "title": "Gallery",
+    "description": "Browse our portfolio and recent work at ${config.name}."
+  },
+  "sections": [
+    {
+      "id": "hero-1",
+      "component": "Hero",
+      "variant": "minimal",
+      "props": {
+        "heading": "Gallery",
+        "subheading": "Our recent work and projects"
+      }
+    },
+    {
+      "id": "gallery-2",
+      "component": "Gallery",
+      "variant": "masonry",
+      "props": {
+        "items": "{items}"
+      }
+    }
+  ],
+  "cmsCollections": [
+    "galleryItems"
+  ]
+}

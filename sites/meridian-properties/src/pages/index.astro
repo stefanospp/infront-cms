@@ -1,0 +1,85 @@
+---
+import "../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import Section from '@agency/ui/components/Section.astro';
+import CardGrid from '@agency/ui/components/CardGrid.astro';
+import Testimonials from '@agency/ui/components/Testimonials.astro';
+import StatsCounter from '@agency/ui/components/StatsCounter.astro';
+import CTA from '@agency/ui/components/CTA.astro';
+import { getDirectusImageUrl } from '@agency/utils';
+import { getProperties, getTestimonials } from '../lib/directus';
+import config from '../../site.config';
+
+const title = config.seo.defaultTitle;
+const description = config.seo.defaultDescription;
+
+// Fetch featured properties from Directus
+const rawProperties = await getProperties({ limit: 6 });
+const properties = rawProperties.map((p: any) => ({
+  title: p.title,
+  description: p.location ? `${p.location} — ${p.bedrooms ?? ''}BD / ${p.bathrooms ?? ''}BA / ${p.area_sqm ?? ''}m²` : '',
+  image: p.featured_image && config.cms?.url
+    ? getDirectusImageUrl(config.cms.url, p.featured_image, { width: 600, height: 400, fit: 'cover', format: 'webp' })
+    : undefined,
+  href: `/properties/${p.slug}`,
+}));
+
+// Fetch testimonials from Directus
+const rawTestimonials = await getTestimonials();
+const testimonials = rawTestimonials.map((t: any) => ({
+  quote: t.quote,
+  author: t.author,
+  role: t.company ?? undefined,
+  image: t.image && config.cms?.url
+    ? getDirectusImageUrl(config.cms.url, t.image, { width: 100, height: 100, fit: 'cover', format: 'webp' })
+    : undefined,
+}));
+
+const stats = [
+  { value: '15', suffix: '+', label: 'Years in Cyprus' },
+  { value: '200', suffix: '+', label: 'Properties Sold' },
+  { value: '€500', suffix: 'M+', label: 'Portfolio Value' },
+  { value: '98', suffix: '%', label: 'Client Satisfaction' },
+];
+---
+
+<FullWidth title={title} description={description} config={config}>
+  <Hero
+    variant="split"
+    heading="Exceptional Living on the Mediterranean"
+    subheading="Discover luxury villas, penthouses, and beachfront residences in Limassol — Cyprus's most coveted address."
+    ctaText="Browse Properties"
+    ctaHref="/properties"
+    secondaryCtaText="Schedule Viewing"
+    secondaryCtaHref="/contact"
+  />
+
+  {properties.length > 0 && (
+    <Section heading="Featured Properties" subheading="Our handpicked selection of premium residences" id="featured">
+      <CardGrid variant="three-column" cards={properties} />
+      <div class="text-center mt-8">
+        <a href="/properties" class="inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 font-semibold transition-colors">
+          View All Properties →
+        </a>
+      </div>
+    </Section>
+  )}
+
+  <Section background="primary">
+    <StatsCounter variant="grid" stats={stats} />
+  </Section>
+
+  {testimonials.length > 0 && (
+    <Section heading="What Our Clients Say" background="light">
+      <Testimonials testimonials={testimonials} />
+    </Section>
+  )}
+
+  <CTA
+    heading="Find Your Dream Property"
+    description="Whether you're seeking a sea-view villa, a modern penthouse, or an investment opportunity — our team is here to guide you every step of the way."
+    buttonText="Schedule a Viewing"
+    buttonHref="/contact"
+  />
+</FullWidth>

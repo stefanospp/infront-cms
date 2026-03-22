@@ -1,0 +1,18 @@
+{
+  "page": "contact",
+  "title": "Contact Us",
+  "layout": "SingleColumn",
+  "seo": {
+    "title": "Contact Us",
+    "description": "Schedule a viewing or enquire about luxury properties in Limassol. Contact ${config.name} today."
+  },
+  "sections": [
+    {
+      "id": "contactform-1",
+      "component": "ContactForm",
+      "props": {},
+      "isIsland": true,
+      "clientDirective": "visible"
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+---
+import "../../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import Section from '@agency/ui/components/Section.astro';
+import CTA from '@agency/ui/components/CTA.astro';
+import { getDirectusImageUrl } from '@agency/utils';
+import { getProperties } from '../../lib/directus';
+import config from '../../../site.config';
+
+const title = 'Properties';
+const description = 'Browse our curated collection of luxury properties in Limassol, Cyprus. Villas, penthouses, apartments, and beachfront residences.';
+
+const rawProperties = await getProperties();
+const properties = rawProperties.map((p: any) => ({
+  id: p.id,
+  title: p.title,
+  slug: p.slug,
+  description: p.description,
+  price: p.price,
+  bedrooms: p.bedrooms,
+  bathrooms: p.bathrooms,
+  areaSqm: p.area_sqm,
+  location: p.location,
+  propertyType: p.property_type,
+  image: p.featured_image && config.cms?.url
+    ? getDirectusImageUrl(config.cms.url, p.featured_image, { width: 800, height: 500, fit: 'cover', format: 'webp' })
+    : undefined,
+  features: p.features ?? [],
+}));
+
+function formatPrice(price: number | null | undefined): string {
+  if (!price) return 'Price on Request';
+  return new Intl.NumberFormat('en-CY', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(price);
+}
+
+function formatPropertyType(type: string | null | undefined): string {
+  if (!type) return '';
+  return type.charAt(0).toUpperCase() + type.slice(1);
+}
+---
+
+<FullWidth title={title} description={description} config={config}>
+  <Hero
+    variant="minimal"
+    heading="Our Properties"
+    subheading="Explore premium residences in Limassol's most sought-after locations."
+  />
+
+  <Section>
+    {properties.length > 0 ? (
+      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {properties.map((property) => (
+          <a href={`/properties/${property.slug}`} class="group block bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+            {property.image && (
+              <div class="aspect-[4/3] overflow-hidden">
+                <img
+                  src={property.image}
+                  alt={property.title}
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+              </div>
+            )}
+            <div class="p-6">
+              {property.propertyType && (
+                <span class="inline-block text-xs font-semibold uppercase tracking-wider text-secondary-600 mb-2">
+                  {formatPropertyType(property.propertyType)}
+                </span>
+              )}
+              <h2 class="text-xl font-heading font-semibold text-neutral-900 mb-2 group-hover:text-primary-600 transition-colors">
+                {property.title}
+              </h2>
+              {property.location && (
+                <p class="text-sm text-neutral-500 mb-3">{property.location}</p>
+              )}
+              <p class="text-lg font-semibold text-primary-600 mb-4">
+                {formatPrice(property.price)}
+              </p>
+              <div class="flex gap-4 text-sm text-neutral-500">
+                {property.bedrooms != null && (
+                  <span>{property.bedrooms} Bed{property.bedrooms !== 1 ? 's' : ''}</span>
+                )}
+                {property.bathrooms != null && (
+                  <span>{property.bathrooms} Bath{property.bathrooms !== 1 ? 's' : ''}</span>
+                )}
+                {property.areaSqm != null && (
+                  <span>{property.areaSqm} m²</span>
+                )}
+              </div>
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <div class="text-center py-16">
+        <h2 class="text-2xl font-heading font-semibold text-neutral-900 mb-4">Properties Coming Soon</h2>
+        <p class="text-neutral-600 max-w-lg mx-auto mb-8">
+          Our portfolio is being prepared. Contact us directly to learn about available luxury properties in Limassol.
+        </p>
+        <a href="/contact" class="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors font-semibold">
+          Contact Us
+        </a>
+      </div>
+    )}
+  </Section>
+
+  <CTA
+    heading="Can't Find What You're Looking For?"
+    description="Our team has access to exclusive off-market listings. Tell us your requirements and we'll find the perfect match."
+    buttonText="Schedule a Consultation"
+    buttonHref="/contact"
+  />
+</FullWidth>

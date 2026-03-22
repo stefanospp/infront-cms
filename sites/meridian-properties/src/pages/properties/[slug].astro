@@ -1,0 +1,170 @@
+---
+import "../../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Section from '@agency/ui/components/Section.astro';
+import CTA from '@agency/ui/components/CTA.astro';
+import { getDirectusImageUrl } from '@agency/utils';
+import { getProperties, getPropertyBySlug } from '../../lib/directus';
+import config from '../../../site.config';
+
+export async function getStaticPaths() {
+  const properties = await getProperties();
+  return properties.map((p: any) => ({
+    params: { slug: p.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+const property = await getPropertyBySlug(slug!);
+
+if (!property) {
+  return Astro.redirect('/404');
+}
+
+const p = property as any;
+
+const title = p.title;
+const description = p.description
+  ? p.description.replace(/<[^>]+>/g, '').slice(0, 160)
+  : `View ${p.title} — luxury property in ${p.location ?? 'Limassol'}, Cyprus.`;
+
+const featuredImage = p.featured_image && config.cms?.url
+  ? getDirectusImageUrl(config.cms.url, p.featured_image, { width: 1200, height: 700, fit: 'cover', format: 'webp' })
+  : undefined;
+
+const galleryImages = (p.gallery ?? []).map((id: string) =>
+  config.cms?.url ? getDirectusImageUrl(config.cms.url, id, { width: 800, height: 600, fit: 'cover', format: 'webp' }) : ''
+).filter(Boolean);
+
+function formatPrice(price: number | null | undefined): string {
+  if (!price) return 'Price on Request';
+  return new Intl.NumberFormat('en-CY', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(price);
+}
+
+function formatPropertyType(type: string | null | undefined): string {
+  if (!type) return '';
+  return type.charAt(0).toUpperCase() + type.slice(1);
+}
+
+const features: string[] = p.features ?? [];
+---
+
+<FullWidth title={title} description={description} config={config}>
+  {featuredImage && (
+    <div class="w-full h-[50vh] min-h-[400px] relative">
+      <img
+        src={featuredImage}
+        alt={p.title}
+        class="w-full h-full object-cover"
+      />
+      <div class="absolute inset-0 bg-gradient-to-t from-primary-900/60 to-transparent" />
+      <div class="absolute bottom-0 left-0 right-0 p-8 max-w-6xl mx-auto">
+        {p.property_type && (
+          <span class="inline-block text-xs font-semibold uppercase tracking-wider text-secondary-400 mb-2">
+            {formatPropertyType(p.property_type)}
+          </span>
+        )}
+        <h1 class="text-3xl md:text-4xl font-heading font-bold text-white mb-2">{p.title}</h1>
+        {p.location && <p class="text-neutral-200">{p.location}</p>}
+      </div>
+    </div>
+  )}
+
+  <Section>
+    <div class="grid gap-12 lg:grid-cols-3">
+      <div class="lg:col-span-2">
+        {!featuredImage && (
+          <h1 class="text-3xl md:text-4xl font-heading font-bold text-neutral-900 mb-6">{p.title}</h1>
+        )}
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 p-6 bg-neutral-50 rounded-lg">
+          <div class="text-center">
+            <p class="text-2xl font-bold text-primary-600">{formatPrice(p.price)}</p>
+            <p class="text-sm text-neutral-500">Price</p>
+          </div>
+          {p.bedrooms != null && (
+            <div class="text-center">
+              <p class="text-2xl font-bold text-neutral-900">{p.bedrooms}</p>
+              <p class="text-sm text-neutral-500">Bedrooms</p>
+            </div>
+          )}
+          {p.bathrooms != null && (
+            <div class="text-center">
+              <p class="text-2xl font-bold text-neutral-900">{p.bathrooms}</p>
+              <p class="text-sm text-neutral-500">Bathrooms</p>
+            </div>
+          )}
+          {p.area_sqm != null && (
+            <div class="text-center">
+              <p class="text-2xl font-bold text-neutral-900">{p.area_sqm} m²</p>
+              <p class="text-sm text-neutral-500">Area</p>
+            </div>
+          )}
+        </div>
+
+        {p.description && (
+          <div class="prose prose-lg max-w-none text-neutral-700 mb-8" set:html={p.description} />
+        )}
+
+        {features.length > 0 && (
+          <div class="mb-8">
+            <h2 class="text-xl font-heading font-semibold text-neutral-900 mb-4">Features</h2>
+            <div class="flex flex-wrap gap-2">
+              {features.map((feature) => (
+                <span class="inline-block bg-neutral-100 text-neutral-700 px-3 py-1 rounded-full text-sm">
+                  {feature}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {galleryImages.length > 0 && (
+          <div>
+            <h2 class="text-xl font-heading font-semibold text-neutral-900 mb-4">Gallery</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {galleryImages.map((src: string, i: number) => (
+                <div class="aspect-[4/3] overflow-hidden rounded-lg">
+                  <img
+                    src={src}
+                    alt={`${p.title} — Photo ${i + 1}`}
+                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    loading="lazy"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <aside>
+        <div class="sticky top-24 bg-neutral-50 rounded-lg p-6">
+          <h2 class="text-lg font-heading font-semibold text-neutral-900 mb-4">Interested in this property?</h2>
+          <p class="text-neutral-600 text-sm mb-6">
+            Contact our team to arrange a private viewing or request more details.
+          </p>
+          <a
+            href="/contact"
+            class="block w-full text-center bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors font-semibold mb-3"
+          >
+            Schedule Viewing
+          </a>
+          <a
+            href={`tel:${config.contact.phone}`}
+            class="block w-full text-center border border-primary-600 text-primary-600 px-6 py-3 rounded-lg hover:bg-primary-50 transition-colors font-semibold"
+          >
+            Call {config.contact.phone}
+          </a>
+        </div>
+      </aside>
+    </div>
+  </Section>
+
+  <CTA
+    heading="Looking for Something Different?"
+    description="We have access to exclusive off-market properties. Let us know your requirements."
+    buttonText="Contact Us"
+    buttonHref="/contact"
+  />
+</FullWidth>

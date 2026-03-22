@@ -1,0 +1,40 @@
+{
+  "page": "team",
+  "title": "Our Team",
+  "layout": "FullWidth",
+  "seo": {
+    "title": "Our Team",
+    "description": "Meet the experienced professionals at Meridian Properties — your trusted advisors for luxury real estate in Limassol, Cyprus."
+  },
+  "sections": [
+    {
+      "id": "hero-1",
+      "component": "Hero",
+      "variant": "minimal",
+      "props": {}
+    },
+    {
+      "id": "teamgrid-2",
+      "component": "TeamGrid",
+      "variant": "detailed",
+      "props": {
+        "members": "{members}"
+      }
+    },
+    {
+      "id": "section-3",
+      "component": "Section",
+      "props": {}
+    },
+    {
+      "id": "cta-4",
+      "component": "CTA",
+      "props": {
+        "heading": "Ready to Start Your Property Search?"
+      }
+    }
+  ],
+  "cmsCollections": [
+    "teamMembers"
+  ]
+}

@@ -1,0 +1,37 @@
+---
+import "../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import Section from '@agency/ui/components/Section.astro';
+import Gallery from '@agency/ui/components/Gallery.astro';
+import { getDirectusImageUrl } from '@agency/utils';
+import { getGalleryItems } from '../lib/directus';
+import config from '../../site.config';
+
+const title = 'Gallery';
+const description = `Browse our portfolio and recent work at ${config.name}.`;
+
+const rawItems = await getGalleryItems();
+const items = rawItems.map((item: any) => ({
+  title: item.title ?? undefined,
+  description: item.description ?? undefined,
+  image: item.image && config.cms?.url
+    ? getDirectusImageUrl(config.cms.url, item.image, { width: 800, format: 'webp' })
+    : '',
+  href: item.href ?? undefined,
+}));
+---
+
+<FullWidth title={title} description={description} config={config}>
+  <Hero variant="minimal" heading="Gallery" subheading="Our recent work and projects" />
+
+  <Section>
+    {items.length > 0 ? (
+      <Gallery variant="masonry" items={items} />
+    ) : (
+      <div class="text-center py-16">
+        <p class="text-lg text-neutral-500">No gallery items yet. Check back soon.</p>
+      </div>
+    )}
+  </Section>
+</FullWidth>

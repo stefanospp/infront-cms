@@ -1,0 +1,38 @@
+{
+  "page": "compare",
+  "title": "Compare Plans",
+  "layout": "FullWidth",
+  "seo": {
+    "title": "Compare Plans",
+    "description": "Compare our plans and find the right fit for your needs."
+  },
+  "sections": [
+    {
+      "id": "hero-1",
+      "component": "Hero",
+      "variant": "minimal",
+      "props": {
+        "heading": "Compare Plans",
+        "subheading": "Find the right plan for your needs"
+      }
+    },
+    {
+      "id": "pricingtable-2",
+      "component": "PricingTable",
+      "variant": "{plans.length <= 2 ? 'two-column' : 'three-column'}",
+      "props": {
+        "plans": "{plans}"
+      }
+    },
+    {
+      "id": "cta-3",
+      "component": "CTA",
+      "props": {
+        "heading": "Need a custom plan?"
+      }
+    }
+  ],
+  "cmsCollections": [
+    "comparisons"
+  ]
+}

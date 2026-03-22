@@ -1,0 +1,81 @@
+---
+import "../styles/global.css";
+import SingleColumn from '@agency/ui/layouts/SingleColumn.astro';
+import Section from '@agency/ui/components/Section.astro';
+import ContactForm from '@agency/ui/islands/ContactForm';
+import Map from '@agency/ui/components/Map.astro';
+import config from '../../site.config';
+
+const title = 'Contact Us';
+const description = `Schedule a viewing or enquire about luxury properties in Limassol. Contact ${config.name} today.`;
+const address = config.contact.address
+  ? `${config.contact.address.street}, ${config.contact.address.city}, ${config.contact.address.postcode}`
+  : '';
+---
+
+<SingleColumn title={title} description={description} config={config}>
+  <Section>
+    <h1 class="text-4xl font-heading font-bold text-neutral-900 mb-6">Contact Us</h1>
+    <div class="grid gap-12 lg:grid-cols-2">
+      <div>
+        <p class="text-lg text-neutral-600 mb-8">
+          Interested in a property or looking for something specific? Fill out the form and one of our advisors will be in touch within 24 hours.
+        </p>
+        <ContactForm client:visible />
+      </div>
+      <div>
+        <div class="mb-8">
+          <h2 class="text-xl font-heading font-semibold text-neutral-900 mb-4">Get in Touch</h2>
+          <dl class="space-y-4 text-neutral-600">
+            <div>
+              <dt class="font-semibold text-neutral-800">Email</dt>
+              <dd>
+                <a href={`mailto:${config.contact.email}`} class="text-primary-600 hover:text-primary-700">
+                  {config.contact.email}
+                </a>
+              </dd>
+            </div>
+            {config.contact.phone && (
+              <div>
+                <dt class="font-semibold text-neutral-800">Phone</dt>
+                <dd>
+                  <a href={`tel:${config.contact.phone}`} class="text-primary-600 hover:text-primary-700">
+                    {config.contact.phone}
+                  </a>
+                </dd>
+              </div>
+            )}
+            {config.contact.address && (
+              <div>
+                <dt class="font-semibold text-neutral-800">Address</dt>
+                <dd>
+                  {config.contact.address.street}<br />
+                  {config.contact.address.city}, {config.contact.address.postcode}<br />
+                  {config.contact.address.country}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </div>
+        <div class="mb-8">
+          <h2 class="text-xl font-heading font-semibold text-neutral-900 mb-4">Office Hours</h2>
+          <dl class="space-y-2 text-neutral-600">
+            <div class="flex justify-between">
+              <dt>Monday – Friday</dt>
+              <dd>9:00 – 18:00</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt>Saturday</dt>
+              <dd>10:00 – 14:00</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt>Sunday</dt>
+              <dd>By appointment</dd>
+            </div>
+          </dl>
+        </div>
+        {address && <Map address={address} />}
+      </div>
+    </div>
+  </Section>
+</SingleColumn>

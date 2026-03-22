@@ -1,0 +1,16 @@
+{
+  "page": "terms",
+  "title": "Terms of Service",
+  "layout": "SingleColumn",
+  "seo": {
+    "title": "Terms of Service",
+    "description": "Terms of service for ${config.name}."
+  },
+  "sections": [
+    {
+      "id": "section-1",
+      "component": "Section",
+      "props": {}
+    }
+  ]
+}

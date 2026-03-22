@@ -1,0 +1,45 @@
+{
+  "page": "about",
+  "title": "About Us",
+  "layout": "FullWidth",
+  "seo": {
+    "title": "About Us",
+    "description": "Learn more about ${config.name} — your trusted partner for luxury real estate in Limassol, Cyprus."
+  },
+  "sections": [
+    {
+      "id": "hero-1",
+      "component": "Hero",
+      "variant": "minimal",
+      "props": {}
+    },
+    {
+      "id": "section-2",
+      "component": "Section",
+      "props": {}
+    },
+    {
+      "id": "statscounter-3",
+      "component": "StatsCounter",
+      "variant": "grid",
+      "props": {
+        "stats": "{stats}"
+      },
+      "background": "primary"
+    },
+    {
+      "id": "section-4",
+      "component": "Section",
+      "props": {},
+      "heading": "Why Choose Meridian",
+      "background": "light"
+    },
+    {
+      "id": "cta-5",
+      "component": "CTA",
+      "props": {
+        "heading": "Ready to Find Your Perfect Property?"
+      }
+    }
+  ]
+}

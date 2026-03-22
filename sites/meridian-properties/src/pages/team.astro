@@ -1,0 +1,59 @@
+---
+import "../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import Section from '@agency/ui/components/Section.astro';
+import TeamGrid from '@agency/ui/components/TeamGrid.astro';
+import CTA from '@agency/ui/components/CTA.astro';
+import { getDirectusImageUrl } from '@agency/utils';
+import { getTeamMembers } from '../lib/directus';
+import config from '../../site.config';
+
+const title = 'Our Team';
+const description = 'Meet the experienced professionals at Meridian Properties — your trusted advisors for luxury real estate in Limassol, Cyprus.';
+
+const rawMembers = await getTeamMembers();
+const members = rawMembers.map((m: any) => ({
+  name: m.name,
+  role: m.role,
+  bio: m.bio ?? undefined,
+  photo: m.photo && config.cms?.url
+    ? getDirectusImageUrl(config.cms.url, m.photo, { width: 400, height: 400, fit: 'cover', format: 'webp' })
+    : undefined,
+  email: m.email ?? undefined,
+}));
+---
+
+<FullWidth title={title} description={description} config={config}>
+  <Hero
+    variant="minimal"
+    heading="Our Team"
+    subheading="Experienced professionals committed to finding your perfect property."
+  />
+
+  {members.length > 0 ? (
+    <Section>
+      <TeamGrid variant="detailed" members={members} />
+    </Section>
+  ) : (
+    <Section>
+      <div class="text-center py-16">
+        <h2 class="text-2xl font-heading font-semibold text-neutral-900 mb-4">Meet Our Experts</h2>
+        <p class="text-neutral-600 max-w-lg mx-auto mb-8">
+          Our team of seasoned real estate professionals brings decades of combined experience in the Cyprus property market.
+          Contact us to speak with a specialist.
+        </p>
+        <a href="/contact" class="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors font-semibold">
+          Get in Touch
+        </a>
+      </div>
+    </Section>
+  )}
+
+  <CTA
+    heading="Ready to Start Your Property Search?"
+    description="Our team is here to guide you through every step of finding and acquiring your ideal property in Limassol."
+    buttonText="Schedule a Consultation"
+    buttonHref="/contact"
+  />
+</FullWidth>

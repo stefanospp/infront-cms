@@ -1,0 +1,260 @@
+# Directus Schema Snapshot for Meridian Properties
+# Apply with: npx directus schema apply ./schema-snapshot.yaml
+#
+# Collections:
+#   - properties: Real estate listings
+#   - team_members: Staff directory
+#   - testimonials: Client reviews
+
+version: 1
+directus: "11.0.0"
+
+collections:
+  - collection: properties
+    meta:
+      icon: home
+      note: "Real estate property listings"
+      sort_field: sort_order
+      archive_field: status
+      archive_value: archived
+      unarchive_value: published
+      singleton: false
+    fields:
+      - field: id
+        type: integer
+        meta:
+          hidden: true
+          interface: input
+          readonly: true
+        schema:
+          is_primary_key: true
+          has_auto_increment: true
+      - field: status
+        type: string
+        meta:
+          interface: select-dropdown
+          options:
+            choices:
+              - text: Published
+                value: published
+              - text: Draft
+                value: draft
+              - text: Archived
+                value: archived
+          width: half
+        schema:
+          default_value: draft
+      - field: sort_order
+        type: integer
+        meta:
+          interface: input
+          hidden: true
+      - field: title
+        type: string
+        meta:
+          interface: input
+          width: full
+          required: true
+      - field: slug
+        type: string
+        meta:
+          interface: input
+          width: half
+          required: true
+          options:
+            slug: true
+      - field: description
+        type: text
+        meta:
+          interface: input-rich-text-html
+          width: full
+      - field: price
+        type: integer
+        meta:
+          interface: input
+          width: half
+          options:
+            min: 0
+      - field: bedrooms
+        type: integer
+        meta:
+          interface: input
+          width: quarter
+          options:
+            min: 0
+      - field: bathrooms
+        type: integer
+        meta:
+          interface: input
+          width: quarter
+          options:
+            min: 0
+      - field: area_sqm
+        type: integer
+        meta:
+          interface: input
+          width: quarter
+          options:
+            min: 0
+      - field: location
+        type: string
+        meta:
+          interface: input
+          width: half
+      - field: property_type
+        type: string
+        meta:
+          interface: select-dropdown
+          width: half
+          options:
+            choices:
+              - text: Villa
+                value: villa
+              - text: Apartment
+                value: apartment
+              - text: Penthouse
+                value: penthouse
+              - text: Townhouse
+                value: townhouse
+              - text: Land
+                value: land
+      - field: featured_image
+        type: uuid
+        meta:
+          interface: file-image
+          width: half
+      - field: gallery
+        type: json
+        meta:
+          interface: files
+          width: full
+      - field: features
+        type: json
+        meta:
+          interface: tags
+          width: full
+          options:
+            placeholder: "Add feature (e.g., Pool, Sea View, Garden)"
+
+  - collection: team_members
+    meta:
+      icon: people
+      note: "Team member profiles"
+      sort_field: sort_order
+      singleton: false
+    fields:
+      - field: id
+        type: integer
+        meta:
+          hidden: true
+          interface: input
+          readonly: true
+        schema:
+          is_primary_key: true
+          has_auto_increment: true
+      - field: status
+        type: string
+        meta:
+          interface: select-dropdown
+          options:
+            choices:
+              - text: Published
+                value: published
+              - text: Draft
+                value: draft
+          width: half
+        schema:
+          default_value: draft
+      - field: sort_order
+        type: integer
+        meta:
+          interface: input
+          hidden: true
+      - field: name
+        type: string
+        meta:
+          interface: input
+          width: half
+          required: true
+      - field: role
+        type: string
+        meta:
+          interface: input
+          width: half
+      - field: bio
+        type: text
+        meta:
+          interface: input-multiline
+          width: full
+      - field: photo
+        type: uuid
+        meta:
+          interface: file-image
+          width: half
+      - field: email
+        type: string
+        meta:
+          interface: input
+          width: half
+      - field: phone
+        type: string
+        meta:
+          interface: input
+          width: half
+
+  - collection: testimonials
+    meta:
+      icon: format_quote
+      note: "Client testimonials and reviews"
+      sort_field: sort_order
+      singleton: false
+    fields:
+      - field: id
+        type: integer
+        meta:
+          hidden: true
+          interface: input
+          readonly: true
+        schema:
+          is_primary_key: true
+          has_auto_increment: true
+      - field: status
+        type: string
+        meta:
+          interface: select-dropdown
+          options:
+            choices:
+              - text: Published
+                value: published
+              - text: Draft
+                value: draft
+          width: half
+        schema:
+          default_value: draft
+      - field: sort_order
+        type: integer
+        meta:
+          interface: input
+          hidden: true
+      - field: quote
+        type: text
+        meta:
+          interface: input-multiline
+          width: full
+          required: true
+      - field: author
+        type: string
+        meta:
+          interface: input
+          width: half
+          required: true
+      - field: company
+        type: string
+        meta:
+          interface: input
+          width: half
+      - field: image
+        type: uuid
+        meta:
+          interface: file-image
+          width: half

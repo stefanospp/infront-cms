@@ -132,6 +132,72 @@ importers:
         specifier: ^2.4.6
         version: 2.4.6
 
+  sites/athena-institute:
+    dependencies:
+      '@agency/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@agency/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@agency/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@astrojs/react':
+        specifier: ^5.0.0
+        version: 5.0.1(@types/node@24.12.0)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(jiti@2.6.1)(lightningcss@1.32.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@astrojs/sitemap':
+        specifier: ^3.7.0
+        version: 3.7.1
+      '@tailwindcss/vite':
+        specifier: ^4.2.0
+        version: 4.2.2(vite@7.3.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0))
+      astro:
+        specifier: ^6.0.0
+        version: 6.0.8(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.0)(typescript@5.9.3)
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.0
+        version: 18.3.1(react@18.3.1)
+      tailwindcss:
+        specifier: ^4.2.0
+        version: 4.2.2
+
+  sites/meridian-properties:
+    dependencies:
+      '@agency/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@agency/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@agency/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@astrojs/react':
+        specifier: ^5.0.0
+        version: 5.0.1(@types/node@24.12.0)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(jiti@2.6.1)(lightningcss@1.32.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@astrojs/sitemap':
+        specifier: ^3.7.0
+        version: 3.7.1
+      '@tailwindcss/vite':
+        specifier: ^4.2.0
+        version: 4.2.2(vite@7.3.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0))
+      astro:
+        specifier: ^6.0.0
+        version: 6.0.8(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(rollup@4.60.0)(typescript@5.9.3)
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.0
+        version: 18.3.1(react@18.3.1)
+      tailwindcss:
+        specifier: ^4.2.0
+        version: 4.2.2
+
   sites/template:
     dependencies:
       '@agency/config':

@@ -1,0 +1,76 @@
+---
+import "../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import Section from '@agency/ui/components/Section.astro';
+import StatsCounter from '@agency/ui/components/StatsCounter.astro';
+import CTA from '@agency/ui/components/CTA.astro';
+import config from '../../site.config';
+
+const title = 'About Us';
+const description = `Learn more about ${config.name} — your trusted partner for luxury real estate in Limassol, Cyprus.`;
+
+const stats = [
+  { value: '15', suffix: '+', label: 'Years of Experience' },
+  { value: '200', suffix: '+', label: 'Properties Sold' },
+  { value: '€500', suffix: 'M+', label: 'Total Sales Volume' },
+  { value: '98', suffix: '%', label: 'Client Satisfaction' },
+];
+---
+
+<FullWidth title={title} description={description} config={config}>
+  <Hero
+    variant="minimal"
+    heading="About Meridian Properties"
+    subheading="Setting the standard for luxury real estate in Cyprus since 2011."
+  />
+
+  <Section>
+    <div class="max-w-3xl mx-auto">
+      <div class="prose prose-lg max-w-none text-neutral-700">
+        <p>
+          Founded in Limassol, Meridian Properties has established itself as Cyprus's premier luxury real estate consultancy.
+          We specialise in high-end residential properties along the Mediterranean coast — from sea-view penthouses
+          in the heart of the city to exclusive villas in the hillside communities.
+        </p>
+        <p>
+          Our approach is simple: we treat every client relationship as a long-term partnership. Whether you're
+          relocating to Cyprus, investing in Mediterranean real estate, or searching for your dream home, our
+          team provides personalised guidance through every stage of the process.
+        </p>
+        <p>
+          With deep local knowledge, an extensive network of developers and property owners, and a reputation
+          built on trust and discretion, Meridian Properties delivers results that exceed expectations.
+        </p>
+      </div>
+    </div>
+  </Section>
+
+  <Section background="primary">
+    <StatsCounter variant="grid" stats={stats} />
+  </Section>
+
+  <Section heading="Why Choose Meridian" background="light">
+    <div class="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
+      <div class="text-center">
+        <h3 class="text-xl font-heading font-semibold text-neutral-900 mb-3">Local Expertise</h3>
+        <p class="text-neutral-600">Over 15 years of experience in the Limassol property market, with unmatched knowledge of every neighbourhood and development.</p>
+      </div>
+      <div class="text-center">
+        <h3 class="text-xl font-heading font-semibold text-neutral-900 mb-3">Bespoke Service</h3>
+        <p class="text-neutral-600">A dedicated advisor for every client, ensuring a tailored property search that matches your exact requirements and lifestyle.</p>
+      </div>
+      <div class="text-center">
+        <h3 class="text-xl font-heading font-semibold text-neutral-900 mb-3">End-to-End Support</h3>
+        <p class="text-neutral-600">From property search to legal due diligence, financing, and handover — we manage the entire process so you don't have to.</p>
+      </div>
+    </div>
+  </Section>
+
+  <CTA
+    heading="Ready to Find Your Perfect Property?"
+    description="Contact our team to discuss your requirements and schedule private viewings."
+    buttonText="Schedule a Viewing"
+    buttonHref="/contact"
+  />
+</FullWidth>

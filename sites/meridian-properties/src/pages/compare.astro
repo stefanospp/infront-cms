@@ -1,0 +1,49 @@
+---
+import "../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import Section from '@agency/ui/components/Section.astro';
+import PricingTable from '@agency/ui/components/PricingTable.astro';
+import CTA from '@agency/ui/components/CTA.astro';
+import { getComparisons } from '../lib/directus';
+import config from '../../site.config';
+
+const title = 'Compare Plans';
+const description = `Compare our plans and find the right fit for your needs.`;
+
+const rawPlans = await getComparisons();
+const plans = rawPlans.map((p: any) => ({
+  name: p.name,
+  price: p.price,
+  period: p.period ?? undefined,
+  description: p.description ?? undefined,
+  features: Array.isArray(p.features) ? p.features : (p.features ?? '').split('\n').filter(Boolean),
+  ctaText: p.cta_text ?? 'Get Started',
+  ctaHref: p.cta_href ?? '/contact',
+  highlighted: p.highlighted ?? false,
+}));
+---
+
+<FullWidth title={title} description={description} config={config}>
+  <Hero variant="minimal" heading="Compare Plans" subheading="Find the right plan for your needs" />
+
+  <Section>
+    {plans.length > 0 ? (
+      <PricingTable
+        variant={plans.length <= 2 ? 'two-column' : 'three-column'}
+        plans={plans}
+      />
+    ) : (
+      <div class="text-center py-16">
+        <p class="text-lg text-neutral-500">Pricing information coming soon.</p>
+      </div>
+    )}
+  </Section>
+
+  <CTA
+    heading="Need a custom plan?"
+    description="Contact us for a tailored solution that fits your exact requirements."
+    buttonText="Contact Us"
+    buttonHref="/contact"
+  />
+</FullWidth>

@@ -1,0 +1,57 @@
+{
+  "page": "index",
+  "title": "{config.seo.defaultTitle}",
+  "layout": "FullWidth",
+  "seo": {
+    "title": "{config.seo.defaultTitle}",
+    "description": "{config.seo.defaultDescription}"
+  },
+  "sections": [
+    {
+      "id": "hero-1",
+      "component": "Hero",
+      "variant": "split",
+      "props": {}
+    },
+    {
+      "id": "cardgrid-2",
+      "component": "CardGrid",
+      "variant": "three-column",
+      "props": {
+        "cards": "{properties}"
+      },
+      "heading": "Featured Properties",
+      "subheading": "Our handpicked selection of premium residences",
+      "sectionId": "featured"
+    },
+    {
+      "id": "statscounter-3",
+      "component": "StatsCounter",
+      "variant": "grid",
+      "props": {
+        "stats": "{stats}"
+      },
+      "background": "primary"
+    },
+    {
+      "id": "testimonials-4",
+      "component": "Testimonials",
+      "props": {
+        "testimonials": "{testimonials}"
+      },
+      "heading": "What Our Clients Say",
+      "background": "light"
+    },
+    {
+      "id": "cta-5",
+      "component": "CTA",
+      "props": {
+        "heading": "Find Your Dream Property"
+      }
+    }
+  ],
+  "cmsCollections": [
+    "properties",
+    "testimonials"
+  ]
+}

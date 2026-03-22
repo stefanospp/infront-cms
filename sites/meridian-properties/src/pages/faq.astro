@@ -1,0 +1,40 @@
+---
+import "../styles/global.css";
+import FullWidth from '@agency/ui/layouts/FullWidth.astro';
+import Hero from '@agency/ui/components/Hero.astro';
+import Section from '@agency/ui/components/Section.astro';
+import FAQ from '@agency/ui/components/FAQ.astro';
+import CTA from '@agency/ui/components/CTA.astro';
+import { getFaqs } from '../lib/directus';
+import config from '../../site.config';
+
+const title = 'Frequently Asked Questions';
+const description = `Common questions about ${config.name} and our services.`;
+
+const rawFaqs = await getFaqs();
+const items = rawFaqs.map((f: any) => ({
+  question: f.question,
+  answer: f.answer,
+}));
+---
+
+<FullWidth title={title} description={description} config={config}>
+  <Hero variant="minimal" heading="FAQ" subheading="Answers to common questions" />
+
+  <Section>
+    {items.length > 0 ? (
+      <FAQ items={items} />
+    ) : (
+      <div class="text-center py-16">
+        <p class="text-lg text-neutral-500">No FAQs yet. Check back soon.</p>
+      </div>
+    )}
+  </Section>
+
+  <CTA
+    heading="Still have questions?"
+    description="We're happy to help. Get in touch with our team."
+    buttonText="Contact Us"
+    buttonHref="/contact"
+  />
+</FullWidth>

@@ -1,0 +1,16 @@
+{
+  "page": "privacy",
+  "title": "Privacy Policy",
+  "layout": "SingleColumn",
+  "seo": {
+    "title": "Privacy Policy",
+    "description": "Privacy policy for ${config.name}."
+  },
+  "sections": [
+    {
+      "id": "section-1",
+      "component": "Section",
+      "props": {}
+    }
+  ]
+}
