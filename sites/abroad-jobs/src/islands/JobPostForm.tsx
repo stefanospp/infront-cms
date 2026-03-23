@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { z } from 'zod';
 import { jobInputSchema, INDUSTRIES, VISA_OPTIONS, RELOCATION_OPTIONS } from '../lib/validation';
-import { PRICE_PER_JOB_EUR_EUR } from '../lib/config';
+import { PRICE_PER_JOB_EUR } from '../lib/config';
 
 type JobFormData = z.infer<typeof jobInputSchema>;
 
