@@ -64,11 +64,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // Verify session with central auth service (with caching and timeout)
   // Extract only the auth session cookie to avoid leaking unrelated cookies
+  // Cookie may have __Secure- or __Host- prefix in production (HTTPS)
   const rawCookies = context.request.headers.get('cookie') ?? '';
   const cookieHeader = rawCookies
     .split(';')
     .map((c) => c.trim())
-    .filter((c) => c.startsWith(`${SESSION_COOKIE_NAME}=`))
+    .filter((c) => c.includes(`${SESSION_COOKIE_NAME}=`))
     .join('; ');
 
   // Check session cache first
