@@ -5,6 +5,9 @@ compatibility_flags = ["nodejs_compat"]
 [assets]
 directory = "./dist/client"
 
+[triggers]
+crons = ["0 6 * * *"]
+
 [[d1_databases]]
 binding = "DB"
 database_name = "abroad-jobs-db"

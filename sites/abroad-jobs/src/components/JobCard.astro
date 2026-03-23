@@ -1,5 +1,6 @@
 ---
 import type { Job } from '../lib/schema';
+import { getFlagUrl, getCompanyLogoUrl } from '../lib/countries';
 
 export interface Props {
   job: Job;
@@ -24,53 +25,86 @@ function getTimeAgo(date: Date): string {
 
 const visaLabel = job.visaSupport === 'yes' ? 'Visa sponsored' : job.visaSupport === 'partial' ? 'Visa (partial)' : null;
 const relocationLabel = job.relocationPkg === 'yes' ? 'Relocation' : job.relocationPkg === 'allowance_only' ? 'Relo allowance' : null;
+const flagUrl = getFlagUrl(job.country, 'w40');
+const logoUrl = job.companyLogo || getCompanyLogoUrl(job.companyWebsite);
 ---
 
 <a
   href={`/jobs/${job.slug}`}
-  class="group block rounded-lg border border-neutral-200 bg-white px-4 py-4 transition-all hover:border-neutral-300 hover:shadow-sm sm:px-5"
+  class="group block rounded-2xl border border-neutral-200/80 bg-white px-6 py-5 shadow-sm transition-all hover:border-primary-200 hover:shadow-md sm:px-7 sm:py-6"
 >
-  <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-    <!-- Left: Job info -->
-    <div class="min-w-0 flex-1">
-      <h2 class="text-base font-semibold text-neutral-900 group-hover:text-primary-700 transition-colors truncate">
-        {job.title}
-      </h2>
-      <p class="mt-0.5 text-sm text-neutral-500">
-        {job.companyName}
-        <span class="mx-1.5 text-neutral-300">&middot;</span>
-        {job.country}
-      </p>
-    </div>
-
-    <!-- Right: Meta -->
-    <div class="flex shrink-0 items-center gap-2 text-xs sm:flex-col sm:items-end sm:gap-1.5">
-      <span class="text-neutral-400">{timeAgo}</span>
-      {job.salaryRange && (
-        <span class="text-neutral-600 font-medium">{job.salaryRange}</span>
+  <div class="flex gap-4 sm:gap-5">
+    <!-- Company logo -->
+    <div class="hidden shrink-0 sm:block">
+      {logoUrl ? (
+        <img
+          src={logoUrl}
+          alt={`${job.companyName} logo`}
+          width="48"
+          height="48"
+          class="h-12 w-12 rounded-xl border border-neutral-100 bg-white object-contain p-1"
+          loading="lazy"
+        />
+      ) : (
+        <div class="flex h-12 w-12 items-center justify-center rounded-xl border border-neutral-100 bg-neutral-50 text-lg font-bold text-neutral-300">
+          {job.companyName.charAt(0)}
+        </div>
       )}
     </div>
-  </div>
 
-  <!-- Tags -->
-  <div class="mt-2.5 flex flex-wrap gap-1.5">
-    <span class="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
-      {job.industry}
-    </span>
-    {visaLabel && (
-      <span class="inline-flex items-center rounded-md bg-secondary-50 px-2 py-0.5 text-xs text-secondary-700">
-        {visaLabel}
-      </span>
-    )}
-    {relocationLabel && (
-      <span class="inline-flex items-center rounded-md bg-accent-50 px-2 py-0.5 text-xs text-accent-700">
-        {relocationLabel}
-      </span>
-    )}
-    {job.workingLanguage && (
-      <span class="inline-flex items-center rounded-md bg-neutral-50 px-2 py-0.5 text-xs text-neutral-500">
-        {job.workingLanguage}
-      </span>
-    )}
+    <!-- Content -->
+    <div class="min-w-0 flex-1">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-6">
+        <div class="min-w-0 flex-1">
+          <h2 class="text-lg font-bold text-neutral-900 group-hover:text-primary-600 transition-colors sm:text-xl">
+            {job.title}
+          </h2>
+          <p class="mt-1 flex items-center gap-1.5 text-sm text-neutral-500 sm:text-base">
+            <span class="font-medium text-neutral-700">{job.companyName}</span>
+            <span class="text-neutral-300">&middot;</span>
+            {flagUrl && (
+              <img
+                src={flagUrl}
+                alt={`${job.country} flag`}
+                width="20"
+                height="15"
+                class="inline-block h-3.5 w-auto rounded-sm"
+                loading="lazy"
+              />
+            )}
+            {job.country}
+          </p>
+        </div>
+
+        <div class="flex shrink-0 items-center gap-3 sm:flex-col sm:items-end sm:gap-1.5">
+          {job.salaryRange && (
+            <span class="text-sm font-semibold text-neutral-800">{job.salaryRange}</span>
+          )}
+          <span class="text-xs text-neutral-400">{timeAgo}</span>
+        </div>
+      </div>
+
+      <!-- Tags -->
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="inline-flex items-center rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600">
+          {job.industry}
+        </span>
+        {visaLabel && (
+          <span class="inline-flex items-center rounded-full bg-secondary-50 px-3 py-1 text-xs font-medium text-secondary-700">
+            {visaLabel}
+          </span>
+        )}
+        {relocationLabel && (
+          <span class="inline-flex items-center rounded-full bg-accent-50 px-3 py-1 text-xs font-medium text-accent-700">
+            {relocationLabel}
+          </span>
+        )}
+        {job.workingLanguage && (
+          <span class="inline-flex items-center rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-600">
+            {job.workingLanguage}
+          </span>
+        )}
+      </div>
+    </div>
   </div>
 </a>

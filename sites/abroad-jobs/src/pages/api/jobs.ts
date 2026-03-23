@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getDb } from '../../lib/db';
+import { getDb, mapRawJob } from '../../lib/db';
 import { jobs } from '../../lib/schema';
 import { eq, desc, and, sql } from 'drizzle-orm';
 import { searchParamsSchema } from '../../lib/validation';
@@ -65,7 +65,7 @@ export const GET: APIRoute = async ({ request }) => {
       .prepare(queryParts.join(' '))
       .bind(...params)
       .all();
-    results = (raw.results ?? []) as typeof results;
+    results = (raw.results ?? []).map((r) => mapRawJob(r as Record<string, unknown>));
   } else {
     const conditions = [
       eq(jobs.isLive, 1),

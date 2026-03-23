@@ -57,6 +57,7 @@ export const POST: APIRoute = async ({ request, url }) => {
       slug,
       companyName: input.companyName,
       companyWebsite: input.companyWebsite || null,
+      companyLogo: input.companyLogo || null,
       contactEmail,
       title: input.title,
       description: input.description,

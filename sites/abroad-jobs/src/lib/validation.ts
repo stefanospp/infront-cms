@@ -19,6 +19,7 @@ export const jobInputSchema = z.object({
   title: z.string().min(2).max(200),
   companyName: z.string().min(1).max(200),
   companyWebsite: z.string().url().optional().or(z.literal('')),
+  companyLogo: z.string().url().optional().or(z.literal('')),
   country: z.string().min(1).max(100),
   industry: z.enum(INDUSTRIES),
   salaryRange: z.string().max(100).optional().or(z.literal('')),

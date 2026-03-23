@@ -23,13 +23,17 @@ const industries: string[] = [
 ];
 ---
 
-<section class="border-b border-neutral-200 bg-neutral-50 px-4 py-12 sm:px-6 sm:py-16">
-  <div class="mx-auto max-w-3xl text-center">
-    <h1 class="text-3xl font-bold tracking-tight text-neutral-900 sm:text-4xl">
-      Find jobs abroad with relocation support
+<section class="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 px-4 py-14 sm:px-6 sm:py-20">
+  <!-- Subtle pattern overlay -->
+  <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.08)_0%,transparent_50%)]"></div>
+  <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.05)_0%,transparent_50%)]"></div>
+
+  <div class="relative mx-auto max-w-3xl text-center">
+    <h1 class="text-3xl font-bold tracking-tight text-white sm:text-5xl">
+      Your next career move<br class="hidden sm:block" /> starts abroad
     </h1>
-    <p class="mt-3 text-lg text-neutral-500">
-      {jobCount > 0 ? `${jobCount} open positions worldwide` : 'Browse open positions worldwide'}
+    <p class="mt-4 text-base text-primary-200 sm:text-lg">
+      {jobCount > 0 ? `${jobCount} jobs with visa sponsorship and relocation support` : 'Jobs with visa sponsorship and relocation support'}
     </p>
 
     <!-- Search form -->
@@ -37,7 +41,7 @@ const industries: string[] = [
       <div class="flex flex-col gap-3 sm:flex-row">
         <div class="relative flex-1">
           <svg
-            class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400"
+            class="pointer-events-none absolute left-3.5 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke-width="1.5"
@@ -50,14 +54,14 @@ const industries: string[] = [
             name="q"
             value={query}
             placeholder="Job title, company, or keyword..."
-            class="w-full rounded-lg border border-neutral-300 bg-white py-3 pl-10 pr-4 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            class="w-full rounded-xl border-0 bg-white py-3.5 pl-11 pr-4 text-sm text-neutral-900 shadow-lg placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-white/30"
           />
         </div>
         <button
           type="submit"
-          class="rounded-lg bg-primary-700 px-6 py-3 text-sm font-medium text-white hover:bg-primary-800 transition-colors sm:w-auto"
+          class="rounded-xl bg-accent-500 px-6 py-3.5 text-sm font-semibold text-white shadow-lg hover:bg-accent-600 active:bg-accent-700 transition-colors sm:w-auto"
         >
-          Search
+          Search jobs
         </button>
       </div>
 
@@ -70,9 +74,9 @@ const industries: string[] = [
             id="country-filter"
             name="country"
             value={country}
-            placeholder="Country..."
+            placeholder="Filter by country..."
             list="country-suggestions"
-            class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            class="w-full rounded-xl border-0 bg-white/15 px-4 py-2.5 text-sm text-white placeholder:text-primary-200 backdrop-blur-sm focus:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors"
           />
           <datalist id="country-suggestions">
             <option value="Germany" />
@@ -97,11 +101,11 @@ const industries: string[] = [
           <select
             id="industry-filter"
             name="industry"
-            class="w-full rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-700 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+            class="w-full rounded-xl border-0 bg-white/15 px-4 py-2.5 text-sm text-white backdrop-blur-sm focus:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors"
           >
-            <option value="">All industries</option>
+            <option value="" class="text-neutral-900">All industries</option>
             {industries.map((ind) => (
-              <option value={ind} selected={industry === ind}>{ind}</option>
+              <option value={ind} selected={industry === ind} class="text-neutral-900">{ind}</option>
             ))}
           </select>
         </div>

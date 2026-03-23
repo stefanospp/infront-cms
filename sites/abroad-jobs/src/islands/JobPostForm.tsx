@@ -10,6 +10,7 @@ const emptyJob: JobFormData = {
   title: '',
   companyName: '',
   companyWebsite: '',
+  companyLogo: '',
   country: '',
   industry: 'Technology',
   salaryRange: '',
@@ -46,6 +47,7 @@ export default function JobPostForm() {
         ...emptyJob,
         companyName: first.companyName,
         companyWebsite: first.companyWebsite,
+        companyLogo: first.companyLogo,
       },
     ]);
   }
@@ -188,6 +190,21 @@ export default function JobPostForm() {
                 placeholder="https://"
                 className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
               />
+            </div>
+
+            {/* Company logo */}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700">
+                Company logo URL <span className="text-neutral-400">(optional)</span>
+              </label>
+              <input
+                type="url"
+                value={job.companyLogo}
+                onChange={(e) => updateJob(idx, 'companyLogo', e.target.value)}
+                placeholder="https://company.com/logo.png"
+                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+              />
+              <p className="mt-1 text-xs text-neutral-400">Leave blank to auto-detect from your website</p>
             </div>
 
             {/* Job title */}

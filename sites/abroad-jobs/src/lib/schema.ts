@@ -7,6 +7,7 @@ export const jobs = sqliteTable('jobs', {
   // Company
   companyName: text('company_name').notNull(),
   companyWebsite: text('company_website'),
+  companyLogo: text('company_logo'),
   contactEmail: text('contact_email').notNull(),
 
   // Job
@@ -27,6 +28,10 @@ export const jobs = sqliteTable('jobs', {
   // Status
   isLive: integer('is_live').notNull().default(0),
   stripeSessionId: text('stripe_session_id'),
+
+  // Source tracking (paid = employer-posted, arbeitnow/remotive = imported)
+  source: text('source').default('paid'),
+  sourceId: text('source_id'),
 
   // Timestamps (unix seconds)
   createdAt: integer('created_at').notNull(),

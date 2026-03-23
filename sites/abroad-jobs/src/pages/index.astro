@@ -4,7 +4,7 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import SearchHero from '../components/SearchHero.astro';
 import JobList from '../components/JobList.astro';
 import config from '../../site.config';
-import { getDb } from '../lib/db';
+import { getDb, mapRawJob } from '../lib/db';
 import { jobs } from '../lib/schema';
 import { eq, desc, and, like, gt, sql } from 'drizzle-orm';
 import { searchParamsSchema } from '../lib/validation';
@@ -48,7 +48,7 @@ if (q) {
   queryParams.push(limit + 1, (page - 1) * limit);
 
   const raw = await env.DB.prepare(baseQuery).bind(...queryParams).all();
-  results = (raw.results ?? []) as typeof results;
+  results = (raw.results ?? []).map((r) => mapRawJob(r as Record<string, unknown>));
 
   // Count query
   const countQuery = `
