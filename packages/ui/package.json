@@ -10,12 +10,12 @@
   },
   "dependencies": {
     "@agency/config": "workspace:*",
-    "@agency/utils": "workspace:*"
+    "@agency/utils": "workspace:*",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0"
   },
   "peerDependencies": {
     "astro": "^6.0.0",
-    "@astrojs/react": "^5.0.0",
-    "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "@astrojs/react": "^5.0.0"
   }
 }
