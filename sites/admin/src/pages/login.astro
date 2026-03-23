@@ -6,15 +6,18 @@
 import { env } from '@/lib/env';
 
 const authBaseUrl = env('AUTH_SERVICE_URL') ?? 'https://auth.infront.cy';
+const publicAdminUrl = env('PUBLIC_ADMIN_URL') ?? 'https://web.infront.cy';
 
 // Validate redirect to prevent open redirect attacks
 const rawRedirect = Astro.url.searchParams.get('redirect');
-let redirect = Astro.url.origin;
+let redirect = publicAdminUrl;
 if (rawRedirect) {
   try {
     const redirectUrl = new URL(rawRedirect);
-    // Only allow redirects to same origin or the auth service
-    if (redirectUrl.origin === Astro.url.origin || redirectUrl.origin === new URL(authBaseUrl).origin) {
+    const publicOrigin = new URL(publicAdminUrl).origin;
+    const authOrigin = new URL(authBaseUrl).origin;
+    // Only allow redirects to public admin origin or auth service
+    if (redirectUrl.origin === publicOrigin || redirectUrl.origin === authOrigin) {
       redirect = rawRedirect;
     }
   } catch {
