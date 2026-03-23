@@ -1,0 +1,95 @@
+---
+import '../styles/global.css';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import config from '../../site.config';
+import { formatTitle } from '@agency/utils/seo';
+import { getDb } from '../lib/db';
+import { jobs } from '../lib/schema';
+import { eq } from 'drizzle-orm';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+const sessionId = Astro.url.searchParams.get('session_id');
+let postedJobs: (typeof jobs.$inferSelect)[] = [];
+
+if (sessionId) {
+  const db = getDb(env.DB);
+  postedJobs = await db
+    .select()
+    .from(jobs)
+    .where(eq(jobs.stripeSessionId, sessionId));
+}
+
+const liveJobs = postedJobs.filter((j) => j.isLive);
+const pending = postedJobs.length > 0 && liveJobs.length === 0;
+---
+
+<SiteLayout
+  title={formatTitle('Payment Successful', config.seo.titleTemplate)}
+  description="Your job listings are now live on AbroadJobs.eu."
+  config={config}
+  noIndex={true}
+>
+  <section class="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16 text-center">
+    {liveJobs.length > 0 ? (
+      <>
+        <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-secondary-50">
+          <svg class="h-7 w-7 text-secondary-600" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+          </svg>
+        </div>
+        <h1 class="mt-4 text-2xl font-bold text-neutral-900">
+          {liveJobs.length === 1 ? 'Your job is live!' : `Your ${liveJobs.length} jobs are live!`}
+        </h1>
+        <p class="mt-2 text-neutral-500">
+          Your listings are now visible to job seekers worldwide.
+        </p>
+        <div class="mt-8 space-y-3 text-left">
+          {liveJobs.map((job) => (
+            <a
+              href={`/jobs/${job.slug}`}
+              class="block rounded-lg border border-neutral-200 bg-white px-4 py-3 text-sm hover:border-neutral-300 hover:shadow-sm transition-all"
+            >
+              <span class="font-medium text-neutral-900">{job.title}</span>
+              <span class="ml-2 text-neutral-400">{job.companyName} &middot; {job.country}</span>
+            </a>
+          ))}
+        </div>
+        <a
+          href="/"
+          class="mt-8 inline-flex items-center text-sm text-primary-600 hover:text-primary-700 transition-colors"
+        >
+          Back to all jobs
+        </a>
+      </>
+    ) : pending ? (
+      <>
+        <h1 class="text-2xl font-bold text-neutral-900">Payment received</h1>
+        <p class="mt-2 text-neutral-500">
+          Your jobs will be live in a few seconds. Refresh this page shortly.
+        </p>
+        <a
+          href={`/success?session_id=${sessionId}`}
+          class="mt-6 inline-flex items-center rounded-lg border border-neutral-300 bg-white px-5 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
+        >
+          Refresh
+        </a>
+      </>
+    ) : (
+      <>
+        <h1 class="text-2xl font-bold text-neutral-900">Something went wrong</h1>
+        <p class="mt-2 text-neutral-500">
+          We couldn't find your jobs. If you completed payment, please contact us at{' '}
+          <a href="mailto:hello@abroadjobs.eu" class="text-primary-600 hover:text-primary-700">hello@abroadjobs.eu</a>.
+        </p>
+        <a
+          href="/"
+          class="mt-6 inline-flex items-center text-sm text-primary-600 hover:text-primary-700 transition-colors"
+        >
+          Back to all jobs
+        </a>
+      </>
+    )}
+  </section>
+</SiteLayout>

@@ -1,0 +1,56 @@
+---
+export interface Props {
+  country: string;
+  visaSupport: 'yes' | 'no' | 'partial';
+  relocationPkg: 'yes' | 'no' | 'allowance_only';
+  workingLanguage?: string | null;
+}
+
+const { country, visaSupport, relocationPkg, workingLanguage } = Astro.props;
+
+const visaText = {
+  yes: 'Yes — visa/work permit sponsored',
+  no: 'No visa sponsorship',
+  partial: 'Partial visa support',
+} as const;
+
+const relocationText = {
+  yes: 'Yes — full relocation package',
+  no: 'No relocation package',
+  allowance_only: 'Relocation allowance only',
+} as const;
+---
+
+<div class="rounded-lg border border-neutral-200 bg-neutral-50 p-4 sm:p-5">
+  <h3 class="text-sm font-semibold uppercase tracking-wider text-neutral-500">Relocation details</h3>
+  <dl class="mt-3 space-y-3">
+    <div class="flex items-start gap-3">
+      <dt class="w-36 shrink-0 text-sm text-neutral-500">Country</dt>
+      <dd class="text-sm font-medium text-neutral-900">{country}</dd>
+    </div>
+    <div class="flex items-start gap-3">
+      <dt class="w-36 shrink-0 text-sm text-neutral-500">Visa / Work permit</dt>
+      <dd class:list={[
+        'text-sm font-medium',
+        visaSupport === 'yes' ? 'text-secondary-700' : visaSupport === 'partial' ? 'text-accent-700' : 'text-neutral-500',
+      ]}>
+        {visaText[visaSupport]}
+      </dd>
+    </div>
+    <div class="flex items-start gap-3">
+      <dt class="w-36 shrink-0 text-sm text-neutral-500">Relocation package</dt>
+      <dd class:list={[
+        'text-sm font-medium',
+        relocationPkg === 'yes' ? 'text-secondary-700' : relocationPkg === 'allowance_only' ? 'text-accent-700' : 'text-neutral-500',
+      ]}>
+        {relocationText[relocationPkg]}
+      </dd>
+    </div>
+    {workingLanguage && (
+      <div class="flex items-start gap-3">
+        <dt class="w-36 shrink-0 text-sm text-neutral-500">Working language</dt>
+        <dd class="text-sm font-medium text-neutral-900">{workingLanguage}</dd>
+      </div>
+    )}
+  </dl>
+</div>

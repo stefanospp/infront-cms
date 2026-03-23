@@ -1,0 +1,30 @@
+---
+import '../styles/global.css';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import config from '../../site.config';
+import { formatTitle } from '@agency/utils/seo';
+---
+
+<SiteLayout
+  title={formatTitle('About', config.seo.titleTemplate)}
+  description="AbroadJobs.eu is a simple job board for people looking to relocate abroad for work."
+  config={config}
+>
+  <article class="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16">
+    <h1 class="text-2xl font-bold text-neutral-900 sm:text-3xl">About AbroadJobs.eu</h1>
+
+    <div class="mt-6 space-y-4 text-neutral-600 leading-relaxed">
+      <p>
+        AbroadJobs.eu is a job board for people who want to work abroad. We focus on positions that
+        come with relocation support — visa sponsorship, relocation packages, language training, or
+        accommodation. Every listing clearly states what the employer offers so you can make informed
+        decisions about your next move.
+      </p>
+      <p>
+        We keep things simple. No accounts, no dashboards, no clutter. Employers post jobs, job
+        seekers browse them. If a role interests you, you apply directly with the employer. We believe
+        the best job board is one that gets out of your way.
+      </p>
+    </div>
+  </article>
+</SiteLayout>

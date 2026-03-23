@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@source "../../../../packages/ui/src/**/*.{astro,tsx}";
+@source "../components/**/*.{astro,tsx}";
+@source "../islands/**/*.tsx";
+
+@theme {
+  /* Primary — slate blue, used sparingly for links and CTAs */
+  --color-primary-50: #f0f4f8;
+  --color-primary-100: #d9e2ec;
+  --color-primary-200: #bcccdc;
+  --color-primary-300: #9fb3c8;
+  --color-primary-400: #829ab1;
+  --color-primary-500: #627d98;
+  --color-primary-600: #486581;
+  --color-primary-700: #334e68;
+  --color-primary-800: #243b53;
+  --color-primary-900: #1e3a5f;
+  --color-primary-950: #102a43;
+
+  /* Secondary — muted teal for accents */
+  --color-secondary-50: #effcf6;
+  --color-secondary-100: #c6f7e2;
+  --color-secondary-200: #8eedc7;
+  --color-secondary-300: #65d6ad;
+  --color-secondary-400: #3ebd93;
+  --color-secondary-500: #27ab83;
+  --color-secondary-600: #199473;
+  --color-secondary-700: #147d64;
+  --color-secondary-800: #0c6b58;
+  --color-secondary-900: #014d40;
+  --color-secondary-950: #003833;
+
+  /* Accent — warm amber for badges and highlights */
+  --color-accent-50: #fffbea;
+  --color-accent-100: #fff3c4;
+  --color-accent-200: #fce588;
+  --color-accent-300: #fadb5f;
+  --color-accent-400: #f7c948;
+  --color-accent-500: #f0b429;
+  --color-accent-600: #de911d;
+  --color-accent-700: #cb6e17;
+  --color-accent-800: #b44d12;
+  --color-accent-900: #8d2b0b;
+  --color-accent-950: #73230d;
+
+  /* Neutral — cool gray */
+  --color-neutral-50: #f8f9fa;
+  --color-neutral-100: #f1f3f5;
+  --color-neutral-200: #e9ecef;
+  --color-neutral-300: #dee2e6;
+  --color-neutral-400: #ced4da;
+  --color-neutral-500: #868e96;
+  --color-neutral-600: #495057;
+  --color-neutral-700: #343a40;
+  --color-neutral-800: #212529;
+  --color-neutral-900: #16191d;
+  --color-neutral-950: #0d0f12;
+
+  /* Fonts — system stack for speed, Inter as enhancement */
+  --font-heading: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-neutral-800);
+  background-color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+}

@@ -1,0 +1,11 @@
+name = "abroad-jobs"
+compatibility_date = "2026-03-17"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "./dist/client"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "abroad-jobs-db"
+database_id = "96e53292-7337-4e19-98ba-9b2e01e77eb8"

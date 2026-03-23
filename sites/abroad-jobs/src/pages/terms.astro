@@ -1,0 +1,33 @@
+---
+import '../styles/global.css';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import config from '../../site.config';
+import { formatTitle } from '@agency/utils/seo';
+---
+
+<SiteLayout
+  title={formatTitle('Terms of Service', config.seo.titleTemplate)}
+  description="Terms of service for AbroadJobs.eu"
+  config={config}
+  noIndex={true}
+>
+  <article class="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16 text-sm leading-relaxed text-neutral-600">
+    <h1 class="text-2xl font-bold text-neutral-900">Terms of Service</h1>
+    <p class="mt-4">Last updated: March 2026</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-neutral-800">For employers</h2>
+    <p class="mt-2">By posting a job on AbroadJobs.eu, you confirm that the listing is genuine, that you are authorised to post on behalf of the company, and that the position described is accurate. Job listings are non-refundable once posted and remain live for 30 days.</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-neutral-800">For job seekers</h2>
+    <p class="mt-2">AbroadJobs.eu is a listing platform. We do not verify employers, guarantee positions, or manage applications. When you click "Apply," you leave our site and interact directly with the employer. Exercise your own judgement.</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-neutral-800">Content</h2>
+    <p class="mt-2">We reserve the right to remove any listing that violates applicable law, is misleading, or is otherwise inappropriate. We are not responsible for the accuracy of employer-submitted content.</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-neutral-800">Liability</h2>
+    <p class="mt-2">AbroadJobs.eu is provided as-is. We are not liable for any damages arising from the use of this platform, including but not limited to failed applications, inaccurate listings, or lost opportunities.</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-neutral-800">Contact</h2>
+    <p class="mt-2">Questions about these terms? Email <a href="mailto:hello@abroadjobs.eu" class="text-primary-600 hover:text-primary-700">hello@abroadjobs.eu</a>.</p>
+  </article>
+</SiteLayout>

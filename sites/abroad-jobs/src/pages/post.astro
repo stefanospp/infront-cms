@@ -1,0 +1,26 @@
+---
+import '../styles/global.css';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import JobPostForm from '../islands/JobPostForm';
+import config from '../../site.config';
+import { formatTitle } from '@agency/utils/seo';
+
+export const prerender = false;
+---
+
+<SiteLayout
+  title={formatTitle('Post a Job', config.seo.titleTemplate)}
+  description="Post a job on AbroadJobs.eu and reach international candidates looking to relocate. EUR 89 per listing."
+  config={config}
+>
+  <section class="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16">
+    <h1 class="text-2xl font-bold text-neutral-900 sm:text-3xl">Post a job</h1>
+    <p class="mt-2 text-neutral-500">
+      Reach candidates looking to relocate abroad. &euro;89 per listing, live for 30 days. No account needed.
+    </p>
+
+    <div class="mt-8">
+      <JobPostForm client:visible />
+    </div>
+  </section>
+</SiteLayout>

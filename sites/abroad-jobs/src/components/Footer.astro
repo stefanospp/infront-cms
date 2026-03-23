@@ -1,0 +1,32 @@
+---
+import type { SiteConfig } from '@agency/config';
+
+export interface Props {
+  config: SiteConfig;
+  class?: string;
+}
+
+const { config, class: className } = Astro.props;
+const { footer } = config;
+const year = new Date().getFullYear();
+---
+
+<footer class:list={['border-t border-neutral-200 bg-white', className]}>
+  <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
+      <p class="text-sm text-neutral-400">
+        {footer.text || `\u00a9 ${year} AbroadJobs.eu`}
+      </p>
+      <div class="flex items-center gap-5">
+        {footer.legalLinks.map((link) => (
+          <a
+            href={link.href}
+            class="text-sm text-neutral-400 hover:text-neutral-600 transition-colors"
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</footer>

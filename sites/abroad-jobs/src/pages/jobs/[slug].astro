@@ -1,0 +1,168 @@
+---
+import '../../styles/global.css';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import Breadcrumb from '../../components/Breadcrumb.astro';
+import RelocationBadges from '../../components/RelocationBadges.astro';
+import config from '../../../site.config';
+import { getDb } from '../../lib/db';
+import { jobs } from '../../lib/schema';
+import { eq, and, sql } from 'drizzle-orm';
+import { formatTitle } from '@agency/utils/seo';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect('/');
+
+const db = getDb(env.DB);
+const now = Math.floor(Date.now() / 1000);
+
+const results = await db
+  .select()
+  .from(jobs)
+  .where(
+    and(
+      eq(jobs.slug, slug),
+      eq(jobs.isLive, 1),
+      sql`(${jobs.expiresAt} IS NULL OR ${jobs.expiresAt} > ${now})`,
+    )
+  )
+  .limit(1);
+
+const job = results[0];
+if (!job) return Astro.redirect('/');
+
+const pageTitle = formatTitle(`${job.title} at ${job.companyName} — ${job.country}`, config.seo.titleTemplate);
+const postedDate = new Date(job.createdAt * 1000).toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+const isMailto = job.applyUrl.startsWith('mailto:');
+const applyLabel = isMailto ? 'Apply via email' : 'Apply for this job';
+
+// Structured data
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'JobPosting',
+  title: job.title,
+  description: job.description,
+  datePosted: new Date(job.createdAt * 1000).toISOString().split('T')[0],
+  ...(job.expiresAt ? { validThrough: new Date(job.expiresAt * 1000).toISOString().split('T')[0] } : {}),
+  hiringOrganization: {
+    '@type': 'Organization',
+    name: job.companyName,
+    ...(job.companyWebsite ? { sameAs: job.companyWebsite } : {}),
+  },
+  jobLocation: {
+    '@type': 'Place',
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: job.country,
+    },
+  },
+  ...(job.salaryRange ? {
+    baseSalary: {
+      '@type': 'MonetaryAmount',
+      currency: 'EUR',
+      value: {
+        '@type': 'QuantitativeValue',
+        value: job.salaryRange,
+      },
+    },
+  } : {}),
+};
+---
+
+<SiteLayout
+  title={pageTitle}
+  description={`${job.title} at ${job.companyName} in ${job.country}. ${job.visaSupport === 'yes' ? 'Visa sponsorship available.' : ''} Apply now on AbroadJobs.eu.`}
+  config={config}
+  structuredData={structuredData}
+>
+  <article class="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+    <!-- Breadcrumb -->
+    <Breadcrumb items={[
+      { label: 'Jobs', href: '/' },
+      { label: job.title },
+    ]} />
+
+    <!-- Header -->
+    <header class="mt-6">
+      <h1 class="text-2xl font-bold text-neutral-900 sm:text-3xl">
+        {job.title}
+      </h1>
+      <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
+        <span class="font-medium text-neutral-700">{job.companyName}</span>
+        {job.companyWebsite && (
+          <>
+            <span class="text-neutral-300">&middot;</span>
+            <a
+              href={job.companyWebsite}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-primary-600 hover:text-primary-700 transition-colors"
+            >
+              Website
+            </a>
+          </>
+        )}
+        <span class="text-neutral-300">&middot;</span>
+        <span>{job.country}</span>
+        <span class="text-neutral-300">&middot;</span>
+        <span>Posted {postedDate}</span>
+      </div>
+
+      {job.salaryRange && (
+        <p class="mt-3 text-lg font-medium text-neutral-800">{job.salaryRange}</p>
+      )}
+
+      <!-- Tags -->
+      <div class="mt-3 flex flex-wrap gap-1.5">
+        <span class="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
+          {job.industry}
+        </span>
+      </div>
+    </header>
+
+    <!-- Relocation details -->
+    <div class="mt-8">
+      <RelocationBadges
+        country={job.country}
+        visaSupport={job.visaSupport as 'yes' | 'no' | 'partial'}
+        relocationPkg={job.relocationPkg as 'yes' | 'no' | 'allowance_only'}
+        workingLanguage={job.workingLanguage}
+      />
+    </div>
+
+    <!-- Description -->
+    <div class="mt-8">
+      <h2 class="text-lg font-semibold text-neutral-900">Job description</h2>
+      <div class="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-neutral-700">
+        {job.description}
+      </div>
+    </div>
+
+    <!-- Apply button -->
+    <div class="mt-10 border-t border-neutral-200 pt-8">
+      <a
+        href={job.applyUrl}
+        target={isMailto ? undefined : '_blank'}
+        rel={isMailto ? undefined : 'noopener noreferrer'}
+        class="inline-flex items-center rounded-lg bg-primary-700 px-6 py-3 text-sm font-semibold text-white hover:bg-primary-800 transition-colors"
+      >
+        {applyLabel}
+        {!isMailto && (
+          <svg class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+          </svg>
+        )}
+      </a>
+      <p class="mt-2 text-xs text-neutral-400">
+        You will be redirected to the employer's application page.
+      </p>
+    </div>
+  </article>
+</SiteLayout>

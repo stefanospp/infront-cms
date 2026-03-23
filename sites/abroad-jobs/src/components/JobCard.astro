@@ -1,0 +1,76 @@
+---
+import type { Job } from '../lib/schema';
+
+export interface Props {
+  job: Job;
+}
+
+const { job } = Astro.props;
+
+const postedDate = new Date(job.createdAt * 1000);
+const timeAgo = getTimeAgo(postedDate);
+
+function getTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return '1d ago';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  return `${Math.floor(diffDays / 30)}mo ago`;
+}
+
+const visaLabel = job.visaSupport === 'yes' ? 'Visa sponsored' : job.visaSupport === 'partial' ? 'Visa (partial)' : null;
+const relocationLabel = job.relocationPkg === 'yes' ? 'Relocation' : job.relocationPkg === 'allowance_only' ? 'Relo allowance' : null;
+---
+
+<a
+  href={`/jobs/${job.slug}`}
+  class="group block rounded-lg border border-neutral-200 bg-white px-4 py-4 transition-all hover:border-neutral-300 hover:shadow-sm sm:px-5"
+>
+  <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+    <!-- Left: Job info -->
+    <div class="min-w-0 flex-1">
+      <h2 class="text-base font-semibold text-neutral-900 group-hover:text-primary-700 transition-colors truncate">
+        {job.title}
+      </h2>
+      <p class="mt-0.5 text-sm text-neutral-500">
+        {job.companyName}
+        <span class="mx-1.5 text-neutral-300">&middot;</span>
+        {job.country}
+      </p>
+    </div>
+
+    <!-- Right: Meta -->
+    <div class="flex shrink-0 items-center gap-2 text-xs sm:flex-col sm:items-end sm:gap-1.5">
+      <span class="text-neutral-400">{timeAgo}</span>
+      {job.salaryRange && (
+        <span class="text-neutral-600 font-medium">{job.salaryRange}</span>
+      )}
+    </div>
+  </div>
+
+  <!-- Tags -->
+  <div class="mt-2.5 flex flex-wrap gap-1.5">
+    <span class="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
+      {job.industry}
+    </span>
+    {visaLabel && (
+      <span class="inline-flex items-center rounded-md bg-secondary-50 px-2 py-0.5 text-xs text-secondary-700">
+        {visaLabel}
+      </span>
+    )}
+    {relocationLabel && (
+      <span class="inline-flex items-center rounded-md bg-accent-50 px-2 py-0.5 text-xs text-accent-700">
+        {relocationLabel}
+      </span>
+    )}
+    {job.workingLanguage && (
+      <span class="inline-flex items-center rounded-md bg-neutral-50 px-2 py-0.5 text-xs text-neutral-500">
+        {job.workingLanguage}
+      </span>
+    )}
+  </div>
+</a>

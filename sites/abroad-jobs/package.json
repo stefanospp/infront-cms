@@ -1,0 +1,32 @@
+{
+  "name": "@agency/abroad-jobs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@agency/config": "workspace:*",
+    "@agency/ui": "workspace:*",
+    "@agency/utils": "workspace:*",
+    "@astrojs/cloudflare": "^13.1.0",
+    "wrangler": "^4.61.0",
+    "@astrojs/react": "^5.0.0",
+    "@tailwindcss/vite": "^4.2.0",
+    "astro": "^6.0.0",
+    "drizzle-orm": "^0.39.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "resend": "^4.0.0",
+    "stripe": "^17.0.0",
+    "tailwindcss": "^4.2.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.30.0"
+  }
+}

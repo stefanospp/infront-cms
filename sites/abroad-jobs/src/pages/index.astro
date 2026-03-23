@@ -1,0 +1,116 @@
+---
+import '../styles/global.css';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import SearchHero from '../components/SearchHero.astro';
+import JobList from '../components/JobList.astro';
+import config from '../../site.config';
+import { getDb } from '../lib/db';
+import { jobs } from '../lib/schema';
+import { eq, desc, and, like, gt, sql } from 'drizzle-orm';
+import { searchParamsSchema } from '../lib/validation';
+import { env } from 'cloudflare:workers';
+
+export const prerender = false;
+
+const params = searchParamsSchema.safeParse({
+  q: Astro.url.searchParams.get('q') || undefined,
+  country: Astro.url.searchParams.get('country') || undefined,
+  industry: Astro.url.searchParams.get('industry') || undefined,
+  page: Astro.url.searchParams.get('page') || undefined,
+});
+
+const { q = '', country = '', industry = '', page = 1, limit = 50 } = params.success ? params.data : { q: '', country: '', industry: '', page: 1, limit: 50 };
+
+const db = getDb(env.DB);
+const now = Math.floor(Date.now() / 1000);
+
+let results: (typeof jobs.$inferSelect)[];
+let total: number;
+
+if (q) {
+  // Full-text search via FTS5
+  const ftsQuery = q.replace(/['"]/g, '').trim();
+  const baseQuery = `
+    SELECT j.* FROM jobs j
+    JOIN jobs_fts f ON j.id = f.rowid
+    WHERE jobs_fts MATCH ?
+      AND j.is_live = 1
+      AND (j.expires_at IS NULL OR j.expires_at > ?)
+      ${country ? 'AND j.country = ?' : ''}
+      ${industry ? 'AND j.industry = ?' : ''}
+    ORDER BY rank
+    LIMIT ? OFFSET ?
+  `;
+
+  const queryParams: unknown[] = [ftsQuery, now];
+  if (country) queryParams.push(country);
+  if (industry) queryParams.push(industry);
+  queryParams.push(limit + 1, (page - 1) * limit);
+
+  const raw = await env.DB.prepare(baseQuery).bind(...queryParams).all();
+  results = (raw.results ?? []) as typeof results;
+
+  // Count query
+  const countQuery = `
+    SELECT COUNT(*) as cnt FROM jobs j
+    JOIN jobs_fts f ON j.id = f.rowid
+    WHERE jobs_fts MATCH ?
+      AND j.is_live = 1
+      AND (j.expires_at IS NULL OR j.expires_at > ?)
+      ${country ? 'AND j.country = ?' : ''}
+      ${industry ? 'AND j.industry = ?' : ''}
+  `;
+  const countParams: unknown[] = [ftsQuery, now];
+  if (country) countParams.push(country);
+  if (industry) countParams.push(industry);
+  const countResult = await env.DB.prepare(countQuery).bind(...countParams).first<{ cnt: number }>();
+  total = countResult?.cnt ?? 0;
+} else {
+  // Standard filtered query
+  const conditions = [
+    eq(jobs.isLive, 1),
+    sql`(${jobs.expiresAt} IS NULL OR ${jobs.expiresAt} > ${now})`,
+  ];
+  if (country) conditions.push(eq(jobs.country, country));
+  if (industry) conditions.push(eq(jobs.industry, industry));
+
+  results = await db
+    .select()
+    .from(jobs)
+    .where(and(...conditions))
+    .orderBy(desc(jobs.createdAt))
+    .limit(limit + 1)
+    .offset((page - 1) * limit);
+
+  // Count
+  const countResult = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(jobs)
+    .where(and(...conditions));
+  total = countResult[0]?.count ?? 0;
+}
+
+const hasMore = results.length > limit;
+const displayJobs = hasMore ? results.slice(0, limit) : results;
+---
+
+<SiteLayout
+  title={config.seo.defaultTitle}
+  description={config.seo.defaultDescription}
+  config={config}
+>
+  <SearchHero
+    query={q}
+    country={country}
+    industry={industry}
+    jobCount={total}
+  />
+  <JobList
+    jobs={displayJobs}
+    hasMore={hasMore}
+    query={q}
+    country={country}
+    industry={industry}
+    page={page}
+  />
+</SiteLayout>

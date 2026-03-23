@@ -1,0 +1,103 @@
+---
+import type { SiteConfig } from '@agency/config';
+
+export interface Props {
+  config: SiteConfig;
+  class?: string;
+}
+
+const { config, class: className } = Astro.props;
+const { nav, name } = config;
+const currentPath = Astro.url.pathname;
+---
+
+<header
+  class:list={[
+    'sticky top-0 z-40 border-b border-neutral-200 bg-white/95 backdrop-blur-sm',
+    className,
+  ]}
+>
+  <nav
+    class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6"
+    aria-label="Main navigation"
+  >
+    <a
+      href="/"
+      class="text-lg font-bold tracking-tight text-neutral-900 hover:text-primary-700 transition-colors"
+    >
+      {name}<span class="text-primary-600">.eu</span>
+    </a>
+
+    <!-- Desktop -->
+    <div class="hidden items-center gap-6 sm:flex">
+      {nav.items.map((item) => (
+        <a
+          href={item.href}
+          class:list={[
+            'text-sm transition-colors',
+            currentPath === item.href
+              ? 'font-medium text-neutral-900'
+              : 'text-neutral-500 hover:text-neutral-800',
+          ]}
+        >
+          {item.label}
+        </a>
+      ))}
+      {nav.cta && (
+        <a
+          href={nav.cta.href}
+          class="inline-flex items-center rounded-lg bg-primary-700 px-4 py-2 text-sm font-medium text-white hover:bg-primary-800 transition-colors"
+        >
+          {nav.cta.label}
+        </a>
+      )}
+    </div>
+
+    <!-- Mobile toggle -->
+    <button
+      type="button"
+      class="sm:hidden rounded-md p-2 text-neutral-500 hover:bg-neutral-100 hover:text-neutral-700"
+      aria-label="Toggle menu"
+      id="mobile-menu-toggle"
+    >
+      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+      </svg>
+    </button>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="hidden border-t border-neutral-100 bg-white sm:hidden">
+    <div class="space-y-1 px-4 py-3">
+      {nav.items.map((item) => (
+        <a
+          href={item.href}
+          class:list={[
+            'block rounded-md px-3 py-2 text-sm transition-colors',
+            currentPath === item.href
+              ? 'bg-neutral-50 font-medium text-neutral-900'
+              : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900',
+          ]}
+        >
+          {item.label}
+        </a>
+      ))}
+      {nav.cta && (
+        <a
+          href={nav.cta.href}
+          class="mt-2 block rounded-lg bg-primary-700 px-3 py-2 text-center text-sm font-medium text-white hover:bg-primary-800 transition-colors"
+        >
+          {nav.cta.label}
+        </a>
+      )}
+    </div>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById('mobile-menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+  toggle?.addEventListener('click', () => {
+    menu?.classList.toggle('hidden');
+  });
+</script>

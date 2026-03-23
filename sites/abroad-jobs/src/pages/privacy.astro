@@ -1,0 +1,33 @@
+---
+import '../styles/global.css';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import config from '../../site.config';
+import { formatTitle } from '@agency/utils/seo';
+---
+
+<SiteLayout
+  title={formatTitle('Privacy Policy', config.seo.titleTemplate)}
+  description="Privacy policy for AbroadJobs.eu"
+  config={config}
+  noIndex={true}
+>
+  <article class="mx-auto max-w-2xl px-4 py-12 sm:px-6 sm:py-16 text-sm leading-relaxed text-neutral-600">
+    <h1 class="text-2xl font-bold text-neutral-900">Privacy Policy</h1>
+    <p class="mt-4">Last updated: March 2026</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-neutral-800">What we collect</h2>
+    <p class="mt-2">When you post a job, we collect the information you provide in the form: company name, website, contact email, job details, and payment information (processed by Stripe). We do not store card numbers.</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-neutral-800">How we use it</h2>
+    <p class="mt-2">Job information is displayed publicly on the site. Your contact email is used only to send a posting confirmation and is not displayed publicly. Payment data is handled entirely by Stripe.</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-neutral-800">Cookies</h2>
+    <p class="mt-2">We use only essential cookies required for the site to function. We do not use tracking or advertising cookies.</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-neutral-800">Data retention</h2>
+    <p class="mt-2">Job listings and associated data are retained for 90 days after expiry, then permanently deleted.</p>
+
+    <h2 class="mt-8 text-lg font-semibold text-neutral-800">Contact</h2>
+    <p class="mt-2">For privacy-related questions, email <a href="mailto:hello@abroadjobs.eu" class="text-primary-600 hover:text-primary-700">hello@abroadjobs.eu</a>.</p>
+  </article>
+</SiteLayout>
