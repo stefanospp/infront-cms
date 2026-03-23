@@ -15,6 +15,7 @@ import type {
   AnalyticsConfig,
 } from '@agency/config';
 import { getTemplate } from '@agency/config';
+import { serializePropValue } from '@agency/utils';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,19 +48,32 @@ export interface GeneratorResult {
 // Helpers
 // ---------------------------------------------------------------------------
 
-/**
- * Resolve the monorepo root.
- * Hardcoded to /app for Docker. For local dev, override via MONOREPO_ROOT env.
- */
-export function getMonorepoRoot(): string {
-  return process.env.MONOREPO_ROOT || '/app';
-}
+// Re-export from canonical location so existing imports from '@/lib/generator' still work
+export { getMonorepoRoot } from './paths';
 
 const SLUG_RE = /^[a-z][a-z0-9-]{1,62}$/;
+
+/** Slugs that conflict with platform routes, reserved directories, or internal names. */
+export const RESERVED_SLUGS = new Set([
+  'admin',
+  'template',
+  'api',
+  'auth',
+  'login',
+  'health',
+  'assets',
+  'static',
+  '_astro',
+  'public',
+  'www',
+]);
 
 function validateSlug(slug: string): string | null {
   if (!SLUG_RE.test(slug)) {
     return 'Slug must be lowercase, start with a letter, contain only letters/numbers/hyphens, and be 2–63 characters.';
+  }
+  if (RESERVED_SLUGS.has(slug)) {
+    return `The slug "${slug}" is reserved and cannot be used.`;
   }
   return null;
 }
@@ -269,28 +283,6 @@ function collectImports(
 }
 
 /**
- * Serialize a JavaScript value into a string suitable for Astro template expressions.
- * Objects and arrays become `{...}` expressions; strings become quoted literals.
- */
-function serializePropValue(value: unknown): string {
-  if (typeof value === 'string') {
-    // Check for config references like {config.seo.defaultTitle}
-    if (value.startsWith('{') && value.endsWith('}')) {
-      return value;
-    }
-    return JSON.stringify(value);
-  }
-  if (typeof value === 'number' || typeof value === 'boolean') {
-    return `{${value}}`;
-  }
-  if (value === null || value === undefined) {
-    return '{undefined}';
-  }
-  // Arrays and objects — use JSON.stringify and wrap in expression
-  return `{${JSON.stringify(value, null, 2)}}`;
-}
-
-/**
  * Render a single section as an Astro component invocation string.
  */
 function renderSection(
@@ -442,9 +434,9 @@ export async function generateSite(
     await fs.cp(templatePath, sitePath, {
       recursive: true,
       filter: (src) => {
-        // Exclude node_modules and dist from the copy
+        // Exclude files/directories that should not be copied to new sites
         const basename = path.basename(src);
-        return basename !== 'node_modules' && basename !== 'dist';
+        return basename !== 'node_modules' && basename !== 'dist' && basename !== '.git' && basename !== '.deploy.json';
       },
     });
 
@@ -529,7 +521,23 @@ export async function generateSite(
       'utf-8',
     );
 
-    // 10. Generate src/styles/global.css
+    // 10. Validate color tokens and generate src/styles/global.css
+    const colorGroups = ['primary', 'secondary', 'accent', 'neutral'] as const;
+    for (const group of colorGroups) {
+      const scale = payload.tokens.colors[group];
+      if (scale) {
+        for (const [step, value] of Object.entries(scale)) {
+          if (!validateColor(value as string)) {
+            return {
+              success: false,
+              sitePath,
+              checklist: [],
+              error: `Invalid color value for ${group}-${step}: "${value}". Must be hex, rgb(), hsl(), or oklch().`,
+            };
+          }
+        }
+      }
+    }
     const globalCssContent = generateGlobalCssContent(payload.tokens);
     await fs.mkdir(path.join(sitePath, 'src', 'styles'), { recursive: true });
     await fs.writeFile(
@@ -627,11 +635,19 @@ ${payload.tier === 'cms' || payload.tier === 'interactive' ? '- CMS powered by D
 
     return { success: true, sitePath, checklist };
   } catch (err) {
-    // Clean up on failure
+    // Clean up on failure — remove generated site directory and Docker config
     try {
       await fs.rm(sitePath, { recursive: true, force: true });
     } catch (cleanupErr) {
-      console.error('[generator] Failed to clean up after generation error:', cleanupErr instanceof Error ? cleanupErr.message : cleanupErr);
+      console.error('[generator] Failed to clean up site directory after generation error:', cleanupErr instanceof Error ? cleanupErr.message : cleanupErr);
+    }
+    if (payload.tier === 'cms' || payload.tier === 'interactive') {
+      const dockerTargetPath = path.join(root, 'infra', 'docker', payload.slug);
+      try {
+        await fs.rm(dockerTargetPath, { recursive: true, force: true });
+      } catch {
+        // Docker directory may not have been created yet
+      }
     }
 
     return {

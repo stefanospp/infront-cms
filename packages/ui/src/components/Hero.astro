@@ -7,6 +7,8 @@ export interface Props {
   ctaHref?: string;
   backgroundImage?: string;
   backgroundVideo?: string;
+  poster?: string;
+  imageAlt?: string;
   class?: string;
 }
 
@@ -18,6 +20,8 @@ const {
   ctaHref,
   backgroundImage,
   backgroundVideo,
+  poster,
+  imageAlt = heading,
   class: className,
 } = Astro.props;
 ---
@@ -87,9 +91,10 @@ const {
           <div class="overflow-hidden rounded-2xl">
             <img
               src={backgroundImage}
-              alt=""
+              alt={imageAlt}
               class="h-full w-full object-cover"
               loading="eager"
+              fetchpriority="high"
             />
           </div>
         )}
@@ -110,9 +115,10 @@ const {
         <div class="absolute inset-0 z-0">
           <img
             src={backgroundImage}
-            alt=""
+            alt={imageAlt}
             class="h-full w-full object-cover"
             loading="eager"
+            fetchpriority="high"
           />
           <div class="absolute inset-0 bg-neutral-900/60" />
         </div>
@@ -178,6 +184,7 @@ const {
             muted
             loop
             playsinline
+            poster={poster}
             class="h-full w-full object-cover"
           >
             <source src={backgroundVideo} type="video/mp4" />

@@ -4,13 +4,13 @@
 
 cat > /app/runtime-env.json << ENVJSON
 {
-  "ADMIN_PASSWORD_HASH": "${ADMIN_PASSWORD_HASH}",
-  "SESSION_SECRET": "${SESSION_SECRET}",
   "CLOUDFLARE_API_TOKEN": "${CLOUDFLARE_API_TOKEN}",
   "CLOUDFLARE_ACCOUNT_ID": "${CLOUDFLARE_ACCOUNT_ID}",
   "CLOUDFLARE_ZONE_ID": "${CLOUDFLARE_ZONE_ID}"
 }
 ENVJSON
+
+chmod 600 /app/runtime-env.json
 
 # Sync baked-in client sites into the volume so that sites added via git
 # (not the wizard) are visible to the admin dashboard. Uses cp -n to avoid

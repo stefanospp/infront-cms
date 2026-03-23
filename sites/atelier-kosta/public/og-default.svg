@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#2d2d2d"/>
+  <!-- Thin architectural border -->
+  <rect x="40" y="40" width="1120" height="550" fill="none" stroke="#d4c5a9" stroke-width="1"/>
+  <rect x="48" y="48" width="1104" height="534" fill="none" stroke="rgba(212,197,169,0.3)" stroke-width="1"/>
+  <!-- Horizontal rule accent -->
+  <rect x="500" y="240" width="200" height="1" fill="#d4c5a9"/>
+  <text x="600" y="300" text-anchor="middle" font-family="'Cormorant Garamond', Georgia, serif" font-size="68" font-weight="300" fill="#f5f2ed" letter-spacing="6">Atelier Kosta</text>
+  <text x="600" y="360" text-anchor="middle" font-family="'Work Sans', system-ui, sans-serif" font-size="22" font-weight="300" fill="#d4c5a9" letter-spacing="4">ARCHITECTURE &amp; INTERIOR DESIGN</text>
+  <rect x="500" y="395" width="200" height="1" fill="#d4c5a9"/>
+  <text x="600" y="445" text-anchor="middle" font-family="'Work Sans', system-ui, sans-serif" font-size="16" font-weight="300" fill="rgba(212,197,169,0.6)" letter-spacing="2">NICOSIA, CYPRUS</text>
+</svg>

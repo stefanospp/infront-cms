@@ -86,33 +86,77 @@ const quoteIcon = `<svg class="mb-4 h-8 w-8 text-primary-300" fill="currentColor
 
 {
   variant === 'carousel' && (
-    <div class:list={['mx-auto max-w-3xl overflow-hidden', className]}>
-      <div class="flex snap-x snap-mandatory gap-8 overflow-x-auto pb-4 scrollbar-hide">
-        {testimonials.map((t) => (
-          <figure class="w-full flex-shrink-0 snap-center rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
-            <Fragment set:html={quoteIcon} />
-            <blockquote class="text-base leading-relaxed text-neutral-700">
-              {t.quote}
-            </blockquote>
-            <figcaption class="mt-6 flex items-center gap-4">
-              {t.image && (
-                <img
-                  src={t.image}
-                  alt={t.author}
-                  class="h-12 w-12 rounded-full object-cover"
-                  loading="lazy"
-                />
-              )}
-              <div>
-                <div class="font-heading text-sm font-semibold text-neutral-900">
-                  {t.author}
+    <div class:list={['mx-auto max-w-3xl overflow-hidden', className]} data-testimonial-carousel>
+      <div class="relative">
+        <div class="flex snap-x snap-mandatory gap-8 overflow-x-auto pb-4 scrollbar-hide" id="testimonial-carousel" role="region" aria-label="Testimonials carousel">
+          {testimonials.map((t, i) => (
+            <figure class="w-full flex-shrink-0 snap-center rounded-xl border border-neutral-200 bg-white p-8 shadow-sm" role="group" aria-label={`Testimonial ${i + 1} of ${testimonials.length}`}>
+              <Fragment set:html={quoteIcon} />
+              <blockquote class="text-base leading-relaxed text-neutral-700">
+                {t.quote}
+              </blockquote>
+              <figcaption class="mt-6 flex items-center gap-4">
+                {t.image && (
+                  <img
+                    src={t.image}
+                    alt={t.author}
+                    class="h-12 w-12 rounded-full object-cover"
+                    loading="lazy"
+                  />
+                )}
+                <div>
+                  <div class="font-heading text-sm font-semibold text-neutral-900">
+                    {t.author}
+                  </div>
+                  {t.role && <div class="text-sm text-neutral-500">{t.role}</div>}
                 </div>
-                {t.role && <div class="text-sm text-neutral-500">{t.role}</div>}
-              </div>
-            </figcaption>
-          </figure>
-        ))}
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+        {testimonials.length > 1 && (
+          <div class="mt-4 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-600 shadow-sm transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+              aria-label="Previous testimonial"
+              data-carousel-prev
+            >
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-600 shadow-sm transition-colors hover:bg-neutral-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
+              aria-label="Next testimonial"
+              data-carousel-next
+            >
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
 }
+
+<script>
+  document.querySelectorAll('[data-testimonial-carousel]').forEach((wrapper) => {
+    const carousel = wrapper.querySelector('#testimonial-carousel') as HTMLElement | null;
+    const prevBtn = wrapper.querySelector('[data-carousel-prev]');
+    const nextBtn = wrapper.querySelector('[data-carousel-next]');
+
+    if (!carousel) return;
+
+    function scrollByOne(direction: 1 | -1) {
+      const slideWidth = carousel!.querySelector('figure')?.offsetWidth ?? carousel!.offsetWidth;
+      carousel!.scrollBy({ left: direction * (slideWidth + 32), behavior: 'smooth' });
+    }
+
+    prevBtn?.addEventListener('click', () => scrollByOne(-1));
+    nextBtn?.addEventListener('click', () => scrollByOne(1));
+  });
+</script>

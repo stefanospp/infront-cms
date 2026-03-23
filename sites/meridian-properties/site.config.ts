@@ -21,7 +21,7 @@ const config: SiteConfig = {
       "defaultTitle": "Meridian Properties — Luxury Real Estate in Limassol",
       "titleTemplate": "%s | Meridian Properties",
       "defaultDescription": "Discover luxury properties in Limassol, Cyprus. Meridian Properties offers premium villas, apartments, and penthouses along the Mediterranean coast.",
-      "defaultOgImage": "/og-default.jpg"
+      "defaultOgImage": "/og-default.svg"
   },
 
   nav: {

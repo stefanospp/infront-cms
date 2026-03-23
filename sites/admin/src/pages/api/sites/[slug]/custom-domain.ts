@@ -30,6 +30,18 @@ export const POST: APIRoute = async ({ params, request }) => {
     );
   }
 
+  // Validate hostname format (e.g. example.com, sub.example.co.uk)
+  const hostnameRegex = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/i;
+  if (!hostnameRegex.test(domain)) {
+    return new Response(
+      JSON.stringify({ error: 'Invalid hostname format. Expected something like example.com' }),
+      {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      },
+    );
+  }
+
   const meta = await readDeployMetadata(slug);
   if (!meta) {
     return new Response(JSON.stringify({ error: 'Site not found' }), {
@@ -52,9 +64,10 @@ export const POST: APIRoute = async ({ params, request }) => {
       },
     );
   } catch (err) {
+    console.error(`Error adding custom domain for ${slug}:`, err);
     return new Response(
       JSON.stringify({
-        error: err instanceof Error ? err.message : 'Failed to add custom domain',
+        error: 'Failed to add custom domain',
       }),
       {
         status: 500,
@@ -98,9 +111,10 @@ export const DELETE: APIRoute = async ({ params, request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (err) {
+    console.error(`Error removing custom domain for ${slug}:`, err);
     return new Response(
       JSON.stringify({
-        error: err instanceof Error ? err.message : 'Failed to remove custom domain',
+        error: 'Failed to remove custom domain',
       }),
       {
         status: 500,

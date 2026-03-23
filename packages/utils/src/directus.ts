@@ -37,7 +37,12 @@ export async function getPublishedItems<T>(
     query.limit = options.limit;
   }
 
-  return client.request<T[]>(readItems(collection, query));
+  try {
+    return await client.request<T[]>(readItems(collection, query));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to fetch published items from "${collection}": ${message}`);
+  }
 }
 
 export async function getItemBySlug<T>(
@@ -61,6 +66,12 @@ export async function getItemBySlug<T>(
     query.fields = options.fields;
   }
 
-  const items = await client.request<T[]>(readItems(collection, query));
+  let items: T[];
+  try {
+    items = await client.request<T[]>(readItems(collection, query));
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to fetch item by slug "${slug}" from "${collection}": ${message}`);
+  }
   return items[0] ?? null;
 }

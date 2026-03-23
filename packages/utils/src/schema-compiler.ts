@@ -25,7 +25,7 @@ const ISLAND_COMPONENTS = new Set(['ContactForm', 'CookieConsent', 'MobileNav'])
  * - Numbers / booleans become `{value}`.
  * - Arrays / objects become `{JSON-literal}` with pretty-printing.
  */
-function serializePropValue(value: unknown): string {
+export function serializePropValue(value: unknown): string {
   if (typeof value === 'string') {
     // Config references like {config.name} stay as expressions
     if (value.startsWith('{') && value.endsWith('}')) {

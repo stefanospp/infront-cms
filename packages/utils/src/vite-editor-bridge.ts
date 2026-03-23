@@ -11,7 +11,8 @@ import type { Plugin } from 'vite';
  *
  * Only active when the page is loaded inside an iframe (the editor preview).
  */
-export function editorBridgePlugin(): Plugin {
+export function editorBridgePlugin(options?: { origin?: string }): Plugin {
+  const targetOrigin = options?.origin ?? 'https://admin.infront.cy';
   return {
     name: 'agency-editor-bridge',
     enforce: 'post',
@@ -19,9 +20,10 @@ export function editorBridgePlugin(): Plugin {
     transformIndexHtml(html: string) {
       // Only inject in dev mode — Vite only calls this hook during dev/preview
       // The script self-disables if not in an iframe
+      const script = BRIDGE_SCRIPT.replace(/__EDITOR_ORIGIN__/g, targetOrigin);
       return html.replace(
         '</body>',
-        `<script type="module">${BRIDGE_SCRIPT}</script>\n</body>`,
+        `<script type="module">${script}</script>\n</body>`,
       );
     },
   };
@@ -184,7 +186,7 @@ const BRIDGE_SCRIPT = `
         sectionId,
         propPath,
         value: newValue,
-      }, '*');
+      }, '__EDITOR_ORIGIN__');
     }
 
     editingElement = null;
@@ -236,7 +238,7 @@ const BRIDGE_SCRIPT = `
     window.parent.postMessage({
       type: 'editor-bridge:section-select',
       sectionId: selectedId,
-    }, '*');
+    }, '__EDITOR_ORIGIN__');
   }, true);
 
   // Double-click → inline edit
@@ -288,7 +290,7 @@ const BRIDGE_SCRIPT = `
   });
 
   // Notify parent that bridge is ready
-  window.parent.postMessage({ type: 'editor-bridge:ready' }, '*');
+  window.parent.postMessage({ type: 'editor-bridge:ready' }, '__EDITOR_ORIGIN__');
 
   // Re-position overlay on scroll/resize
   window.addEventListener('scroll', () => {

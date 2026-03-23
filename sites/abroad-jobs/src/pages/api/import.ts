@@ -5,6 +5,20 @@ import { runScheduledMaintenance } from '../../scheduled';
 
 export const prerender = false;
 
+// Simple in-memory rate limiter: IP -> last request timestamp
+const importRateLimitMap = new Map<string, number>();
+const IMPORT_RATE_LIMIT_WINDOW_MS = 5 * 60 * 1000; // 5 minutes
+
+function isImportRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const last = importRateLimitMap.get(ip);
+  if (last && now - last < IMPORT_RATE_LIMIT_WINDOW_MS) {
+    return true;
+  }
+  importRateLimitMap.set(ip, now);
+  return false;
+}
+
 /**
  * Triggers job import from external APIs (Arbeitnow + Remotive)
  * and runs scheduled maintenance (expire jobs, clean orphans).
@@ -15,6 +29,14 @@ export const prerender = false;
  * Usage: POST /api/import with Authorization: Bearer <IMPORT_SECRET>
  */
 export const POST: APIRoute = async ({ request }) => {
+  const clientIp = request.headers.get('cf-connecting-ip') ?? request.headers.get('x-forwarded-for') ?? 'unknown';
+  if (isImportRateLimited(clientIp)) {
+    return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+      status: 429,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
   // Verify secret to prevent unauthorized triggers
   const authHeader = request.headers.get('Authorization');
   const expected = (env as Record<string, unknown>).IMPORT_SECRET as string | undefined;

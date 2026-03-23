@@ -22,7 +22,7 @@ const gridClass =
 
 <div class:list={[gridClass, className]}>
   {
-    items.map((item) => {
+    items.map((item, index) => {
       const content = (
         <figure
           class:list={[
@@ -32,7 +32,7 @@ const gridClass =
         >
           <img
             src={item.image}
-            alt={item.title ?? ''}
+            alt={item.title ?? `Gallery image ${index + 1}`}
             class="w-full object-cover transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
           />

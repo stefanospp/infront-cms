@@ -216,7 +216,7 @@ export const GET: APIRoute = async ({ params }) => {
   } catch (err) {
     console.error(`Error reading config for ${slug}:`, err);
     return json(
-      { error: err instanceof Error ? err.message : 'Internal server error' },
+      { error: 'Internal server error' },
       500,
     );
   }
@@ -261,7 +261,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
   } catch (err) {
     console.error(`Error saving config for ${slug}:`, err);
     return json(
-      { error: err instanceof Error ? err.message : 'Internal server error' },
+      { error: 'Internal server error' },
       500,
     );
   }

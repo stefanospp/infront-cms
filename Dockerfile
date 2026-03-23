@@ -1,4 +1,4 @@
-FROM node:22-slim
+FROM node:22.14-slim
 
 # Install pnpm with pinned version for reproducible builds
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate

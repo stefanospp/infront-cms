@@ -3,6 +3,7 @@ export const prerender = false;
 
 import '@/styles/global.css';
 import SiteEditor from '@/islands/SiteEditor';
+import ErrorBoundary from '@agency/ui/islands/ErrorBoundary';
 
 const slug = Astro.params.slug!;
 ---
@@ -22,6 +23,8 @@ const slug = Astro.params.slug!;
     </style>
   </head>
   <body>
-    <SiteEditor client:load slug={slug} />
+    <ErrorBoundary client:load>
+      <SiteEditor client:load slug={slug} />
+    </ErrorBoundary>
   </body>
 </html>

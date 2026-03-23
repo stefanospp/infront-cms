@@ -25,6 +25,21 @@ interface DeployMetadata {
   dnsRecordId: string | null;
 }
 
+interface VersionEntry {
+  hash: string;
+  shortHash: string;
+  message: string;
+  date: string;
+  filesChanged: number;
+}
+
+interface ExportResult {
+  type: 'source' | 'static';
+  files: string[];
+  downloadUrl?: string;
+  message?: string;
+}
+
 type LoadState = 'loading' | 'loaded' | 'error';
 
 // ---------------------------------------------------------------------------
@@ -36,7 +51,7 @@ const statusBadge: Record<
   { bg: string; text: string; label: string }
 > = {
   pending: { bg: 'bg-neutral-100', text: 'text-neutral-700', label: 'Pending' },
-  building: { bg: 'bg-warning-100', text: 'text-warning-700', label: 'Building' },
+  building: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Building' },
   deploying: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Deploying' },
   live: { bg: 'bg-green-100', text: 'text-green-700', label: 'Live' },
   failed: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
@@ -65,6 +80,20 @@ export default function SiteDetail({ slug }: { slug: string }) {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // Export state
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+  const [exporting, setExporting] = useState<'source' | 'static' | null>(null);
+  const [exportResult, setExportResult] = useState<ExportResult | null>(null);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Version history state
+  const [versions, setVersions] = useState<VersionEntry[]>([]);
+  const [versionsLoading, setVersionsLoading] = useState(false);
+  const [versionsError, setVersionsError] = useState<string | null>(null);
+  const [versionsExpanded, setVersionsExpanded] = useState(false);
+  const [revertingHash, setRevertingHash] = useState<string | null>(null);
+
   // ---- Fetch helpers ----
 
   const fetchDeployStatus = useCallback(async () => {
@@ -79,6 +108,26 @@ export default function SiteDetail({ slug }: { slug: string }) {
       console.error('Failed to fetch deploy status:', err instanceof Error ? err.message : err);
     }
     return null;
+  }, [slug]);
+
+  const fetchVersions = useCallback(async () => {
+    setVersionsLoading(true);
+    setVersionsError(null);
+    try {
+      const res = await fetch(`/api/sites/${slug}/versions`);
+      if (!res.ok) {
+        const data = await res.json();
+        setVersionsError(data.error ?? 'Failed to fetch versions');
+        return;
+      }
+      const data: VersionEntry[] = await res.json();
+      setVersions(data);
+    } catch (err) {
+      console.error('Failed to fetch versions:', err instanceof Error ? err.message : err);
+      setVersionsError('Network error');
+    } finally {
+      setVersionsLoading(false);
+    }
   }, [slug]);
 
   // ---- Initial load ----
@@ -120,12 +169,33 @@ export default function SiteDetail({ slug }: { slug: string }) {
     };
   }, [slug, fetchDeployStatus]);
 
+  // ---- Fetch versions on mount ----
+
+  useEffect(() => {
+    fetchVersions();
+  }, [fetchVersions]);
+
   // ---- Polling cleanup ----
 
   useEffect(() => {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
+  }, []);
+
+  // ---- Close export dropdown on outside click ----
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        exportDropdownRef.current &&
+        !exportDropdownRef.current.contains(event.target as Node)
+      ) {
+        setExportDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // ---- Redeploy ----
@@ -157,6 +227,72 @@ export default function SiteDetail({ slug }: { slug: string }) {
     } catch (err) {
       console.error('Failed to trigger redeploy:', err instanceof Error ? err.message : err);
       setRedeploying(false);
+    }
+  }
+
+  // ---- Export site ----
+
+  async function handleExport(type: 'source' | 'static') {
+    setExportDropdownOpen(false);
+    setExporting(type);
+    setExportResult(null);
+    setExportError(null);
+
+    try {
+      const res = await fetch(`/api/sites/${slug}/export`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setExportError(data.error ?? 'Export failed');
+      } else {
+        setExportResult(data as ExportResult);
+      }
+    } catch (err) {
+      console.error('Failed to export site:', err instanceof Error ? err.message : err);
+      setExportError('Network error');
+    } finally {
+      setExporting(null);
+    }
+  }
+
+  // ---- Revert version ----
+
+  async function handleRevert(hash: string) {
+    const shortHash = hash.substring(0, 7);
+    if (
+      !confirm(
+        `Revert site to version ${shortHash}? This will create a new commit reverting all changes after this version.`
+      )
+    ) {
+      return;
+    }
+
+    setRevertingHash(hash);
+    try {
+      const res = await fetch(`/api/sites/${slug}/versions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'revert', hash }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error ?? 'Revert failed');
+      } else {
+        alert(data.message ?? `Successfully reverted to ${shortHash}`);
+        await fetchVersions();
+      }
+    } catch (err) {
+      console.error('Failed to revert:', err instanceof Error ? err.message : err);
+      alert('Network error while reverting');
+    } finally {
+      setRevertingHash(null);
     }
   }
 
@@ -434,7 +570,7 @@ export default function SiteDetail({ slug }: { slug: string }) {
                 </div>
               )}
 
-              <div className="pt-2">
+              <div className="pt-2 flex items-center gap-3">
                 <button
                   onClick={handleRedeploy}
                   disabled={redeploying || isInProgress}
@@ -468,10 +604,277 @@ export default function SiteDetail({ slug }: { slug: string }) {
                     </>
                   )}
                 </button>
+
+                {/* Export Site dropdown */}
+                <div className="relative" ref={exportDropdownRef}>
+                  <button
+                    onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+                    disabled={exporting !== null}
+                    className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-semibold text-neutral-700 shadow-sm hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {exporting !== null ? (
+                      <>
+                        <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-neutral-400 border-t-transparent" />
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        Export Site
+                        <svg
+                          className={`h-3 w-3 transition-transform ${exportDropdownOpen ? 'rotate-180' : ''}`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+
+                  {exportDropdownOpen && (
+                    <div className="absolute left-0 top-full mt-1 w-48 rounded-lg border border-neutral-200 bg-white shadow-lg z-10">
+                      <button
+                        onClick={() => handleExport('source')}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 rounded-t-lg transition-colors"
+                      >
+                        <svg
+                          className="h-4 w-4 text-neutral-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+                          />
+                        </svg>
+                        Export Source
+                      </button>
+                      <button
+                        onClick={() => handleExport('static')}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 rounded-b-lg border-t border-neutral-100 transition-colors"
+                      >
+                        <svg
+                          className="h-4 w-4 text-neutral-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                          />
+                        </svg>
+                        Export Static
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </dl>
           )}
         </div>
+      </div>
+
+      {/* Export Result */}
+      {(exportResult || exportError) && (
+        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-sm font-semibold text-neutral-900">
+              Export Result
+            </h3>
+            <button
+              onClick={() => {
+                setExportResult(null);
+                setExportError(null);
+              }}
+              className="text-neutral-400 hover:text-neutral-600 transition-colors"
+              aria-label="Dismiss"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {exportError && (
+            <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+              <p className="text-xs font-medium text-red-800">{exportError}</p>
+            </div>
+          )}
+
+          {exportResult && (
+            <div>
+              <p className="text-sm text-neutral-600 mb-3">
+                {exportResult.type === 'source' ? 'Source' : 'Static'} export
+                completed.
+                {exportResult.message && ` ${exportResult.message}`}
+              </p>
+
+              {exportResult.downloadUrl && (
+                <a
+                  href={exportResult.downloadUrl}
+                  download
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors mb-3"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Download Archive
+                </a>
+              )}
+
+              {exportResult.files.length > 0 && (
+                <div className="mt-3">
+                  <p className="text-xs font-medium text-neutral-500 mb-2">
+                    {exportResult.files.length} file{exportResult.files.length !== 1 ? 's' : ''} included:
+                  </p>
+                  <div className="max-h-48 overflow-y-auto rounded-lg bg-neutral-50 border border-neutral-200 p-3">
+                    <ul className="space-y-1">
+                      {exportResult.files.map((file) => (
+                        <li
+                          key={file}
+                          className="text-xs font-mono text-neutral-600"
+                        >
+                          {file}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Version History */}
+      <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
+        <button
+          onClick={() => setVersionsExpanded(!versionsExpanded)}
+          className="flex w-full items-center justify-between"
+        >
+          <h3 className="text-sm font-semibold text-neutral-900">
+            Version History
+          </h3>
+          <svg
+            className={`h-4 w-4 text-neutral-400 transition-transform ${versionsExpanded ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+
+        {versionsExpanded && (
+          <div className="mt-4">
+            {versionsLoading && (
+              <div className="text-center py-4">
+                <div className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-neutral-300 border-t-primary-600" />
+                <p className="mt-2 text-xs text-neutral-500">Loading versions...</p>
+              </div>
+            )}
+
+            {versionsError && (
+              <div className="rounded-lg bg-red-50 border border-red-200 p-3">
+                <p className="text-xs font-medium text-red-800">{versionsError}</p>
+              </div>
+            )}
+
+            {!versionsLoading && !versionsError && versions.length === 0 && (
+              <p className="text-sm text-neutral-500 py-2">
+                No version history available.
+              </p>
+            )}
+
+            {!versionsLoading && versions.length > 0 && (
+              <div className="space-y-3">
+                {versions.map((version) => (
+                  <div
+                    key={version.hash}
+                    className="flex items-start justify-between gap-4 rounded-lg border border-neutral-200 p-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <code className="rounded bg-neutral-100 px-1.5 py-0.5 text-xs font-mono font-medium text-neutral-700">
+                          {version.shortHash}
+                        </code>
+                        <span className="text-xs text-neutral-400">
+                          {version.filesChanged} file{version.filesChanged !== 1 ? 's' : ''} changed
+                        </span>
+                      </div>
+                      <p className="mt-1 text-sm text-neutral-700 truncate">
+                        {version.message}
+                      </p>
+                      <p className="mt-0.5 text-xs text-neutral-400">
+                        {new Date(version.date).toLocaleString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleRevert(version.hash)}
+                      disabled={revertingHash !== null}
+                      className="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-neutral-300 bg-white px-3 py-1.5 text-xs font-medium text-neutral-600 hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {revertingHash === version.hash ? (
+                        <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-neutral-400 border-t-transparent" />
+                      ) : (
+                        <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                          />
+                        </svg>
+                      )}
+                      Revert
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!versionsLoading && versions.length > 0 && (
+              <div className="mt-3 text-center">
+                <button
+                  onClick={fetchVersions}
+                  className="text-xs font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                >
+                  Refresh
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Component Overrides */}

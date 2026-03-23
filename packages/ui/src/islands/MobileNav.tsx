@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import ErrorBoundary from './ErrorBoundary';
 
 interface NavItem {
   label: string;
@@ -15,7 +16,15 @@ interface Props {
   cta?: NavCTA;
 }
 
-export default function MobileNav({ items, cta }: Props) {
+export default function MobileNav(props: Props) {
+  return (
+    <ErrorBoundary>
+      <MobileNavInner {...props} />
+    </ErrorBoundary>
+  );
+}
+
+function MobileNavInner({ items, cta }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);

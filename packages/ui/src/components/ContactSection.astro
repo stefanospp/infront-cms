@@ -5,10 +5,13 @@ import Map from './Map.astro';
 
 export interface Props {
   config: SiteConfig;
+  heading?: string;
+  description?: string;
+  contactInfoHeading?: string;
   class?: string;
 }
 
-const { config, class: className } = Astro.props;
+const { config, heading = 'Contact Us', description = 'Have a project in mind? Fill out the form and we\'ll get back to you within 24 hours.', contactInfoHeading = 'Get in Touch', class: className } = Astro.props;
 
 const address = config.contact.address
   ? `${config.contact.address.street}, ${config.contact.address.city}, ${config.contact.address.postcode}`
@@ -17,17 +20,17 @@ const address = config.contact.address
 
 <section class:list={['px-4 py-16 sm:px-6 sm:py-24 lg:px-8', className]}>
   <div class="mx-auto max-w-7xl">
-    <h1 class="text-4xl font-heading font-bold text-neutral-900 mb-6">Contact Us</h1>
+    <h1 class="text-4xl font-heading font-bold text-neutral-900 mb-6">{heading}</h1>
     <div class="grid gap-12 lg:grid-cols-2">
       <div>
         <p class="text-lg text-neutral-600 mb-8">
-          Have a project in mind? Fill out the form and we'll get back to you within 24 hours.
+          {description}
         </p>
         <ContactForm client:visible />
       </div>
       <div>
         <div class="mb-8">
-          <h2 class="text-xl font-heading font-semibold text-neutral-900 mb-4">Get in Touch</h2>
+          <h2 class="text-xl font-heading font-semibold text-neutral-900 mb-4">{contactInfoHeading}</h2>
           <dl class="space-y-4 text-neutral-600">
             <div>
               <dt class="font-semibold text-neutral-800">Email</dt>

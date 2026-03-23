@@ -49,7 +49,7 @@ const { variant = 'grid', logos, heading, class: className } = Astro.props;
   {
     variant === 'scrolling' && (
       <div class="overflow-hidden">
-        <div class="flex animate-scroll gap-12">
+        <div class="logo-scroll-track flex gap-12">
           {[...logos, ...logos].map((logo) => (
             <img
               src={logo.image}
@@ -63,3 +63,24 @@ const { variant = 'grid', logos, heading, class: className } = Astro.props;
     )
   }
 </div>
+
+<style>
+  @keyframes scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .logo-scroll-track {
+    animation: scroll 30s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .logo-scroll-track {
+      animation: none;
+    }
+  }
+</style>

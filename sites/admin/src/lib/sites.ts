@@ -1,5 +1,6 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
+import { getMonorepoRoot } from './paths';
 
 export interface SiteInfo {
   slug: string;
@@ -12,11 +13,6 @@ export interface SiteInfo {
   stagingUrl?: string | null;
   productionUrl?: string | null;
   lastDeployAt?: string | null;
-}
-
-/** Resolve the monorepo root. */
-function getMonorepoRoot(): string {
-  return '/app';
 }
 
 /**

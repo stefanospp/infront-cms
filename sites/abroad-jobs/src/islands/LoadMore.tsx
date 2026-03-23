@@ -1,20 +1,5 @@
 import { useState, useCallback } from 'react';
-
-interface Job {
-  id: number;
-  slug: string;
-  title: string;
-  companyName: string;
-  companyWebsite: string | null;
-  companyLogo: string | null;
-  country: string;
-  industry: string;
-  salaryRange: string | null;
-  visaSupport: string;
-  relocationPkg: string;
-  workingLanguage: string | null;
-  createdAt: number;
-}
+import type { Job } from '../lib/schema';
 
 interface Props {
   query?: string;
@@ -79,6 +64,7 @@ export default function LoadMore({ query = '', country = '', industry = '', init
   const [jobs, setJobs] = useState<Job[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
 
   const loadMore = useCallback(async () => {
     setLoading(true);
@@ -89,6 +75,7 @@ export default function LoadMore({ query = '', country = '', industry = '', init
     params.set('page', String(page));
 
     try {
+      setError(false);
       const res = await fetch(`/api/jobs?${params.toString()}`);
       const data = await res.json();
       setJobs((prev) => [...prev, ...data.jobs]);
@@ -96,6 +83,7 @@ export default function LoadMore({ query = '', country = '', industry = '', init
       setPage((p) => p + 1);
     } catch (err) {
       console.error('Failed to load more jobs:', err instanceof Error ? err.message : err);
+      setError(true);
     } finally {
       setLoading(false);
     }
@@ -174,7 +162,21 @@ export default function LoadMore({ query = '', country = '', industry = '', init
         </div>
       )}
 
-      {hasMore && (
+      {error && (
+        <div className="mt-8 text-center">
+          <p className="text-sm text-red-600 mb-2">Failed to load more jobs.</p>
+          <button
+            type="button"
+            onClick={loadMore}
+            disabled={loading}
+            className="inline-flex items-center rounded-lg border border-red-300 bg-white px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50 transition-colors"
+          >
+            {loading ? 'Retrying...' : 'Retry'}
+          </button>
+        </div>
+      )}
+
+      {hasMore && !error && (
         <div className="mt-8 text-center">
           <button
             type="button"

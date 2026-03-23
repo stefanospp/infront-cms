@@ -8,14 +8,57 @@ import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 
+// Simple in-memory rate limiter: IP -> timestamp of requests within the window
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(ip) ?? [];
+  const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (recent.length >= RATE_LIMIT_MAX) {
+    rateLimitMap.set(ip, recent);
+    return true;
+  }
+  recent.push(now);
+  rateLimitMap.set(ip, recent);
+  return false;
+}
+
+const ALLOWED_ORIGIN = 'https://abroadjobs.eu';
+
 export const POST: APIRoute = async ({ request, url }) => {
+  const origin = request.headers.get('origin');
+  const corsHeaders: Record<string, string> = {};
+  if (origin === ALLOWED_ORIGIN || origin === url.origin) {
+    corsHeaders['Access-Control-Allow-Origin'] = origin;
+  }
+
+  const clientIp = request.headers.get('cf-connecting-ip') ?? request.headers.get('x-forwarded-for') ?? 'unknown';
+  if (isRateLimited(clientIp)) {
+    return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+      status: 429,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
+  }
+
+  // Reject oversized payloads (>1MB)
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength, 10) > 1_048_576) {
+    return new Response(JSON.stringify({ error: 'Request body too large' }), {
+      status: 413,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+    });
+  }
+
   let body: unknown;
   try {
     body = await request.json();
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -23,7 +66,7 @@ export const POST: APIRoute = async ({ request, url }) => {
   if (!parsed.success) {
     return new Response(JSON.stringify({ error: 'Validation failed', details: parsed.error.flatten() }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -31,7 +74,7 @@ export const POST: APIRoute = async ({ request, url }) => {
   if (parsed.data.honeypot) {
     return new Response(JSON.stringify({ error: 'Spam detected' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -82,6 +125,6 @@ export const POST: APIRoute = async ({ request, url }) => {
   ).bind(session.id, pendingId).run();
 
   return new Response(JSON.stringify({ url: session.url }), {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
   });
 };

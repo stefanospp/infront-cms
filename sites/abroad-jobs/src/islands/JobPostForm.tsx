@@ -1,10 +1,9 @@
 import { useState, type FormEvent } from 'react';
 import { z } from 'zod';
 import { jobInputSchema, INDUSTRIES, VISA_OPTIONS, RELOCATION_OPTIONS } from '../lib/validation';
+import { PRICE_PER_JOB_EUR_EUR } from '../lib/config';
 
 type JobFormData = z.infer<typeof jobInputSchema>;
-
-const PRICE_PER_JOB = 89;
 
 const emptyJob: JobFormData = {
   title: '',
@@ -21,14 +20,21 @@ const emptyJob: JobFormData = {
   applyUrl: '',
 };
 
+const INPUT_CLASS =
+  'mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20';
+
+const SELECT_CLASS =
+  'mt-1 block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20';
+
 export default function JobPostForm() {
   const [contactEmail, setContactEmail] = useState('');
   const [jobForms, setJobForms] = useState<JobFormData[]>([{ ...emptyJob }]);
   const [honeypot, setHoneypot] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
-  const totalPrice = jobForms.length * PRICE_PER_JOB;
+  const totalPrice = jobForms.length * PRICE_PER_JOB_EUR;
 
   function updateJob(index: number, field: keyof JobFormData, value: string) {
     setJobForms((prev) => {
@@ -81,6 +87,10 @@ export default function JobPostForm() {
       }
     }
 
+    if (!agreedToTerms) {
+      validationErrors.terms = 'You must agree to the Terms of Service and Privacy Policy.';
+    }
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       setSubmitting(false);
@@ -128,7 +138,7 @@ export default function JobPostForm() {
           required
           value={contactEmail}
           onChange={(e) => setContactEmail(e.target.value)}
-          className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          className={INPUT_CLASS}
           placeholder="you@company.com"
         />
         {errors.contactEmail && <p className="mt-1 text-xs text-red-600">{errors.contactEmail}</p>}
@@ -170,79 +180,85 @@ export default function JobPostForm() {
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             {/* Company name */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-neutral-700">Company name</label>
+              <label htmlFor={`job-${idx}-companyName`} className="block text-sm font-medium text-neutral-700">Company name</label>
               <input
+                id={`job-${idx}-companyName`}
                 type="text"
                 required
                 value={job.companyName}
                 onChange={(e) => updateJob(idx, 'companyName', e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={INPUT_CLASS}
               />
               {errors[`job_${idx}_companyName`] && <p className="mt-1 text-xs text-red-600">{errors[`job_${idx}_companyName`]}</p>}
             </div>
 
             {/* Company website */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700">Company website</label>
+              <label htmlFor={`job-${idx}-companyWebsite`} className="block text-sm font-medium text-neutral-700">Company website</label>
               <input
+                id={`job-${idx}-companyWebsite`}
                 type="url"
                 value={job.companyWebsite}
                 onChange={(e) => updateJob(idx, 'companyWebsite', e.target.value)}
                 placeholder="https://"
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={INPUT_CLASS}
               />
             </div>
 
             {/* Company logo */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700">
+              <label htmlFor={`job-${idx}-companyLogo`} className="block text-sm font-medium text-neutral-700">
                 Company logo URL <span className="text-neutral-400">(optional)</span>
               </label>
               <input
+                id={`job-${idx}-companyLogo`}
                 type="url"
                 value={job.companyLogo}
                 onChange={(e) => updateJob(idx, 'companyLogo', e.target.value)}
                 placeholder="https://company.com/logo.png"
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={INPUT_CLASS}
               />
               <p className="mt-1 text-xs text-neutral-400">Leave blank to auto-detect from your website</p>
             </div>
 
             {/* Job title */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700">Job title</label>
+              <label htmlFor={`job-${idx}-title`} className="block text-sm font-medium text-neutral-700">Job title</label>
               <input
+                id={`job-${idx}-title`}
                 type="text"
                 required
                 value={job.title}
                 onChange={(e) => updateJob(idx, 'title', e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={INPUT_CLASS}
               />
               {errors[`job_${idx}_title`] && <p className="mt-1 text-xs text-red-600">{errors[`job_${idx}_title`]}</p>}
             </div>
 
             {/* Country */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700">Country</label>
+              <label htmlFor={`job-${idx}-country`} className="block text-sm font-medium text-neutral-700">Country</label>
               <input
+                id={`job-${idx}-country`}
                 type="text"
                 required
                 value={job.country}
                 onChange={(e) => updateJob(idx, 'country', e.target.value)}
                 placeholder="e.g. Germany"
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={INPUT_CLASS}
               />
               {errors[`job_${idx}_country`] && <p className="mt-1 text-xs text-red-600">{errors[`job_${idx}_country`]}</p>}
             </div>
 
             {/* Industry */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700">Industry</label>
+              <label htmlFor={`job-${idx}-industry`} className="block text-sm font-medium text-neutral-700">Industry</label>
               <select
+                id={`job-${idx}-industry`}
                 required
                 value={job.industry}
                 onChange={(e) => updateJob(idx, 'industry', e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={SELECT_CLASS}
               >
                 {INDUSTRIES.map((ind) => (
                   <option key={ind} value={ind}>{ind}</option>
@@ -252,26 +268,28 @@ export default function JobPostForm() {
 
             {/* Salary range */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700">
+              <label htmlFor={`job-${idx}-salaryRange`} className="block text-sm font-medium text-neutral-700">
                 Salary range <span className="text-neutral-400">(optional)</span>
               </label>
               <input
+                id={`job-${idx}-salaryRange`}
                 type="text"
                 value={job.salaryRange}
                 onChange={(e) => updateJob(idx, 'salaryRange', e.target.value)}
-                placeholder="e.g. €60,000 – €80,000"
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                placeholder="e.g. €60,000 - €80,000"
+                className={INPUT_CLASS}
               />
             </div>
 
             {/* Visa support */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700">Visa / work permit support</label>
+              <label htmlFor={`job-${idx}-visaSupport`} className="block text-sm font-medium text-neutral-700">Visa / work permit support</label>
               <select
+                id={`job-${idx}-visaSupport`}
                 required
                 value={job.visaSupport}
                 onChange={(e) => updateJob(idx, 'visaSupport', e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={SELECT_CLASS}
               >
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
@@ -281,12 +299,13 @@ export default function JobPostForm() {
 
             {/* Relocation package */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700">Relocation package</label>
+              <label htmlFor={`job-${idx}-relocationPkg`} className="block text-sm font-medium text-neutral-700">Relocation package</label>
               <select
+                id={`job-${idx}-relocationPkg`}
                 required
                 value={job.relocationPkg}
                 onChange={(e) => updateJob(idx, 'relocationPkg', e.target.value)}
-                className="mt-1 block w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={SELECT_CLASS}
               >
                 <option value="yes">Yes</option>
                 <option value="no">No</option>
@@ -296,42 +315,45 @@ export default function JobPostForm() {
 
             {/* Working language */}
             <div>
-              <label className="block text-sm font-medium text-neutral-700">
+              <label htmlFor={`job-${idx}-workingLanguage`} className="block text-sm font-medium text-neutral-700">
                 Working language <span className="text-neutral-400">(optional)</span>
               </label>
               <input
+                id={`job-${idx}-workingLanguage`}
                 type="text"
                 value={job.workingLanguage}
                 onChange={(e) => updateJob(idx, 'workingLanguage', e.target.value)}
                 placeholder="e.g. English"
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={INPUT_CLASS}
               />
             </div>
 
             {/* Apply URL */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-neutral-700">Application URL or email</label>
+              <label htmlFor={`job-${idx}-applyUrl`} className="block text-sm font-medium text-neutral-700">Application URL or email</label>
               <input
+                id={`job-${idx}-applyUrl`}
                 type="text"
                 required
                 value={job.applyUrl}
                 onChange={(e) => updateJob(idx, 'applyUrl', e.target.value)}
                 placeholder="https://company.com/apply or mailto:jobs@company.com"
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={INPUT_CLASS}
               />
               {errors[`job_${idx}_applyUrl`] && <p className="mt-1 text-xs text-red-600">{errors[`job_${idx}_applyUrl`]}</p>}
             </div>
 
             {/* Description */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-neutral-700">Job description</label>
+              <label htmlFor={`job-${idx}-description`} className="block text-sm font-medium text-neutral-700">Job description</label>
               <textarea
+                id={`job-${idx}-description`}
                 required
                 rows={8}
                 value={job.description}
                 onChange={(e) => updateJob(idx, 'description', e.target.value)}
                 placeholder="Describe the role, responsibilities, requirements, and what makes this opportunity unique..."
-                className="mt-1 block w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+                className={INPUT_CLASS}
               />
               {errors[`job_${idx}_description`] && <p className="mt-1 text-xs text-red-600">{errors[`job_${idx}_description`]}</p>}
             </div>
@@ -351,12 +373,34 @@ export default function JobPostForm() {
         Add another job
       </button>
 
+      {/* Terms consent */}
+      <div className="flex items-start gap-3">
+        <input
+          id="agree-terms"
+          type="checkbox"
+          checked={agreedToTerms}
+          onChange={(e) => setAgreedToTerms(e.target.checked)}
+          className="mt-1 h-4 w-4 rounded border-neutral-300 text-primary-600 focus:ring-2 focus:ring-primary-500/20"
+        />
+        <label htmlFor="agree-terms" className="text-sm text-neutral-600">
+          I agree to the{' '}
+          <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-primary-600 underline hover:text-primary-700">
+            Terms of Service
+          </a>{' '}
+          and{' '}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-primary-600 underline hover:text-primary-700">
+            Privacy Policy
+          </a>
+        </label>
+      </div>
+      {errors.terms && <p className="-mt-6 text-xs text-red-600">{errors.terms}</p>}
+
       {/* Price summary + submit */}
       <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 sm:p-5">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-neutral-600">
-              {jobForms.length} {jobForms.length === 1 ? 'job' : 'jobs'} &times; &euro;{PRICE_PER_JOB}
+              {jobForms.length} {jobForms.length === 1 ? 'job' : 'jobs'} &times; &euro;{PRICE_PER_JOB_EUR}
             </p>
             <p className="mt-0.5 text-xl font-bold text-neutral-900">&euro;{totalPrice}</p>
           </div>

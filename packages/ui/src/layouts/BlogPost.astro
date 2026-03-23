@@ -16,6 +16,7 @@ export interface Props {
   author?: string;
   publishedDate?: string;
   featuredImage?: string;
+  featuredImageAlt?: string;
 }
 
 const {
@@ -23,6 +24,7 @@ const {
   author,
   publishedDate,
   featuredImage,
+  featuredImageAlt,
   config,
   ...rest
 } = Astro.props;
@@ -93,7 +95,7 @@ const formattedDate = publishedDate
             <div class="mt-8 overflow-hidden rounded-xl">
               <img
                 src={featuredImage}
-                alt={title}
+                alt={featuredImageAlt || title}
                 class="h-auto w-full object-cover"
                 loading="eager"
               />

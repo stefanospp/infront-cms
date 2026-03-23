@@ -70,18 +70,7 @@ docker stop infront-admin 2>/dev/null || true
 docker rm infront-admin 2>/dev/null || true
 
 # Prompt for env vars if not set
-if [ -z "${ADMIN_PASSWORD_HASH:-}" ]; then
-  echo ""
-  echo "  Enter admin password (will be hashed):"
-  read -r ADMIN_PASSWORD
-  ADMIN_PASSWORD_HASH=$(docker run --rm infront-admin node -e "import('bcryptjs').then(b=>b.default.hash('${ADMIN_PASSWORD}',10).then(console.log))")
-  echo "  Password hashed."
-fi
-
-if [ -z "${SESSION_SECRET:-}" ]; then
-  SESSION_SECRET=$(openssl rand -hex 32)
-  echo "  Generated session secret."
-fi
+# Auth is handled by BetterAuth at auth.infront.cy — no local password hash needed.
 
 if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
   echo ""
@@ -107,8 +96,6 @@ docker run -d \
   -e HOST=0.0.0.0 \
   -e PORT=4321 \
   -e NODE_ENV=production \
-  -e "ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH}" \
-  -e "SESSION_SECRET=${SESSION_SECRET}" \
   -e "CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}" \
   -e "CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}" \
   -e "CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" \
@@ -188,7 +175,7 @@ echo "  Setup complete!"
 echo "============================================"
 echo ""
 echo "  Admin URL:  https://web.infront.cy"
-echo "  Password:   the one you entered above"
+echo "  Auth:       BetterAuth SSO at auth.infront.cy"
 echo ""
 echo "  To update the admin later:"
 echo "    cd /opt/infront-cms"

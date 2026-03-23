@@ -14,6 +14,51 @@ import { createDnsRecord, addWorkerCustomDomain } from './cloudflare';
 const execFileAsync = promisify(execFile);
 
 // ---------------------------------------------------------------------------
+// File-based deploy lock — prevents concurrent deploys for the same site
+// ---------------------------------------------------------------------------
+
+function deployLockPath(slug: string): string {
+  const root = getMonorepoRoot();
+  return path.join(root, 'sites', slug, '.deploy.lock');
+}
+
+async function acquireDeployLock(slug: string): Promise<boolean> {
+  const lockFile = deployLockPath(slug);
+  try {
+    // O_EXCL ensures atomic creation — fails if the file already exists
+    const handle = await fs.open(lockFile, 'wx');
+    await handle.writeFile(JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString() }));
+    await handle.close();
+    return true;
+  } catch (err: unknown) {
+    if ((err as NodeJS.ErrnoException).code === 'EEXIST') {
+      // Lock file exists — check if it is stale (older than 10 minutes)
+      try {
+        const stat = await fs.stat(lockFile);
+        const ageMs = Date.now() - stat.mtimeMs;
+        if (ageMs > 10 * 60 * 1000) {
+          // Stale lock — remove and retry
+          await fs.unlink(lockFile);
+          return acquireDeployLock(slug);
+        }
+      } catch {
+        // stat/unlink failed — treat as locked
+      }
+      return false;
+    }
+    throw err;
+  }
+}
+
+async function releaseDeployLock(slug: string): Promise<void> {
+  try {
+    await fs.unlink(deployLockPath(slug));
+  } catch {
+    // Ignore — lock file may already be removed
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -60,7 +105,10 @@ export async function writeDeployMetadata(
   slug: string,
   meta: DeployMetadata,
 ): Promise<void> {
-  await fs.writeFile(deployMetaPath(slug), JSON.stringify(meta, null, 2), 'utf-8');
+  const target = deployMetaPath(slug);
+  const tmp = `${target}.${process.pid}.tmp`;
+  await fs.writeFile(tmp, JSON.stringify(meta, null, 2), 'utf-8');
+  await fs.rename(tmp, target);
 }
 
 // ---------------------------------------------------------------------------
@@ -79,7 +127,7 @@ async function wranglerDeploy(siteDir: string): Promise<void> {
       cwd: siteDir,
       timeout: 120_000,
       env: {
-        // Only pass required env vars — don't leak SESSION_SECRET, ADMIN_PASSWORD_HASH, etc.
+        // Only pass required env vars — don't leak other secrets.
         PATH: globalThis.process?.env?.PATH ?? '/usr/local/bin:/usr/bin:/bin',
         HOME: globalThis.process?.env?.HOME ?? '/app',
         NODE_ENV: globalThis.process?.env?.NODE_ENV ?? 'production',
@@ -100,6 +148,12 @@ async function wranglerDeploy(siteDir: string): Promise<void> {
  * step so the admin UI can poll for status.
  */
 export async function deployNewSite(slug: string): Promise<void> {
+  const lockAcquired = await acquireDeployLock(slug);
+  if (!lockAcquired) {
+    console.error(`[deploy] Deploy already in progress for ${slug}, skipping.`);
+    return;
+  }
+
   const root = getMonorepoRoot();
   const siteDir = path.join(root, 'sites', slug);
 
@@ -119,66 +173,66 @@ export async function deployNewSite(slug: string): Promise<void> {
 
   // ------ Step 1: Build ------
   try {
-    await writeDeployMetadata(slug, meta);
-  } catch (err) {
-    console.error(`[deploy] Failed to write initial metadata for ${slug}:`, err instanceof Error ? err.message : err);
-    return;
-  }
-
-  const buildResult = await buildSite(slug);
-
-  if (!buildResult.success) {
-    meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed', buildLog: buildResult.buildLog ?? buildResult.error ?? null };
     try {
       await writeDeployMetadata(slug, meta);
     } catch (err) {
-      console.error(`[deploy] Failed to write build-failure metadata for ${slug}:`, err instanceof Error ? err.message : err);
+      console.error(`[deploy] Failed to write initial metadata for ${slug}:`, err instanceof Error ? err.message : err);
+      return;
     }
-    return;
-  }
 
-  // Store build log
-  meta = { ...meta, buildLog: buildResult.buildLog ?? 'Build completed successfully' };
-
-  // ------ Step 2: Deploy to Workers ------
-  try {
-    meta = { ...meta, status: 'deploying' };
-    await writeDeployMetadata(slug, meta);
-
-    // Deploy to Workers (creates worker automatically from wrangler.toml)
-    await wranglerDeploy(siteDir);
-
-    const workersDevUrl = `${slug}.workers.dev`;
-    meta = { ...meta, workersDevUrl };
-
-    // Create a CNAME DNS record pointing to the Workers subdomain
-    const stagingDomain = `${slug}.infront.cy`;
-    const dnsRecordId = await createDnsRecord(slug, workersDevUrl);
-    meta = { ...meta, dnsRecordId };
-
-    // Add Workers Custom Domain for SSL on the staging domain
-    await addWorkerCustomDomain(slug, stagingDomain);
-
-    // All done
-    meta = {
-      ...meta,
-      stagingUrl: stagingDomain,
-      lastDeployAt: new Date().toISOString(),
-      status: 'live',
-      error: null,
-    };
-    await writeDeployMetadata(slug, meta);
-  } catch (err) {
-    meta = {
-      ...meta,
-      status: 'failed',
-      error: err instanceof Error ? err.message : String(err),
-    };
     try {
+      const buildResult = await buildSite(slug);
+
+      if (!buildResult.success) {
+        meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed', buildLog: buildResult.buildLog ?? buildResult.error ?? null };
+        await writeDeployMetadata(slug, meta);
+        return;
+      }
+
+      // Store build log
+      meta = { ...meta, buildLog: buildResult.buildLog ?? 'Build completed successfully' };
+
+      // ------ Step 2: Deploy to Workers ------
+      meta = { ...meta, status: 'deploying' };
       await writeDeployMetadata(slug, meta);
-    } catch (writeErr) {
-      console.error(`[deploy] Failed to write deploy-failure metadata for ${slug}:`, writeErr instanceof Error ? writeErr.message : writeErr);
+
+      // Deploy to Workers (creates worker automatically from wrangler.toml)
+      await wranglerDeploy(siteDir);
+
+      const workersDevUrl = `${slug}.workers.dev`;
+      meta = { ...meta, workersDevUrl };
+
+      // Create a CNAME DNS record pointing to the Workers subdomain
+      const stagingDomain = `${slug}.infront.cy`;
+      const dnsRecordId = await createDnsRecord(slug, workersDevUrl);
+      meta = { ...meta, dnsRecordId };
+
+      // Add Workers Custom Domain for SSL on the staging domain
+      await addWorkerCustomDomain(slug, stagingDomain);
+
+      // All done
+      meta = {
+        ...meta,
+        stagingUrl: stagingDomain,
+        lastDeployAt: new Date().toISOString(),
+        status: 'live',
+        error: null,
+      };
+      await writeDeployMetadata(slug, meta);
+    } catch (err) {
+      meta = {
+        ...meta,
+        status: 'failed',
+        error: err instanceof Error ? err.message : String(err),
+      };
+      try {
+        await writeDeployMetadata(slug, meta);
+      } catch (writeErr) {
+        console.error(`[deploy] Failed to write deploy-failure metadata for ${slug}:`, writeErr instanceof Error ? writeErr.message : writeErr);
+      }
     }
+  } finally {
+    await releaseDeployLock(slug);
   }
 }
 
@@ -187,62 +241,68 @@ export async function deployNewSite(slug: string): Promise<void> {
  * Reads the existing .deploy.json for project details.
  */
 export async function redeploySite(slug: string): Promise<void> {
+  const lockAcquired = await acquireDeployLock(slug);
+  if (!lockAcquired) {
+    throw new Error(`Deploy already in progress for "${slug}".`);
+  }
+
   const root = getMonorepoRoot();
   const siteDir = path.join(root, 'sites', slug);
 
   let meta = await readDeployMetadata(slug);
   if (!meta) {
+    await releaseDeployLock(slug);
     throw new Error(
       `No deploy metadata found for "${slug}". Has this site been deployed before?`,
     );
   }
 
-  // ------ Step 1: Build ------
   try {
-    meta = { ...meta, status: 'building', error: null };
-    await writeDeployMetadata(slug, meta);
-  } catch (err) {
-    console.error(`[redeploy] Failed to write building metadata for ${slug}:`, err instanceof Error ? err.message : err);
-  }
-
-  const buildResult = await buildSite(slug);
-
-  if (!buildResult.success) {
-    meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed', buildLog: buildResult.buildLog ?? buildResult.error ?? null };
+    // ------ Step 1: Build ------
     try {
+      meta = { ...meta, status: 'building', error: null };
       await writeDeployMetadata(slug, meta);
     } catch (err) {
-      console.error(`[redeploy] Failed to write build-failure metadata for ${slug}:`, err instanceof Error ? err.message : err);
+      console.error(`[redeploy] Failed to write building metadata for ${slug}:`, err instanceof Error ? err.message : err);
     }
-    return;
-  }
 
-  // ------ Step 2: Deploy to Workers ------
-  try {
-    meta = { ...meta, status: 'deploying', buildLog: buildResult.buildLog ?? 'Build completed successfully' };
-    await writeDeployMetadata(slug, meta);
-
-    // Upload new assets — wrangler deploy updates the existing Worker
-    await wranglerDeploy(siteDir);
-
-    // Update metadata
-    meta = {
-      ...meta,
-      lastDeployAt: new Date().toISOString(),
-      status: 'live',
-      error: null,
-    };
-    await writeDeployMetadata(slug, meta);
-  } catch (err) {
-    meta = {
-      ...meta,
-      status: 'failed',
-      error: err instanceof Error ? err.message : String(err),
-    };
     try {
+      const buildResult = await buildSite(slug);
+
+      if (!buildResult.success) {
+        meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed', buildLog: buildResult.buildLog ?? buildResult.error ?? null };
+        await writeDeployMetadata(slug, meta);
+        return;
+      }
+
+      // ------ Step 2: Deploy to Workers ------
+      meta = { ...meta, status: 'deploying', buildLog: buildResult.buildLog ?? 'Build completed successfully' };
       await writeDeployMetadata(slug, meta);
-    } catch (writeErr) {
-      console.error(`[redeploy] Failed to write deploy-failure metadata for ${slug}:`, writeErr instanceof Error ? writeErr.message : writeErr);
+
+      // Upload new assets — wrangler deploy updates the existing Worker
+      await wranglerDeploy(siteDir);
+
+      // Update metadata
+      meta = {
+        ...meta,
+        lastDeployAt: new Date().toISOString(),
+        status: 'live',
+        error: null,
+      };
+      await writeDeployMetadata(slug, meta);
+    } catch (err) {
+      meta = {
+        ...meta,
+        status: 'failed',
+        error: err instanceof Error ? err.message : String(err),
+      };
+      try {
+        await writeDeployMetadata(slug, meta);
+      } catch (writeErr) {
+        console.error(`[redeploy] Failed to write deploy-failure metadata for ${slug}:`, writeErr instanceof Error ? writeErr.message : writeErr);
+      }
     }
+  } finally {
+    await releaseDeployLock(slug);
   }
 }

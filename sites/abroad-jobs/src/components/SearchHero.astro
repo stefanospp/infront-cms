@@ -1,5 +1,5 @@
 ---
-import type { INDUSTRIES } from '../lib/validation';
+import { INDUSTRIES } from '../lib/validation';
 
 export interface Props {
   query?: string;
@@ -10,17 +10,7 @@ export interface Props {
 
 const { query = '', country = '', industry = '', jobCount = 0 } = Astro.props;
 
-const industries: string[] = [
-  'Hospitality & Tourism',
-  'Renewable Energy',
-  'Digital Marketing',
-  'Finance & Fintech',
-  'Healthcare',
-  'Education',
-  'Construction',
-  'Technology',
-  'Other',
-];
+const industries = INDUSTRIES;
 ---
 
 <section class="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 px-4 py-14 sm:px-6 sm:py-20">
@@ -101,11 +91,11 @@ const industries: string[] = [
           <select
             id="industry-filter"
             name="industry"
-            class="w-full rounded-xl border-0 bg-white/15 px-4 py-2.5 text-sm text-white backdrop-blur-sm focus:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors"
+            class="w-full rounded-xl border-0 bg-white/15 px-4 py-2.5 text-sm text-white backdrop-blur-sm focus:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/20 transition-colors [&>option]:bg-white [&>option]:text-neutral-900"
           >
-            <option value="" class="text-neutral-900">All industries</option>
+            <option value="" class="bg-white text-neutral-900">All industries</option>
             {industries.map((ind) => (
-              <option value={ind} selected={industry === ind} class="text-neutral-900">{ind}</option>
+              <option value={ind} selected={industry === ind} class="bg-white text-neutral-900">{ind}</option>
             ))}
           </select>
         </div>

@@ -181,17 +181,17 @@ Then edit \`site.config.ts\` and \`src/styles/global.css\` with client branding.
 
 \`\`\`bash
 # Client site
-npm run dev --workspace=sites/<slug>
+pnpm dev --workspace=sites/<slug>
 
 # Admin UI
-npm run dev --workspace=sites/admin
+pnpm dev --workspace=sites/admin
 \`\`\`
 
 ## Build & deploy
 
 \`\`\`bash
 # Build
-npm run build --workspace=sites/<slug>
+pnpm build --workspace=sites/<slug>
 
 # Or redeploy via admin UI — click "Redeploy" on the site management page
 \`\`\`
@@ -199,9 +199,9 @@ npm run build --workspace=sites/<slug>
 ## Code quality
 
 \`\`\`bash
-npm run lint        # ESLint
-npm run typecheck   # TypeScript strict
-npm run format      # Prettier
+pnpm lint        # ESLint
+pnpm typecheck   # TypeScript strict
+pnpm format      # Prettier
 \`\`\`
 
 ## Run tests
@@ -275,11 +275,11 @@ graph TD
 
 ## Workspace commands
 
-All workspaces are managed via npm. To target a specific workspace:
+All workspaces are managed via pnpm. To target a specific workspace:
 
 \`\`\`bash
-npm run dev --workspace=sites/<slug>
-npm run build --workspace=sites/<slug>
+pnpm dev --workspace=sites/<slug>
+pnpm build --workspace=sites/<slug>
 \`\`\`
 
 ## Path aliases
@@ -447,7 +447,7 @@ The dashboard is the home page of the admin UI. It shows:
 | Badge | Meaning |
 |-------|---------|
 | **Pending** (yellow) | Site created, build not started yet |
-| **Building** (blue) | \`npm install\` + \`npm run build\` in progress |
+| **Building** (blue) | \`pnpm install\` + \`pnpm build\` in progress |
 | **Deploying** (blue) | Uploading to Cloudflare Pages |
 | **Live** (green) | Successfully deployed and accessible |
 | **Failed** (red) | Build or deploy error — check site detail for error message |
@@ -573,7 +573,7 @@ Review all settings and click **Create Site**. The system:
 
 1. Generates the site from the template
 2. Writes \`site.config.ts\` and \`global.css\` with your settings
-3. Builds the site (\`npm install\` + \`npm run build\`)
+3. Builds the site (\`pnpm install\` + \`pnpm build\`)
 4. Deploys to Cloudflare Pages via \`wrangler\`
 5. Creates DNS CNAME record for \`<slug>.infront.cy\`
 6. Site goes live at the staging URL
@@ -720,8 +720,8 @@ sequenceDiagram
     Gen->>API: Return success
     API-->>UI: 201 Created (staging URL)
     API->>Build: Fire-and-forget deploy
-    Build->>Build: npm install
-    Build->>Build: npm run build
+    Build->>Build: pnpm install
+    Build->>Build: pnpm build
     Build->>CF: wrangler pages deploy
     CF-->>Build: Deploy ID
     Build->>DNS: Create CNAME record
@@ -821,7 +821,7 @@ After running the script, you need to:
 - [ ] (CMS tiers) Start CMS: \`cd infra/docker/<slug> && docker compose up -d\`
 - [ ] Add DNS records for the domain
 - [ ] Add client content and pages
-- [ ] Test locally: \`npm run dev --workspace=sites/<slug>\`
+- [ ] Test locally: \`pnpm dev --workspace=sites/<slug>\`
 - [ ] Deploy via admin UI or manually
 
 ## Differences from wizard
@@ -2434,7 +2434,7 @@ sequenceDiagram
     Admin->>API: Create / Redeploy
     API->>API: Write .deploy.json (pending)
     API-->>Admin: 200 OK (fire-and-forget)
-    API->>Build: npm install + npm run build
+    API->>Build: pnpm install + pnpm build
     Note over Build: Status: building
     Build->>CF: wrangler pages deploy
     Note over CF: Status: deploying
@@ -2447,8 +2447,8 @@ sequenceDiagram
 
 ## Build step
 
-1. \`npm install\` at monorepo root (registers workspace, 60s timeout)
-2. \`npm run build --workspace=sites/<slug>\` (Astro build, 120s timeout)
+1. \`pnpm install\` at monorepo root (registers workspace, 60s timeout)
+2. \`pnpm build --workspace=sites/<slug>\` (Astro build, 120s timeout)
 3. Output goes to \`sites/<slug>/dist/\`
 
 Uses \`execFile\` (not \`exec\`) for security — slug is passed as an argument, not interpolated into a shell command.
@@ -2673,15 +2673,15 @@ Returns 409 if a deploy is already in progress.
 ## Via CLI
 
 \`\`\`bash
-npm run build --workspace=sites/<slug>
+pnpm build --workspace=sites/<slug>
 npx wrangler pages deploy sites/<slug>/dist --project-name <slug>
 \`\`\`
 
 ## What happens during redeploy
 
 1. Status set to \`building\`
-2. \`npm install\` at monorepo root
-3. \`npm run build --workspace=sites/<slug>\`
+2. \`pnpm install\` at monorepo root
+3. \`pnpm build --workspace=sites/<slug>\`
 4. Status set to \`deploying\`
 5. \`wrangler pages deploy\` uploads new assets
 6. Status set to \`live\`
@@ -3176,7 +3176,7 @@ use: {
   trace: 'on-first-retry'
 }
 webServer: {
-  command: 'npm run preview --workspace=sites/template'
+  command: 'pnpm preview --workspace=sites/template'
   port: 4321
   reuseExistingServer: !process.env.CI
 }
@@ -3542,70 +3542,31 @@ If you need to add a third-party script (e.g., chat widget, analytics):
   // API REFERENCE
   // =========================================================================
   {
-    id: 'api-auth-login',
-    title: 'POST /api/auth/login',
-    description: 'Authenticate with the admin password and receive a session cookie.',
+    id: 'api-auth',
+    title: 'Authentication (BetterAuth SSO)',
+    description: 'Authentication is handled by BetterAuth SSO at auth.infront.cy. The admin no longer has its own login/logout API routes.',
     category: 'api-reference',
-    tags: ['auth', 'login', 'password', 'session', 'jwt', 'cookie'],
-    relatedArticles: ['api-auth-logout'],
+    tags: ['auth', 'login', 'logout', 'session', 'sso', 'betterauth'],
+    relatedArticles: [],
     body: `
-## Request
+## Overview
 
-\`\`\`
-POST /api/auth/login
-Content-Type: application/json
+Authentication is handled centrally by **BetterAuth SSO** at \`auth.infront.cy\`. The previous \`/api/auth/login\` and \`/api/auth/logout\` routes have been removed.
 
-{
-  "password": "your-admin-password"
-}
-\`\`\`
+## How it works
 
-## Response (200 OK)
+1. Unauthenticated users are redirected to \`auth.infront.cy\` for login.
+2. After successful authentication, the user is redirected back to the admin with a session cookie.
+3. The admin middleware validates the BetterAuth session on each request.
 
-\`\`\`json
-{ "ok": true }
-\`\`\`
+## Logging out
 
-Sets a \`session\` cookie:
-- \`httpOnly: true\`
-- \`secure: true\`
-- \`sameSite: strict\`
-- \`maxAge: 86400\` (24 hours)
-- Contains a JWT signed with \`SESSION_SECRET\`
+Logout is handled via the BetterAuth SSO provider. Users are redirected to \`auth.infront.cy\` to end their session.
 
-## Error responses
+## Environment variables
 
-| Status | Body | Cause |
-|--------|------|-------|
-| 400 | \`{ "error": "Password is required" }\` | Missing or non-string password |
-| 400 | \`{ "error": "Invalid request" }\` | JSON parsing failed |
-| 401 | \`{ "error": "Invalid password" }\` | bcrypt comparison failed |
-| 500 | \`{ "error": "Server configuration error" }\` | Missing env vars |
-`,
-  },
-  {
-    id: 'api-auth-logout',
-    title: 'POST /api/auth/logout',
-    description: 'Clear the session cookie and log out.',
-    category: 'api-reference',
-    tags: ['auth', 'logout', 'session', 'clear'],
-    relatedArticles: ['api-auth-login'],
-    body: `
-## Request
-
-\`\`\`
-POST /api/auth/logout
-\`\`\`
-
-No body required.
-
-## Response (200 OK)
-
-\`\`\`json
-{ "ok": true }
-\`\`\`
-
-Clears the \`session\` cookie (\`maxAge: 0\`).
+- \`BETTER_AUTH_URL\` — URL of the BetterAuth instance (e.g., \`https://auth.infront.cy\`)
+- \`BETTER_AUTH_SECRET\` — shared secret for session validation
 `,
   },
   {
@@ -3689,7 +3650,7 @@ See the [Wizard Creation Flow](#article/wizard-creation-flow) for the full reque
 {
   "success": true,
   "sitePath": "/app/sites/acme-corp",
-  "checklist": ["pnpm install", "pnpm dev --filter @agency/acme-corp"],
+  "checklist": ["ppnpm install", "pnpm dev --filter @agency/acme-corp"],
   "stagingUrl": "https://acme-corp.infront.cy",
   "deployStatus": "pending"
 }
@@ -4021,9 +3982,9 @@ Stops all running dev servers.
 
 \`\`\`
 1. Edit files in sites/<slug>/
-2. Preview: npm run dev --workspace=sites/<slug>
+2. Preview: pnpm dev --workspace=sites/<slug>
 3. Redeploy via admin UI "Redeploy" button
-   (or: npm run build --workspace=sites/<slug> && wrangler pages deploy)
+   (or: pnpm build --workspace=sites/<slug> && wrangler pages deploy)
 \`\`\`
 
 ## Quick reference: what to edit
@@ -4118,7 +4079,7 @@ const { title, price, features, class: className } = Astro.props;
 ### Step 2: Test locally
 
 \`\`\`bash
-npm run dev --workspace=sites/acme-corp
+pnpm dev --workspace=sites/acme-corp
 \`\`\`
 
 ### Step 3: Move to packages/ui (if reusable)
@@ -4192,7 +4153,7 @@ CI/CD workflows trigger based on file paths:
 Runs on every push to main and PRs. 5 jobs:
 
 1. **Lint & Typecheck** — ESLint + TypeScript strict
-2. **Security Audit** — \`npm audit --audit-level=critical\`
+2. **Security Audit** — \`pnpm audit --audit-level=critical\`
 3. **Integration Tests** — Vitest
 4. **E2E Tests** — Playwright (builds template site first)
 5. **Lighthouse CI** — Performance, accessibility, SEO (depends on e2e)
@@ -4201,8 +4162,8 @@ Runs on every push to main and PRs. 5 jobs:
 
 Triggers on push to main when \`sites/template/**\` or \`packages/**\` change.
 
-1. \`npm ci\`
-2. \`npm run build --workspace=sites/template\`
+1. \`pnpm install --frozen-lockfile\`
+2. \`pnpm build --workspace=sites/template\`
 3. \`npx wrangler pages deploy sites/template/dist --project-name=template\`
 
 ## deploy-directus.yml
@@ -4381,7 +4342,7 @@ WCAG 2.1 Level AA is mandatory on all sites. This is enforced by:
 error TS2345: Argument of type 'string' is not assignable to parameter of type ...
 \`\`\`
 
-**Fix:** Run \`npm run typecheck\` locally to see all errors. Fix them before deploying.
+**Fix:** Run \`pnpm typecheck\` locally to see all errors. Fix them before deploying.
 
 ### Missing dependencies
 
@@ -4389,7 +4350,7 @@ error TS2345: Argument of type 'string' is not assignable to parameter of type .
 Error: Cannot find module '@agency/ui/components/Hero.astro'
 \`\`\`
 
-**Fix:** Run \`npm install\` at the monorepo root. Check that the workspace is registered in the root \`package.json\`.
+**Fix:** Run \`pnpm install\` at the monorepo root. Check that the workspace is registered in the root \`package.json\`.
 
 ### Tailwind classes not generating
 
@@ -4407,19 +4368,19 @@ Components render without styles — classes like \`bg-primary-600\` aren't in t
 
 Build exceeds the 120-second timeout.
 
-**Fix:** Check for circular dependencies, very large image files being processed, or excessive page count. The build runs \`npm install\` (60s limit) + \`npm run build\` (120s limit).
+**Fix:** Check for circular dependencies, very large image files being processed, or excessive page count. The build runs \`pnpm install\` (60s limit) + \`pnpm build\` (120s limit).
 
 ## Debugging locally
 
 \`\`\`bash
 # Run the same build that the deploy pipeline runs
-npm run build --workspace=sites/<slug>
+pnpm build --workspace=sites/<slug>
 
 # Check for type errors
-npm run typecheck
+pnpm typecheck
 
 # Check for lint issues
-npm run lint
+pnpm lint
 \`\`\`
 `,
   },

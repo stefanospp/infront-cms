@@ -22,7 +22,7 @@ const config: SiteConfig = {
     titleTemplate: '%s | Agency Template',
     defaultDescription:
       'A professional website template built with Astro, Tailwind CSS, and modern web standards.',
-    defaultOgImage: '/og-default.jpg',
+    defaultOgImage: '/og-default.svg',
     structuredData: {
       type: 'Organization',
     },

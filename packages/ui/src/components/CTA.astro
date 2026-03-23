@@ -6,6 +6,7 @@ export interface Props {
   buttonText: string;
   buttonHref: string;
   image?: string;
+  imageAlt?: string;
   class?: string;
 }
 
@@ -16,6 +17,7 @@ const {
   buttonText,
   buttonHref,
   image,
+  imageAlt = heading,
   class: className,
 } = Astro.props;
 ---
@@ -79,7 +81,7 @@ const {
         </div>
         {image && (
           <div class="overflow-hidden rounded-xl">
-            <img src={image} alt="" class="h-full w-full object-cover" loading="lazy" />
+            <img src={image} alt={imageAlt} class="h-full w-full object-cover" loading="lazy" />
           </div>
         )}
       </div>

@@ -1,12 +1,11 @@
 import Stripe from 'stripe';
+import { PRICE_PER_JOB_CENTS } from './config';
 
 export function getStripe(secretKey: string) {
   return new Stripe(secretKey, {
     apiVersion: '2025-04-30.basil',
   });
 }
-
-const PRICE_PER_JOB_CENTS = 8900; // €89.00
 
 export function createCheckoutParams(
   jobCount: number,

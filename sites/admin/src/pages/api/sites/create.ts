@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { z } from 'zod';
-import { generateSite } from '@/lib/generator';
+import { generateSite, RESERVED_SLUGS } from '@/lib/generator';
 import type { CreateSitePayload } from '@/lib/generator';
 import { writeDeployMetadata, deployNewSite } from '@/lib/deploy';
 import { auditLog } from '@agency/utils/logger';
@@ -37,7 +37,10 @@ const createSiteSchema = z.object({
     .regex(
       /^[a-z][a-z0-9-]+$/,
       'Slug must be lowercase, start with a letter, and contain only letters, numbers, and hyphens',
-    ),
+    )
+    .refine((val) => !RESERVED_SLUGS.has(val), {
+      message: 'This slug is reserved and cannot be used',
+    }),
   name: z.string().min(1, 'Name is required'),
   tagline: z.string().min(1, 'Tagline is required'),
   domain: z.string().min(3, 'Domain is required'),
@@ -74,8 +77,17 @@ const createSiteSchema = z.object({
     structuredData: z
       .object({
         type: z.string(),
+        name: z.string().optional(),
+        url: z.string().optional(),
+        logo: z.string().optional(),
+        description: z.string().optional(),
+        sameAs: z.array(z.string()).optional(),
+        address: addressSchema.optional(),
+        telephone: z.string().optional(),
+        email: z.string().optional(),
+        priceRange: z.string().optional(),
+        image: z.string().optional(),
       })
-      .passthrough()
       .optional(),
   }),
   nav: z.object({
@@ -139,6 +151,15 @@ const createSiteSchema = z.object({
 });
 
 export const POST: APIRoute = async ({ request }) => {
+  // Reject oversized payloads (>5MB)
+  const contentLength = request.headers.get('content-length');
+  if (contentLength && parseInt(contentLength, 10) > 5_242_880) {
+    return new Response(
+      JSON.stringify({ error: 'Request body too large' }),
+      { status: 413, headers: { 'Content-Type': 'application/json' } },
+    );
+  }
+
   try {
     const body = await request.json();
 
@@ -206,8 +227,7 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error:
-          err instanceof Error ? err.message : 'Internal server error',
+        error: 'Internal server error',
         sitePath: '',
         checklist: [],
       }),

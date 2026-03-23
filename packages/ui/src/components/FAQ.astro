@@ -20,11 +20,11 @@ const plusIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
     <div class:list={['mx-auto max-w-3xl divide-y divide-neutral-200', className]}>
       {items.map((item) => (
         <details class="group py-6">
-          <summary class="flex cursor-pointer list-none items-center justify-between text-left">
+          <summary class="flex cursor-pointer list-none items-center justify-between text-left [&::-webkit-details-marker]:hidden">
             <h3 class="font-heading text-base font-semibold text-neutral-900 pr-4">
               {item.question}
             </h3>
-            <span class="ml-4 flex-shrink-0 text-neutral-400 transition-transform duration-200 group-open:rotate-45">
+            <span class="ml-4 flex-shrink-0 text-neutral-400 transition-transform duration-200 group-open:rotate-45" aria-hidden="true">
               <Fragment set:html={plusIcon} />
             </span>
           </summary>
@@ -42,11 +42,11 @@ const plusIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
     <div class:list={['mx-auto grid max-w-5xl grid-cols-1 gap-x-12 gap-y-0 md:grid-cols-2', className]}>
       {items.map((item) => (
         <details class="group border-b border-neutral-200 py-6">
-          <summary class="flex cursor-pointer list-none items-center justify-between text-left">
+          <summary class="flex cursor-pointer list-none items-center justify-between text-left [&::-webkit-details-marker]:hidden">
             <h3 class="font-heading text-base font-semibold text-neutral-900 pr-4">
               {item.question}
             </h3>
-            <span class="ml-4 flex-shrink-0 text-neutral-400 transition-transform duration-200 group-open:rotate-45">
+            <span class="ml-4 flex-shrink-0 text-neutral-400 transition-transform duration-200 group-open:rotate-45" aria-hidden="true">
               <Fragment set:html={plusIcon} />
             </span>
           </summary>

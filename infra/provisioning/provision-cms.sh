@@ -96,8 +96,19 @@ fi
 
 if [ -f "${DOCKER_DIR}/.env" ]; then
   warn "Using existing .env (delete it to regenerate credentials)"
-  # shellcheck disable=SC1090
-  source "${DOCKER_DIR}/.env"
+  # Parse .env line-by-line to avoid arbitrary code execution
+  while IFS='=' read -r key value; do
+    # Skip empty lines and comments
+    case "$key" in
+      ''|\#*) continue ;;
+    esac
+    # Remove surrounding quotes from value
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    export "$key=$value"
+  done < "${DOCKER_DIR}/.env"
   PORT="${PORT:-8055}"
   ADMIN_EMAIL="${ADMIN_EMAIL:-admin@${DOMAIN}}"
   ADMIN_PASSWORD="${ADMIN_PASSWORD:-}"

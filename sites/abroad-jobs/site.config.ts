@@ -14,7 +14,7 @@ const config: SiteConfig = {
     defaultTitle: 'Jobs Abroad with Relocation Support — AbroadJobs.eu',
     titleTemplate: '%s | AbroadJobs.eu',
     defaultDescription: 'Find jobs abroad with visa sponsorship and relocation packages. Employers post, job seekers browse for free.',
-    defaultOgImage: '/og-default.jpg',
+    defaultOgImage: '/og-default.svg',
   },
 
   nav: {

@@ -19,6 +19,28 @@ const json = (body: Record<string, unknown>, status: number) =>
     headers: { 'Content-Type': 'application/json' },
   });
 
+function isValidImageMagicBytes(buffer: Buffer, ext: string): boolean {
+  if (buffer.length < 12) return false;
+
+  switch (ext) {
+    case '.jpg':
+    case '.jpeg':
+      return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+    case '.png':
+      return buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47;
+    case '.gif':
+      return buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46;
+    case '.webp':
+      return (
+        buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+        buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50
+      );
+    // SVG, AVIF, ICO — skip magic byte check (SVG is text, others are less common)
+    default:
+      return true;
+  }
+}
+
 function getMediaDir(slug: string): string {
   return path.join(getMonorepoRoot(), 'sites', slug, 'public', 'images');
 }
@@ -153,9 +175,14 @@ export const POST: APIRoute = async ({ params, request }) => {
     return json({ error: 'Invalid filename' }, 400);
   }
 
+  // Validate magic bytes to ensure actual image content
+  const fileBuffer = Buffer.from(await file.arrayBuffer());
+  if (!isValidImageMagicBytes(fileBuffer, ext)) {
+    return json({ error: 'File content does not match a valid image format' }, 400);
+  }
+
   try {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    await fs.writeFile(finalPath, buffer);
+    await fs.writeFile(finalPath, fileBuffer);
 
     return json(
       {

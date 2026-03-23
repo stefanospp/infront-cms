@@ -7,8 +7,15 @@ import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 
+const ALLOWED_ORIGIN = 'https://abroadjobs.eu';
+
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
+  const origin = request.headers.get('origin');
+  const corsHeaders: Record<string, string> = {};
+  if (origin === ALLOWED_ORIGIN || origin === url.origin) {
+    corsHeaders['Access-Control-Allow-Origin'] = origin;
+  }
   const parsed = searchParamsSchema.safeParse({
     q: url.searchParams.get('q') || undefined,
     country: url.searchParams.get('country') || undefined,
@@ -20,7 +27,7 @@ export const GET: APIRoute = async ({ request }) => {
   if (!parsed.success) {
     return new Response(JSON.stringify({ error: 'Invalid parameters' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   }
 
@@ -44,7 +51,7 @@ export const GET: APIRoute = async ({ request }) => {
       .join(' ');
     if (!ftsQuery) {
       return new Response(JSON.stringify({ jobs: [], hasMore: false }), {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       });
     }
 
@@ -99,6 +106,7 @@ export const GET: APIRoute = async ({ request }) => {
     headers: {
       'Content-Type': 'application/json',
       'Cache-Control': 'public, max-age=30',
+      ...corsHeaders,
     },
   });
 };

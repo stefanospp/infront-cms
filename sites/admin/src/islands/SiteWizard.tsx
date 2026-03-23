@@ -1,70 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-interface TemplateColorScale {
-  50: string; 100: string; 200: string; 300: string; 400: string;
-  500: string; 600: string; 700: string; 800: string; 900: string; 950: string;
-}
-
-interface TemplateThemeTokens {
-  colors: {
-    primary: TemplateColorScale;
-    secondary: TemplateColorScale;
-    accent: TemplateColorScale;
-    neutral: TemplateColorScale;
-  };
-  fonts: { heading: string; body: string };
-}
-
-interface ThemeConfig {
-  navStyle: 'sticky' | 'fixed' | 'static';
-  footerStyle: 'simple' | 'multi-column' | 'minimal';
-  heroDefault: 'centered' | 'split' | 'fullscreen' | 'minimal';
-  borderStyle: 'sharp' | 'rounded' | 'pill';
-}
-
-interface NavItem { label: string; href: string }
-interface NavCTA { label: string; href: string }
-interface NavConfig { items: NavItem[]; cta?: NavCTA }
-
-interface FooterColumn { title: string; links: Array<{ label: string; href: string }> }
-interface FooterConfig {
-  columns: FooterColumn[];
-  legalLinks: Array<{ label: string; href: string }>;
-}
-
-interface ContactConfig {
-  email: string;
-  phone?: string;
-  address?: {
-    street: string;
-    city: string;
-    postcode: string;
-    country: string;
-  };
-}
-
-interface SEOConfig {
-  defaultTitle: string;
-  titleTemplate: string;
-  defaultDescription: string;
-  defaultOgImage: string;
-}
-
-interface TemplateDefinition {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  defaultTheme: ThemeConfig;
-  defaultTokens: TemplateThemeTokens;
-  defaultNav: NavConfig;
-  defaultFooter: FooterConfig;
-  defaultSeo: Partial<SEOConfig>;
-}
+import type {
+  TemplateColorScale,
+  TemplateThemeTokens,
+  ThemeConfig,
+  NavConfig,
+  FooterConfig,
+  ContactConfig,
+  SEOConfig,
+  TemplateDefinition,
+} from '@agency/config';
 
 interface GeneratorResult {
   success: boolean;

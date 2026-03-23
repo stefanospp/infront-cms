@@ -75,8 +75,16 @@ case "${COMMAND}" in
     echo "WARNING: This will overwrite the current database. Press Ctrl+C to abort."
     sleep 3
 
+    # Stop Directus before restoring to avoid connection conflicts
+    echo "[$(date)] Stopping Directus container..."
+    docker compose -p "${COMPOSE_PROJECT}" -f "${CLIENT_DIR}/docker-compose.yml" stop directus 2>/dev/null || true
+
     # Decompress and pipe into the container's psql
     gunzip -c "${BACKUP_FILE}" | docker exec -i "${DB_CONTAINER}" psql -U "${DB_USER}" -d "${DB_NAME}"
+
+    # Restart Directus after restore
+    echo "[$(date)] Starting Directus container..."
+    docker compose -p "${COMPOSE_PROJECT}" -f "${CLIENT_DIR}/docker-compose.yml" start directus
 
     echo "[$(date)] Database restore complete for ${CLIENT_SLUG}."
     ;;

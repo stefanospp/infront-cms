@@ -9,6 +9,9 @@ const CF_API_BASE = 'https://api.cloudflare.com/client/v4';
 // Shared fetch helper
 // ---------------------------------------------------------------------------
 
+const CF_TIMEOUT_MS = 10_000;
+const CF_MAX_ATTEMPTS = 2;
+
 async function cfFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const token = env('CLOUDFLARE_API_TOKEN');
   if (!token) {
@@ -16,29 +19,58 @@ async function cfFetch<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   const url = `${CF_API_BASE}${path}`;
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      ...options?.headers,
-    },
-  });
+  let lastError: Error | undefined;
 
-  const body = (await res.json()) as {
-    success: boolean;
-    result: T;
-    errors?: { message: string; code: number }[];
-  };
+  for (let attempt = 1; attempt <= CF_MAX_ATTEMPTS; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), CF_TIMEOUT_MS);
 
-  if (!res.ok || !body.success) {
-    const msg =
-      body.errors?.map((e) => e.message).join('; ') ??
-      `Cloudflare API error: ${res.status} ${res.statusText}`;
-    throw new Error(msg);
+    try {
+      const res = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+      });
+
+      clearTimeout(timeout);
+
+      const body = (await res.json()) as {
+        success: boolean;
+        result: T;
+        errors?: { message: string; code: number }[];
+      };
+
+      // Retry on 5xx errors
+      if (res.status >= 500 && attempt < CF_MAX_ATTEMPTS) {
+        lastError = new Error(`Cloudflare API error: ${res.status} ${res.statusText}`);
+        continue;
+      }
+
+      if (!res.ok || !body.success) {
+        const msg =
+          body.errors?.map((e) => e.message).join('; ') ??
+          `Cloudflare API error: ${res.status} ${res.statusText}`;
+        throw new Error(msg);
+      }
+
+      return body.result;
+    } catch (err) {
+      clearTimeout(timeout);
+      lastError = err instanceof Error ? err : new Error(String(err));
+
+      // Only retry on timeout or network errors, not on validation/auth failures
+      if (attempt < CF_MAX_ATTEMPTS && (lastError.name === 'AbortError' || lastError.message.includes('fetch'))) {
+        continue;
+      }
+      throw lastError;
+    }
   }
 
-  return body.result;
+  throw lastError ?? new Error('Cloudflare API request failed');
 }
 
 // ---------------------------------------------------------------------------

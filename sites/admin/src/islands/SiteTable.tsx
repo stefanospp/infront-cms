@@ -61,7 +61,7 @@ export default function SiteTable() {
   if (state === 'error') {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-12 text-center">
-        <p className="text-sm text-danger-500">
+        <p className="text-sm text-red-500">
           Failed to load sites. Please try again.
         </p>
       </div>
@@ -182,7 +182,7 @@ export default function SiteTable() {
                         {site.name}
                       </span>
                       {site.isTemplate && (
-                        <span className="inline-flex items-center rounded-full bg-warning-500/10 px-2 py-0.5 text-xs font-medium text-warning-500">
+                        <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-500">
                           Template
                         </span>
                       )}

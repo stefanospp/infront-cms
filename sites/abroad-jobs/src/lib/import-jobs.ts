@@ -234,20 +234,24 @@ export async function importJobs(db: D1Database): Promise<{ imported: number; sk
   const stats = { imported: 0, skipped: 0, filtered: 0 };
   const now = Math.floor(Date.now() / 1000);
 
+  // Fetch existing IDs upfront (2 queries instead of 2-3 per job)
+  const { sourceIds: existingSourceIds, slugs: existingSlugs } = await fetchExistingIds(db);
+
   // Fetch from all sources in parallel
   const [arbeitnowJobs, landingJobs] = await Promise.all([
     fetchArbeitnow().catch(() => [] as ArbeitnowJob[]),
     fetchLandingJobs().catch(() => [] as LandingJobsJob[]),
   ]);
 
-  // ── Process Arbeitnow ──
+  // ── Prepare Arbeitnow jobs ──
+  const arbeitnowPrepared: Record<string, unknown>[] = [];
   for (const job of arbeitnowJobs) {
     if (job.remote) { stats.filtered++; continue; }
     const country = parseCountry(job.location);
     if (!country) { stats.filtered++; continue; }
     if (isRemoteOnly(job.title, job.description, job.location)) { stats.filtered++; continue; }
 
-    await insertJob(db, {
+    arbeitnowPrepared.push({
       slug: slugify(job.title, country),
       company_name: job.company_name,
       company_website: null,
@@ -269,25 +273,22 @@ export async function importJobs(db: D1Database): Promise<{ imported: number; sk
       expires_at: now + THIRTY_DAYS,
       source: 'arbeitnow',
       source_id: `arbeitnow:${job.slug}`,
-    }, stats);
+    });
   }
 
-  // ── Process Landing.jobs ──
-  // Import country name lookup
+  // ── Prepare Landing.jobs ──
   const { getCountryName } = await import('./countries');
+  const landingPrepared: Record<string, unknown>[] = [];
 
   for (const job of landingJobs) {
-    // Only relocation jobs, not remote
     if (!job.relocation_paid) { stats.filtered++; continue; }
     if (job.remote) { stats.filtered++; continue; }
 
-    // Get country from locations array
     const loc = job.locations?.[0];
     const countryCode = loc?.country_code;
     const country = countryCode ? (getCountryName(countryCode) ?? countryCode) : null;
     if (!country) { stats.filtered++; continue; }
 
-    // Build salary range
     let salaryRange: string | null = null;
     if (job.gross_salary_low && job.gross_salary_high) {
       const currency = job.currency_code === 'EUR' ? '€' : job.currency_code === 'GBP' ? '£' : job.currency_code === 'USD' ? '$' : job.currency_code;
@@ -296,11 +297,11 @@ export async function importJobs(db: D1Database): Promise<{ imported: number; sk
 
     const createdAt = Math.floor(new Date(job.published_at).getTime() / 1000) || now;
     const city = loc?.city;
-    const fullCountry = city ? `${country}` : country;
+    const fullCountry = city ? `${city}, ${country}` : country;
 
-    await insertJob(db, {
+    landingPrepared.push({
       slug: slugify(job.title, fullCountry),
-      company_name: job.title.split(' at ')[1] ?? 'Company', // Landing.jobs doesn't have company_name at top level
+      company_name: job.title.split(' at ')[1] ?? 'Company',
       company_website: null,
       company_logo: null,
       contact_email: 'imported@abroadjobs.eu',
@@ -309,7 +310,7 @@ export async function importJobs(db: D1Database): Promise<{ imported: number; sk
       country: fullCountry,
       industry: mapIndustry(job.tags),
       salary_range: salaryRange,
-      visa_support: 'partial', // Landing.jobs has relocation_paid but doesn't confirm visa
+      visa_support: 'partial',
       relocation_pkg: 'yes',
       working_language: null,
       apply_url: job.url,
@@ -320,8 +321,12 @@ export async function importJobs(db: D1Database): Promise<{ imported: number; sk
       expires_at: now + THIRTY_DAYS,
       source: 'landingjobs',
       source_id: `landingjobs:${job.id}`,
-    }, stats);
+    });
   }
+
+  // ── Batch insert all jobs (much fewer D1 queries) ──
+  const allJobs = [...arbeitnowPrepared, ...landingPrepared];
+  await batchInsertJobs(db, allJobs, existingSourceIds, existingSlugs, stats);
 
   console.log(`Import complete: ${stats.imported} imported, ${stats.skipped} skipped, ${stats.filtered} filtered (Arbeitnow: ${arbeitnowJobs.length}, Landing.jobs: ${landingJobs.length})`);
   return { imported: stats.imported, skipped: stats.skipped, filtered: stats.filtered };

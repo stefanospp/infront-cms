@@ -5,9 +5,10 @@ import { logger } from '@agency/utils/logger';
 const AUTH_BASE_URL = env('AUTH_SERVICE_URL') ?? 'https://auth.infront.cy';
 const AUTH_TIMEOUT_MS = 5000;
 const SESSION_CACHE_TTL_MS = 60_000; // Cache sessions for 60 seconds
+const SESSION_COOKIE_NAME = 'better-auth.session_token';
 
 const PUBLIC_PATHS = ['/login', '/health'];
-const PUBLIC_PREFIXES = ['/api/auth/', '/_astro/', '/assets/'];
+const PUBLIC_PREFIXES = ['/_astro/', '/assets/'];
 
 const MUTATION_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
@@ -42,7 +43,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
   if (isPublicRoute(pathname)) {
-    return next();
+    const response = await next();
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    return response;
   }
 
   // CSRF protection: verify Origin header on mutation requests to API routes
@@ -56,14 +61,24 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // Verify session with central auth service (with caching and timeout)
-  const cookieHeader = context.request.headers.get('cookie') ?? '';
+  // Extract only the auth session cookie to avoid leaking unrelated cookies
+  const rawCookies = context.request.headers.get('cookie') ?? '';
+  const cookieHeader = rawCookies
+    .split(';')
+    .map((c) => c.trim())
+    .filter((c) => c.startsWith(`${SESSION_COOKIE_NAME}=`))
+    .join('; ');
 
   // Check session cache first
   const cached = sessionCache.get(cookieHeader);
   if (cached && cached.expiresAt > Date.now()) {
     context.locals.user = cached.data.user;
     context.locals.session = cached.data.session;
-    return next();
+    const response = await next();
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    return response;
   }
 
   try {
@@ -77,14 +92,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     clearTimeout(timeout);
 
     if (!res.ok) {
-      const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(context.url.href)}`;
+      const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(context.url.pathname)}`;
       return context.redirect(loginUrl);
     }
 
     const data = await res.json();
 
     if (!data?.user) {
-      const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(context.url.href)}`;
+      const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(context.url.pathname)}`;
       return context.redirect(loginUrl);
     }
 
@@ -98,7 +113,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.locals.user = data.user;
     context.locals.session = data.session;
 
-    return next();
+    const response = await next();
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+    return response;
   } catch (err) {
     const isTimeout = err instanceof Error && err.name === 'AbortError';
     logger.error('Auth service unreachable', {
@@ -112,7 +131,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return new Response('Auth service unavailable. Please try again shortly.', { status: 503 });
     }
 
-    const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(context.url.href)}`;
+    const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(context.url.pathname)}`;
     return context.redirect(loginUrl);
   }
 });

@@ -22,9 +22,41 @@ const EXTENSIONS = ['.astro', '.tsx', '.ts', '.jsx', ''];
 export function componentOverridePlugin(siteRoot: string): Plugin {
   const componentsDir = path.join(siteRoot, 'src', 'components');
 
+  // Cache existing override files at plugin initialization to avoid
+  // repeated fs.existsSync calls on every module resolve.
+  let overrideFiles: Set<string>;
+
+  function scanOverrides(): Set<string> {
+    const files = new Set<string>();
+    try {
+      const entries = fs.readdirSync(componentsDir, { recursive: true });
+      for (const entry of entries) {
+        const entryStr = typeof entry === 'string' ? entry : entry.toString();
+        files.add(path.resolve(componentsDir, entryStr));
+      }
+    } catch {
+      // Directory may not exist yet
+    }
+    return files;
+  }
+
   return {
     name: 'agency-component-override',
     enforce: 'pre',
+
+    buildStart() {
+      overrideFiles = scanOverrides();
+    },
+
+    configureServer(server) {
+      // Re-scan when files change in the components directory during dev
+      overrideFiles = scanOverrides();
+      server.watcher.on('all', (event, filePath) => {
+        if (filePath.startsWith(componentsDir + path.sep) && (event === 'add' || event === 'unlink')) {
+          overrideFiles = scanOverrides();
+        }
+      });
+    },
 
     resolveId(source: string) {
       for (const prefix of OVERRIDE_PREFIXES) {
@@ -40,7 +72,7 @@ export function componentOverridePlugin(siteRoot: string): Plugin {
             return null;
           }
 
-          if (fs.existsSync(localPath)) {
+          if (overrideFiles.has(localPath)) {
             return localPath;
           }
         }

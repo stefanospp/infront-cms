@@ -247,9 +247,6 @@ function createIdGenerator(): (component: string) => string {
   };
 }
 
-/** Module-level reference set per parse call via parseAstroToSchema */
-let nextId: (component: string) => string = createIdGenerator();
-
 /**
  * Known layout components — used to identify the layout wrapper.
  */
@@ -272,7 +269,7 @@ const WRAPPER_COMPONENTS = new Set(['Section']);
  * Handles both self-closing `<Component ... />` and paired
  * `<Component ...>...</Component>` tags.
  */
-function parseTopLevelComponents(template: string): SectionSchema[] {
+function parseTopLevelComponents(template: string, nextId: (component: string) => string): SectionSchema[] {
   const sections: SectionSchema[] = [];
 
   // Find the layout wrapper and get its inner content
@@ -389,7 +386,7 @@ function parseTopLevelComponents(template: string): SectionSchema[] {
     }
 
     // Parse this component
-    const section = parseComponentToSection(componentName, tagContent);
+    const section = parseComponentToSection(componentName, tagContent, nextId);
     if (section) {
       sections.push(section);
     }
@@ -407,9 +404,10 @@ function parseTopLevelComponents(template: string): SectionSchema[] {
 function parseComponentToSection(
   componentName: string,
   tagContent: string,
+  nextId: (component: string) => string,
 ): SectionSchema | null {
   if (WRAPPER_COMPONENTS.has(componentName)) {
-    return parseSectionWrapper(tagContent);
+    return parseSectionWrapper(tagContent, nextId);
   }
 
   // Extract attributes from the tag
@@ -440,7 +438,7 @@ function parseComponentToSection(
 /**
  * Parse a `<Section>` wrapper and extract its inner component.
  */
-function parseSectionWrapper(tagContent: string): SectionSchema | null {
+function parseSectionWrapper(tagContent: string, nextId: (component: string) => string): SectionSchema | null {
   // Extract Section attributes
   const sectionAttrContent = extractTagAttributes('Section', tagContent);
   const sectionAttrs = extractAttributes(sectionAttrContent);
@@ -631,14 +629,14 @@ export function parseAstroToSchema(
   content: string,
   pageName: string,
 ): PageSchema {
-  nextId = createIdGenerator();
+  const nextId = createIdGenerator();
 
   const { frontmatter, template } = splitAstro(content);
   const layout = extractLayout(frontmatter);
   const title = extractTitle(frontmatter);
   const description = extractDescription(frontmatter);
   const cmsCollections = extractCmsCollections(frontmatter);
-  const sections = parseTopLevelComponents(template);
+  const sections = parseTopLevelComponents(template, nextId);
 
   return {
     page: pageName,

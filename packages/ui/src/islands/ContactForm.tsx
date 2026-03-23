@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import ErrorBoundary from './ErrorBoundary';
 
 interface FieldErrors {
   name?: string;
@@ -13,7 +14,15 @@ interface Props {
 
 type FormStatus = 'idle' | 'submitting' | 'success' | 'error';
 
-export default function ContactForm({
+export default function ContactForm(props: Props) {
+  return (
+    <ErrorBoundary>
+      <ContactFormInner {...props} />
+    </ErrorBoundary>
+  );
+}
+
+function ContactFormInner({
   action = '/api/contact',
   successMessage = 'Thank you! Your message has been sent successfully.',
 }: Props) {

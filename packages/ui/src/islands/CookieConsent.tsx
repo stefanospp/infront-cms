@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import ErrorBoundary from './ErrorBoundary';
 
 interface Props {
   analyticsProvider?: 'plausible' | 'fathom' | 'google';
@@ -49,9 +50,18 @@ function loadGoogleAnalytics(siteId: string) {
   document.head.appendChild(inlineScript);
 }
 
-export default function CookieConsent({ analyticsProvider, siteId }: Props) {
+export default function CookieConsent(props: Props) {
+  return (
+    <ErrorBoundary>
+      <CookieConsentInner {...props} />
+    </ErrorBoundary>
+  );
+}
+
+function CookieConsentInner({ analyticsProvider, siteId }: Props) {
   const [consent, setConsent] = useState<ConsentState>('undecided');
   const [mounted, setMounted] = useState(false);
+  const declineRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const stored = getStoredConsent();
@@ -63,6 +73,13 @@ export default function CookieConsent({ analyticsProvider, siteId }: Props) {
       loadGoogleAnalytics(siteId);
     }
   }, [analyticsProvider, siteId]);
+
+  const setDeclineRef = useCallback((node: HTMLButtonElement | null) => {
+    if (node) {
+      node.focus();
+    }
+    (declineRef as React.MutableRefObject<HTMLButtonElement | null>).current = node;
+  }, []);
 
   // Only render for Google Analytics
   if (analyticsProvider !== 'google') {
@@ -102,6 +119,7 @@ export default function CookieConsent({ analyticsProvider, siteId }: Props) {
         <div className="flex flex-shrink-0 gap-3">
           <button
             type="button"
+            ref={setDeclineRef}
             onClick={handleDecline}
             className="rounded-lg border border-neutral-300 bg-white px-5 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
           >

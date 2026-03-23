@@ -1,10 +1,13 @@
 ---
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import SiteDetail from '@/islands/SiteDetail';
+import ErrorBoundary from '@agency/ui/islands/ErrorBoundary';
 
 const slug = Astro.params.slug!;
 ---
 
 <AdminLayout title="Site Details">
-  <SiteDetail client:load slug={slug} />
+  <ErrorBoundary client:load>
+    <SiteDetail client:load slug={slug} />
+  </ErrorBoundary>
 </AdminLayout>

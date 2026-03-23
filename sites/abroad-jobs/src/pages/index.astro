@@ -42,43 +42,41 @@ if (q) {
     .filter(Boolean)
     .map((term) => `"${term}"`)
     .join(' ');
-  const baseQuery = `
+
+  const whereClause = `
+    jobs_fts MATCH ?
+    AND j.is_live = 1
+    AND (j.expires_at IS NULL OR j.expires_at > ?)
+    ${country ? 'AND j.country = ?' : ''}
+    ${industry ? 'AND j.industry = ?' : ''}
+  `;
+
+  const bindParams: unknown[] = [ftsQuery, now];
+  if (country) bindParams.push(country);
+  if (industry) bindParams.push(industry);
+
+  const dataQuery = `
     SELECT j.* FROM jobs j
     JOIN jobs_fts f ON j.id = f.rowid
-    WHERE jobs_fts MATCH ?
-      AND j.is_live = 1
-      AND (j.expires_at IS NULL OR j.expires_at > ?)
-      ${country ? 'AND j.country = ?' : ''}
-      ${industry ? 'AND j.industry = ?' : ''}
+    WHERE ${whereClause}
     ORDER BY rank
     LIMIT ? OFFSET ?
   `;
-
-  const queryParams: unknown[] = [ftsQuery, now];
-  if (country) queryParams.push(country);
-  if (industry) queryParams.push(industry);
-  queryParams.push(limit + 1, (page - 1) * limit);
-
-  const raw = await env.DB.prepare(baseQuery).bind(...queryParams).all();
-  results = (raw.results ?? []).map((r) => mapRawJob(r as Record<string, unknown>));
-
-  // Count query
   const countQuery = `
     SELECT COUNT(*) as cnt FROM jobs j
     JOIN jobs_fts f ON j.id = f.rowid
-    WHERE jobs_fts MATCH ?
-      AND j.is_live = 1
-      AND (j.expires_at IS NULL OR j.expires_at > ?)
-      ${country ? 'AND j.country = ?' : ''}
-      ${industry ? 'AND j.industry = ?' : ''}
+    WHERE ${whereClause}
   `;
-  const countParams: unknown[] = [ftsQuery, now];
-  if (country) countParams.push(country);
-  if (industry) countParams.push(industry);
-  const countResult = await env.DB.prepare(countQuery).bind(...countParams).first<{ cnt: number }>();
-  total = countResult?.cnt ?? 0;
+
+  // Use D1 batch API to run both queries in a single round-trip
+  const [dataResult, countResult] = await env.DB.batch([
+    env.DB.prepare(dataQuery).bind(...bindParams, limit + 1, (page - 1) * limit),
+    env.DB.prepare(countQuery).bind(...bindParams),
+  ]);
+  results = (dataResult.results ?? []).map((r) => mapRawJob(r as Record<string, unknown>));
+  total = (countResult.results?.[0] as Record<string, unknown> | undefined)?.cnt as number ?? 0;
 } else {
-  // Standard filtered query
+  // Standard filtered query — run data + count in parallel
   const conditions = [
     eq(jobs.isLive, 1),
     sql`(${jobs.expiresAt} IS NULL OR ${jobs.expiresAt} > ${now})`,
@@ -86,19 +84,20 @@ if (q) {
   if (country) conditions.push(eq(jobs.country, country));
   if (industry) conditions.push(eq(jobs.industry, industry));
 
-  results = await db
-    .select()
-    .from(jobs)
-    .where(and(...conditions))
-    .orderBy(desc(jobs.createdAt))
-    .limit(limit + 1)
-    .offset((page - 1) * limit);
-
-  // Count
-  const countResult = await db
-    .select({ count: sql<number>`COUNT(*)` })
-    .from(jobs)
-    .where(and(...conditions));
+  const [dataResults, countResult] = await Promise.all([
+    db
+      .select()
+      .from(jobs)
+      .where(and(...conditions))
+      .orderBy(desc(jobs.createdAt))
+      .limit(limit + 1)
+      .offset((page - 1) * limit),
+    db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(jobs)
+      .where(and(...conditions)),
+  ]);
+  results = dataResults;
   total = countResult[0]?.count ?? 0;
 }
 

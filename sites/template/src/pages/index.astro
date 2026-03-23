@@ -14,6 +14,24 @@ import config from '../../site.config';
   description={config.seo.defaultDescription}
   config={config}
 >
+  <script type="application/ld+json" set:html={JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: config.name,
+    url: config.url,
+    description: config.seo.defaultDescription,
+    ...(config.contact.email && { email: `mailto:${config.contact.email}` }),
+    ...(config.contact.phone && { telephone: config.contact.phone }),
+    ...(config.contact.address && {
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: config.contact.address.street,
+        addressLocality: config.contact.address.city,
+        postalCode: config.contact.address.postcode,
+        addressCountry: config.contact.address.country,
+      },
+    }),
+  })} />
   <Hero
     variant={config.theme.heroDefault}
     heading={config.name}

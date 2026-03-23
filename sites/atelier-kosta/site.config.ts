@@ -22,7 +22,7 @@ const config: SiteConfig = {
     titleTemplate: '%s | Atelier Kosta',
     defaultDescription:
       'Boutique architecture studio in Nicosia, Cyprus. Residential and commercial projects with a focus on timeless, contextual design.',
-    defaultOgImage: '/og-default.jpg',
+    defaultOgImage: '/og-default.svg',
   },
 
   nav: {

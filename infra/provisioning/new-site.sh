@@ -121,30 +121,91 @@ export default defineConfig({
 SITECONF
 fi
 
-# 4. Generate tailwind.config.mjs from template
-echo "[4/7] Generating tailwind.config.mjs..."
-if [ -f "${TEMPLATES_DIR}/tailwind.config.mjs.tmpl" ]; then
-  sed \
-    -e "s/__PRIMARY_COLOR__/#1a1a2e/g" \
-    -e "s/__SECONDARY_COLOR__/#16213e/g" \
-    -e "s/__ACCENT_COLOR__/#e94560/g" \
-    -e "s/__HEADING_FONT__/Inter/g" \
-    -e "s/__BODY_FONT__/Inter/g" \
-    "${TEMPLATES_DIR}/tailwind.config.mjs.tmpl" > "${SITE_DIR}/tailwind.config.mjs"
-else
-  cat > "${SITE_DIR}/tailwind.config.mjs" <<TWCONF
-import baseConfig from "@agency/config/tailwind";
+# 4. Generate src/styles/global.css with Tailwind v4 @theme block
+echo "[4/7] Generating src/styles/global.css..."
+mkdir -p "${SITE_DIR}/src/styles"
+cat > "${SITE_DIR}/src/styles/global.css" <<GLOBALCSS
+@import "tailwindcss";
 
-/** @type {import('tailwindcss').Config} */
-export default {
-  presets: [baseConfig],
-  content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
-  theme: {
-    extend: {},
-  },
-};
-TWCONF
-fi
+@source "../../../../packages/ui/src/**/*.{astro,tsx}";
+@source "../components/**/*.{astro,tsx}";
+
+@theme {
+  /* Primary */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #1a1a2e;
+  --color-primary-700: #1e1b4b;
+  --color-primary-800: #1e1b4b;
+  --color-primary-900: #171533;
+  --color-primary-950: #0f0d24;
+
+  /* Secondary */
+  --color-secondary-50: #f0f9ff;
+  --color-secondary-100: #e0f2fe;
+  --color-secondary-200: #bae6fd;
+  --color-secondary-300: #7dd3fc;
+  --color-secondary-400: #38bdf8;
+  --color-secondary-500: #0ea5e9;
+  --color-secondary-600: #16213e;
+  --color-secondary-700: #0c4a6e;
+  --color-secondary-800: #0a3d5c;
+  --color-secondary-900: #082f49;
+  --color-secondary-950: #051e31;
+
+  /* Accent */
+  --color-accent-50: #fff1f2;
+  --color-accent-100: #ffe4e6;
+  --color-accent-200: #fecdd3;
+  --color-accent-300: #fda4af;
+  --color-accent-400: #fb7185;
+  --color-accent-500: #f43f5e;
+  --color-accent-600: #e94560;
+  --color-accent-700: #be123c;
+  --color-accent-800: #9f1239;
+  --color-accent-900: #881337;
+  --color-accent-950: #4c0519;
+
+  /* Neutral */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+
+  /* Fonts */
+  --font-heading: "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-neutral-800);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+GLOBALCSS
+# Remove any legacy tailwind.config.mjs if present
+rm -f "${SITE_DIR}/tailwind.config.mjs"
 
 # 5. Write CLAUDE.md for the site
 echo "[5/7] Writing CLAUDE.md..."
@@ -158,7 +219,7 @@ Tier: **${TIER}**
 ## Quick reference
 - Slug: \`${CLIENT_SLUG}\`
 - Config: \`site.config.ts\`
-- Tailwind: \`tailwind.config.mjs\`
+- Styles: \`src/styles/global.css\`
 
 ## Development
 \`\`\`bash
@@ -172,7 +233,7 @@ pnpm --filter @agency/${CLIENT_SLUG} build
 
 ## Notes
 - This site was scaffolded from \`sites/template\` on $(date +%Y-%m-%d).
-- Brand colors and fonts in \`tailwind.config.mjs\` are placeholders -- update them with the client's actual brand guidelines.
+- Brand colors and fonts in \`src/styles/global.css\` are placeholders -- update them with the client's actual brand guidelines.
 $(if [ "${TIER}" = "cms" ] || [ "${TIER}" = "interactive" ]; then
   echo "- CMS instance config is in \`infra/docker/${CLIENT_SLUG}/\`."
 fi)
@@ -230,8 +291,8 @@ echo "============================================"
 echo ""
 echo "Remaining manual steps:"
 echo ""
-echo "  [ ] Update brand colors in sites/${CLIENT_SLUG}/tailwind.config.mjs"
-echo "  [ ] Update fonts in sites/${CLIENT_SLUG}/tailwind.config.mjs"
+echo "  [ ] Update brand colors in sites/${CLIENT_SLUG}/src/styles/global.css"
+echo "  [ ] Update fonts in sites/${CLIENT_SLUG}/src/styles/global.css"
 echo "  [ ] Replace CMS token in sites/${CLIENT_SLUG}/site.config.ts"
 if [ "${TIER}" = "cms" ] || [ "${TIER}" = "interactive" ]; then
   echo "  [ ] Fill in infra/docker/${CLIENT_SLUG}/.env from .env.example"

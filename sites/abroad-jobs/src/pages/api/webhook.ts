@@ -65,16 +65,27 @@ export const POST: APIRoute = async ({ request, url }) => {
       .where(eq(jobs.stripeSessionId, sessionId));
 
     if (activatedJobs.length > 0 && activatedJobs[0]?.contactEmail) {
-      try {
-        const resend = getResend(env.RESEND_API_KEY);
-        await sendConfirmationEmail(
-          resend,
-          activatedJobs[0].contactEmail,
-          activatedJobs,
-          url.origin,
-        );
-      } catch (err) {
-        console.error('Failed to send confirmation email:', err instanceof Error ? err.message : err);
+      const resend = getResend(env.RESEND_API_KEY);
+      let emailSent = false;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          await sendConfirmationEmail(
+            resend,
+            activatedJobs[0].contactEmail,
+            activatedJobs,
+            url.origin,
+          );
+          emailSent = true;
+          break;
+        } catch (err) {
+          console.error(`Confirmation email attempt ${attempt + 1} failed:`, err instanceof Error ? err.message : err);
+          if (attempt < 1) {
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+          }
+        }
+      }
+      if (!emailSent) {
+        console.error('All confirmation email attempts failed for session:', sessionId);
       }
     }
   }

@@ -16,7 +16,8 @@ export const GET: APIRoute = async ({ site }) => {
     .from(jobs)
     .where(
       sql`${jobs.isLive} = 1 AND (${jobs.expiresAt} IS NULL OR ${jobs.expiresAt} > ${now})`
-    );
+    )
+    .limit(1000);
 
   const staticPages = ['', '/about', '/pricing', '/post', '/privacy', '/terms'];
 

@@ -1,10 +1,13 @@
 ---
 import AdminLayout from '@/layouts/AdminLayout.astro';
 import SiteWizard from '@/islands/SiteWizard';
+import ErrorBoundary from '@agency/ui/islands/ErrorBoundary';
 
 const templateParam = Astro.url.searchParams.get('template') ?? undefined;
 ---
 
 <AdminLayout title="Create New Site">
-  <SiteWizard client:load initialTemplateId={templateParam} />
+  <ErrorBoundary client:load>
+    <SiteWizard client:load initialTemplateId={templateParam} />
+  </ErrorBoundary>
 </AdminLayout>

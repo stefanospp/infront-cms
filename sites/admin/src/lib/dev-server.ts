@@ -90,16 +90,31 @@ export class DevServerManager {
       status: 'starting',
     };
 
+    // Build a sanitized environment — only pass safe variables, not admin secrets
+    const SAFE_ENV_KEYS = ['PATH', 'HOME', 'SHELL', 'LANG', 'TERM', 'USER', 'TMPDIR'];
+    const sanitizedEnv: Record<string, string> = {
+      NODE_ENV: 'development',
+    };
+    for (const key of SAFE_ENV_KEYS) {
+      if (process.env[key]) {
+        sanitizedEnv[key] = process.env[key]!;
+      }
+    }
+    // Pass through site-specific env vars (prefixed with the site slug)
+    const envPrefix = slug.toUpperCase().replace(/-/g, '_') + '_';
+    for (const [key, value] of Object.entries(process.env)) {
+      if (key.startsWith(envPrefix) && value !== undefined) {
+        sanitizedEnv[key] = value;
+      }
+    }
+
     // Spawn the dev server process
     const child = spawn(
       'npm',
       ['run', 'dev', `--workspace=sites/${slug}`, '--', '--port', String(port)],
       {
         cwd: root,
-        env: {
-          ...process.env,
-          NODE_ENV: 'development',
-        },
+        env: sanitizedEnv,
         stdio: ['ignore', 'pipe', 'pipe'],
         detached: false,
       },

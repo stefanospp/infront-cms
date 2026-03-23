@@ -18,6 +18,7 @@ if (!slug) return Astro.redirect('/');
 const db = getDb(env.DB);
 const now = Math.floor(Date.now() / 1000);
 
+// First try to find a live, non-expired job
 const results = await db
   .select()
   .from(jobs)
@@ -25,13 +26,19 @@ const results = await db
     and(
       eq(jobs.slug, slug),
       eq(jobs.isLive, 1),
-      sql`(${jobs.expiresAt} IS NULL OR ${jobs.expiresAt} > ${now})`,
     )
   )
   .limit(1);
 
 const job = results[0];
+
+// Job doesn't exist at all — redirect to homepage
 if (!job) return Astro.redirect('/');
+
+// Check if job has expired
+const isExpired = job.expiresAt !== null && job.expiresAt <= now;
+
+Astro.response.headers.set('Cache-Control', 'public, max-age=300, s-maxage=300, stale-while-revalidate=600');
 
 const pageTitle = formatTitle(`${job.title} at ${job.companyName} — ${job.country}`, config.seo.titleTemplate);
 const postedDate = new Date(job.createdAt * 1000).toLocaleDateString('en-GB', {
@@ -42,6 +49,7 @@ const postedDate = new Date(job.createdAt * 1000).toLocaleDateString('en-GB', {
 
 const isMailto = job.applyUrl.startsWith('mailto:');
 const applyLabel = isMailto ? 'Apply via email' : 'Apply for this job';
+const safeCompanyWebsite = job.companyWebsite && /^https?:\/\//i.test(job.companyWebsite) ? job.companyWebsite : null;
 
 // Structured data
 const structuredData = {
@@ -54,7 +62,7 @@ const structuredData = {
   hiringOrganization: {
     '@type': 'Organization',
     name: job.companyName,
-    ...(job.companyWebsite ? { sameAs: job.companyWebsite } : {}),
+    ...(safeCompanyWebsite ? { sameAs: safeCompanyWebsite } : {}),
   },
   jobLocation: {
     '@type': 'Place',
@@ -77,92 +85,112 @@ const structuredData = {
 ---
 
 <SiteLayout
-  title={pageTitle}
-  description={`${job.title} at ${job.companyName} in ${job.country}. ${job.visaSupport === 'yes' ? 'Visa sponsorship available.' : ''} Apply now on AbroadJobs.eu.`}
+  title={isExpired ? `Expired: ${job.title}` : pageTitle}
+  description={isExpired ? `This job listing has expired.` : `${job.title} at ${job.companyName} in ${job.country}. ${job.visaSupport === 'yes' ? 'Visa sponsorship available.' : ''} Apply now on AbroadJobs.eu.`}
   config={config}
-  structuredData={structuredData}
+  structuredData={isExpired ? undefined : structuredData}
 >
-  <article class="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-    <!-- Breadcrumb -->
-    <Breadcrumb items={[
-      { label: 'Jobs', href: '/' },
-      { label: job.title },
-    ]} />
-
-    <!-- Header -->
-    <header class="mt-6">
-      <h1 class="text-2xl font-bold text-neutral-900 sm:text-3xl">
-        {job.title}
-      </h1>
-      <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
-        <span class="font-medium text-neutral-700">{job.companyName}</span>
-        {job.companyWebsite && (
-          <>
-            <span class="text-neutral-300">&middot;</span>
-            <a
-              href={job.companyWebsite}
-              target="_blank"
-              rel="noopener noreferrer"
-              class="text-primary-600 hover:text-primary-700 transition-colors"
-            >
-              Website
-            </a>
-          </>
-        )}
-        <span class="text-neutral-300">&middot;</span>
-        <span>{job.country}</span>
-        <span class="text-neutral-300">&middot;</span>
-        <span>Posted {postedDate}</span>
+  {isExpired ? (
+    <div class="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-24 text-center">
+      <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
+        <svg class="h-8 w-8 text-neutral-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
       </div>
-
-      {job.salaryRange && (
-        <p class="mt-3 text-lg font-medium text-neutral-800">{job.salaryRange}</p>
-      )}
-
-      <!-- Tags -->
-      <div class="mt-3 flex flex-wrap gap-1.5">
-        <span class="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
-          {job.industry}
-        </span>
-      </div>
-    </header>
-
-    <!-- Relocation details -->
-    <div class="mt-8">
-      <RelocationBadges
-        country={job.country}
-        visaSupport={job.visaSupport as 'yes' | 'no' | 'partial'}
-        relocationPkg={job.relocationPkg as 'yes' | 'no' | 'allowance_only'}
-        workingLanguage={job.workingLanguage}
-      />
-    </div>
-
-    <!-- Description -->
-    <div class="mt-8">
-      <h2 class="text-lg font-semibold text-neutral-900">Job description</h2>
-      <div class="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-neutral-700">
-        {job.description}
-      </div>
-    </div>
-
-    <!-- Apply button -->
-    <div class="mt-10 border-t border-neutral-200 pt-8">
-      <a
-        href={job.applyUrl}
-        target={isMailto ? undefined : '_blank'}
-        rel={isMailto ? undefined : 'noopener noreferrer'}
-        class="inline-flex items-center rounded-lg bg-primary-700 px-6 py-3 text-sm font-semibold text-white hover:bg-primary-800 transition-colors"
-      >
-        {applyLabel}
-        {!isMailto && (
-          <svg class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-          </svg>
-        )}
-      </a>
-      <p class="mt-2 text-xs text-neutral-400">
-        You will be redirected to the employer's application page.
+      <h1 class="text-2xl font-bold text-neutral-900 sm:text-3xl">This job has expired</h1>
+      <p class="mt-3 text-neutral-500">
+        The listing for <strong>{job.title}</strong> at <strong>{job.companyName}</strong> is no longer accepting applications.
       </p>
+      <a
+        href="/"
+        class="mt-8 inline-flex items-center rounded-lg bg-primary-700 px-6 py-3 text-sm font-semibold text-white hover:bg-primary-800 transition-colors"
+      >
+        Browse current jobs
+      </a>
     </div>
-  </article>
+  ) : (
+    <article class="mx-auto max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
+      <!-- Breadcrumb -->
+      <Breadcrumb items={[
+        { label: 'Jobs', href: '/' },
+        { label: job.title },
+      ]} />
+
+      <!-- Header -->
+      <header class="mt-6">
+        <h1 class="text-2xl font-bold text-neutral-900 sm:text-3xl">
+          {job.title}
+        </h1>
+        <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
+          <span class="font-medium text-neutral-700">{job.companyName}</span>
+          {safeCompanyWebsite && (
+            <>
+              <span class="text-neutral-300">&middot;</span>
+              <a
+                href={safeCompanyWebsite}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-primary-600 hover:text-primary-700 transition-colors"
+              >
+                Website
+              </a>
+            </>
+          )}
+          <span class="text-neutral-300">&middot;</span>
+          <span>{job.country}</span>
+          <span class="text-neutral-300">&middot;</span>
+          <span>Posted {postedDate}</span>
+        </div>
+
+        {job.salaryRange && (
+          <p class="mt-3 text-lg font-medium text-neutral-800">{job.salaryRange}</p>
+        )}
+
+        <!-- Tags -->
+        <div class="mt-3 flex flex-wrap gap-1.5">
+          <span class="inline-flex items-center rounded-md bg-neutral-100 px-2 py-0.5 text-xs text-neutral-600">
+            {job.industry}
+          </span>
+        </div>
+      </header>
+
+      <!-- Relocation details -->
+      <div class="mt-8">
+        <RelocationBadges
+          country={job.country}
+          visaSupport={job.visaSupport as 'yes' | 'no' | 'partial'}
+          relocationPkg={job.relocationPkg as 'yes' | 'no' | 'allowance_only'}
+          workingLanguage={job.workingLanguage}
+        />
+      </div>
+
+      <!-- Description -->
+      <div class="mt-8">
+        <h2 class="text-lg font-semibold text-neutral-900">Job description</h2>
+        <div class="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-neutral-700">
+          {job.description}
+        </div>
+      </div>
+
+      <!-- Apply button -->
+      <div class="mt-10 border-t border-neutral-200 pt-8">
+        <a
+          href={job.applyUrl}
+          target={isMailto ? undefined : '_blank'}
+          rel={isMailto ? undefined : 'noopener noreferrer'}
+          class="inline-flex items-center rounded-lg bg-primary-700 px-6 py-3 text-sm font-semibold text-white hover:bg-primary-800 transition-colors"
+        >
+          {applyLabel}
+          {!isMailto && (
+            <svg class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+            </svg>
+          )}
+        </a>
+        <p class="mt-2 text-xs text-neutral-400">
+          You will be redirected to the employer's application page.
+        </p>
+      </div>
+    </article>
+  )}
 </SiteLayout>
