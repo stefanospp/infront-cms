@@ -601,7 +601,8 @@ ${payload.tier === 'cms' || payload.tier === 'interactive' ? '- CMS powered by D
         checklist.push(
           `Start CMS: cd infra/docker/${payload.slug} && docker compose up -d`,
         );
-      } catch {
+      } catch (err) {
+        console.error(`[generator] Failed to copy Docker template for ${payload.slug}:`, err instanceof Error ? err.message : err);
         checklist.push(
           'Docker template not found — manually set up CMS infrastructure',
         );
@@ -629,8 +630,8 @@ ${payload.tier === 'cms' || payload.tier === 'interactive' ? '- CMS powered by D
     // Clean up on failure
     try {
       await fs.rm(sitePath, { recursive: true, force: true });
-    } catch {
-      // Ignore cleanup errors
+    } catch (cleanupErr) {
+      console.error('[generator] Failed to clean up after generation error:', cleanupErr instanceof Error ? cleanupErr.message : cleanupErr);
     }
 
     return {

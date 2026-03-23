@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { listTemplates } from '@agency/config';
 
+export const prerender = false;
+
 export const GET: APIRoute = async () => {
   const templates = listTemplates();
 

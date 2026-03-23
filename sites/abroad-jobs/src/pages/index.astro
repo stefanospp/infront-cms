@@ -12,6 +12,9 @@ import { env } from 'cloudflare:workers';
 
 export const prerender = false;
 
+// Cache SSR response for 60 seconds with stale-while-revalidate
+Astro.response.headers.set('Cache-Control', 'public, max-age=60, s-maxage=60, stale-while-revalidate=300');
+
 const params = searchParamsSchema.safeParse({
   q: Astro.url.searchParams.get('q') || undefined,
   country: Astro.url.searchParams.get('country') || undefined,
@@ -29,7 +32,16 @@ let total: number;
 
 if (q) {
   // Full-text search via FTS5
-  const ftsQuery = q.replace(/['"]/g, '').trim();
+  // Sanitize FTS5 query: strip quotes and operators, wrap each term in double quotes for literal matching
+  const ftsQuery = q
+    .replace(/['"]/g, '')
+    .replace(/\b(AND|OR|NOT|NEAR)\b/gi, '')
+    .replace(/[*^(){}:]/g, '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((term) => `"${term}"`)
+    .join(' ');
   const baseQuery = `
     SELECT j.* FROM jobs j
     JOIN jobs_fts f ON j.id = f.rowid

@@ -148,36 +148,56 @@ async function fetchLandingJobs(): Promise<LandingJobsJob[]> {
   return jobs;
 }
 
-// ─── Shared insert helper ────────────────────────────────────────────────────
+// ─── Batch insert helper ─────────────────────────────────────────────────────
 
-async function insertJob(
+/** Fetch all existing source_ids and slugs in one query each to avoid N+1 */
+async function fetchExistingIds(db: D1Database): Promise<{ sourceIds: Set<string>; slugs: Set<string> }> {
+  const [sourceResult, slugResult] = await db.batch([
+    db.prepare('SELECT source_id FROM jobs WHERE source_id IS NOT NULL'),
+    db.prepare('SELECT slug FROM jobs'),
+  ]);
+
+  const sourceIds = new Set<string>();
+  for (const row of sourceResult.results ?? []) {
+    sourceIds.add(row.source_id as string);
+  }
+
+  const slugs = new Set<string>();
+  for (const row of slugResult.results ?? []) {
+    slugs.add(row.slug as string);
+  }
+
+  return { sourceIds, slugs };
+}
+
+/** Batch insert jobs using D1 batch API (max ~50 per batch to stay within limits) */
+async function batchInsertJobs(
   db: D1Database,
-  job: Record<string, unknown>,
+  jobs: Record<string, unknown>[],
+  existingSourceIds: Set<string>,
+  existingSlugs: Set<string>,
   stats: { imported: number; skipped: number },
 ): Promise<void> {
-  // Dedup check
-  const existing = await db
-    .prepare('SELECT 1 FROM jobs WHERE source_id = ?')
-    .bind(job.source_id)
-    .first();
+  const BATCH_SIZE = 50;
+  const toInsert: D1PreparedStatement[] = [];
 
-  if (existing) {
-    stats.skipped++;
-    return;
-  }
+  for (const job of jobs) {
+    // Dedup check (in-memory, no DB query)
+    if (existingSourceIds.has(job.source_id as string)) {
+      stats.skipped++;
+      continue;
+    }
 
-  // Slug collision check
-  const slugExists = await db
-    .prepare('SELECT 1 FROM jobs WHERE slug = ?')
-    .bind(job.slug)
-    .first();
-  if (slugExists) {
-    job.slug = `${job.slug}-${Date.now().toString(36).slice(-4)}`;
-  }
+    // Slug collision check (in-memory)
+    let slug = job.slug as string;
+    if (existingSlugs.has(slug)) {
+      slug = `${slug}-${Date.now().toString(36).slice(-4)}`;
+    }
+    existingSlugs.add(slug);
+    existingSourceIds.add(job.source_id as string);
 
-  try {
-    await db
-      .prepare(`
+    toInsert.push(
+      db.prepare(`
         INSERT INTO jobs (
           slug, company_name, company_website, company_logo, contact_email,
           title, description, country, industry, salary_range,
@@ -185,19 +205,26 @@ async function insertJob(
           is_live, stripe_session_id, created_at, activated_at, expires_at,
           source, source_id
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `)
-      .bind(
-        job.slug, job.company_name, job.company_website, job.company_logo, job.contact_email,
+      `).bind(
+        slug, job.company_name, job.company_website, job.company_logo, job.contact_email,
         job.title, job.description, job.country, job.industry, job.salary_range,
         job.visa_support, job.relocation_pkg, job.working_language, job.apply_url,
         job.is_live, job.stripe_session_id, job.created_at, job.activated_at, job.expires_at,
         job.source, job.source_id,
       )
-      .run();
-    stats.imported++;
-  } catch (err) {
-    console.error(`Failed to insert job: ${job.title}`, err);
-    stats.skipped++;
+    );
+  }
+
+  // Execute in batches of BATCH_SIZE
+  for (let i = 0; i < toInsert.length; i += BATCH_SIZE) {
+    const batch = toInsert.slice(i, i + BATCH_SIZE);
+    try {
+      await db.batch(batch);
+      stats.imported += batch.length;
+    } catch (err) {
+      console.error(`Batch insert failed (batch ${Math.floor(i / BATCH_SIZE) + 1}):`, err instanceof Error ? err.message : err);
+      stats.skipped += batch.length;
+    }
   }
 }
 

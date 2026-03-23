@@ -75,8 +75,8 @@ export default function SiteDetail({ slug }: { slug: string }) {
         setDeploy(data);
         return data;
       }
-    } catch {
-      // silent
+    } catch (err) {
+      console.error('Failed to fetch deploy status:', err instanceof Error ? err.message : err);
     }
     return null;
   }, [slug]);
@@ -108,7 +108,8 @@ export default function SiteDetail({ slug }: { slug: string }) {
         }
 
         setState('loaded');
-      } catch {
+      } catch (err) {
+        console.error('Failed to load site details:', err instanceof Error ? err.message : err);
         if (!cancelled) setState('error');
       }
     }
@@ -153,7 +154,8 @@ export default function SiteDetail({ slug }: { slug: string }) {
           setRedeploying(false);
         }
       }, 3000);
-    } catch {
+    } catch (err) {
+      console.error('Failed to trigger redeploy:', err instanceof Error ? err.message : err);
       setRedeploying(false);
     }
   }
@@ -182,7 +184,8 @@ export default function SiteDetail({ slug }: { slug: string }) {
         setDomainInput('');
         await fetchDeployStatus();
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to add custom domain:', err instanceof Error ? err.message : err);
       setDomainError('Network error');
     } finally {
       setDomainLoading(false);
@@ -211,7 +214,8 @@ export default function SiteDetail({ slug }: { slug: string }) {
       } else {
         await fetchDeployStatus();
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to remove custom domain:', err instanceof Error ? err.message : err);
       setDomainError('Network error');
     } finally {
       setDomainLoading(false);
@@ -240,7 +244,8 @@ export default function SiteDetail({ slug }: { slug: string }) {
       }
 
       window.location.href = '/?deleted=' + encodeURIComponent(slug);
-    } catch {
+    } catch (err) {
+      console.error('Failed to delete site:', err instanceof Error ? err.message : err);
       setDeleteError('Network error');
       setDeleting(false);
     }

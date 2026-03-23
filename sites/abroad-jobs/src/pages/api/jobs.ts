@@ -32,7 +32,16 @@ export const GET: APIRoute = async ({ request }) => {
   let results: (typeof jobs.$inferSelect)[];
 
   if (q) {
-    const ftsQuery = q.replace(/['"]/g, '').trim();
+    // Sanitize FTS5 query: strip quotes and operators, wrap each term in double quotes for literal matching
+    const ftsQuery = q
+      .replace(/['"]/g, '')
+      .replace(/\b(AND|OR|NOT|NEAR)\b/gi, '')
+      .replace(/[*^(){}:]/g, '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((term) => `"${term}"`)
+      .join(' ');
     if (!ftsQuery) {
       return new Response(JSON.stringify({ jobs: [], hasMore: false }), {
         headers: { 'Content-Type': 'application/json' },

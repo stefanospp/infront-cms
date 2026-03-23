@@ -2,6 +2,7 @@
 import "../../styles/global.css";
 import BlogPost from '@agency/ui/layouts/BlogPost.astro';
 import { getDirectusImageUrl } from '@agency/utils';
+import { sanitizeHtml } from '@agency/utils/sanitize';
 import { getPosts, getPostBySlug } from '../../lib/directus';
 import config from '../../../site.config';
 
@@ -33,5 +34,5 @@ const featuredImage = post.featured_image && config.cms?.url
   featuredImage={featuredImage}
   config={config}
 >
-  <Fragment set:html={post.content} />
+  <Fragment set:html={sanitizeHtml(post.content)} />
 </BlogPost>

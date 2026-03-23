@@ -79,7 +79,10 @@ async function wranglerDeploy(siteDir: string): Promise<void> {
       cwd: siteDir,
       timeout: 120_000,
       env: {
-        ...globalThis.process?.env,
+        // Only pass required env vars — don't leak SESSION_SECRET, ADMIN_PASSWORD_HASH, etc.
+        PATH: globalThis.process?.env?.PATH ?? '/usr/local/bin:/usr/bin:/bin',
+        HOME: globalThis.process?.env?.HOME ?? '/app',
+        NODE_ENV: globalThis.process?.env?.NODE_ENV ?? 'production',
         CLOUDFLARE_API_TOKEN: env('CLOUDFLARE_API_TOKEN') ?? '',
         CLOUDFLARE_ACCOUNT_ID: env('CLOUDFLARE_ACCOUNT_ID') ?? '',
       },
@@ -117,7 +120,8 @@ export async function deployNewSite(slug: string): Promise<void> {
   // ------ Step 1: Build ------
   try {
     await writeDeployMetadata(slug, meta);
-  } catch {
+  } catch (err) {
+    console.error(`[deploy] Failed to write initial metadata for ${slug}:`, err instanceof Error ? err.message : err);
     return;
   }
 
@@ -127,8 +131,8 @@ export async function deployNewSite(slug: string): Promise<void> {
     meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed', buildLog: buildResult.buildLog ?? buildResult.error ?? null };
     try {
       await writeDeployMetadata(slug, meta);
-    } catch {
-      // best-effort
+    } catch (err) {
+      console.error(`[deploy] Failed to write build-failure metadata for ${slug}:`, err instanceof Error ? err.message : err);
     }
     return;
   }
@@ -172,8 +176,8 @@ export async function deployNewSite(slug: string): Promise<void> {
     };
     try {
       await writeDeployMetadata(slug, meta);
-    } catch {
-      // best-effort
+    } catch (writeErr) {
+      console.error(`[deploy] Failed to write deploy-failure metadata for ${slug}:`, writeErr instanceof Error ? writeErr.message : writeErr);
     }
   }
 }
@@ -197,8 +201,8 @@ export async function redeploySite(slug: string): Promise<void> {
   try {
     meta = { ...meta, status: 'building', error: null };
     await writeDeployMetadata(slug, meta);
-  } catch {
-    // best-effort
+  } catch (err) {
+    console.error(`[redeploy] Failed to write building metadata for ${slug}:`, err instanceof Error ? err.message : err);
   }
 
   const buildResult = await buildSite(slug);
@@ -207,8 +211,8 @@ export async function redeploySite(slug: string): Promise<void> {
     meta = { ...meta, status: 'failed', error: buildResult.error ?? 'Build failed', buildLog: buildResult.buildLog ?? buildResult.error ?? null };
     try {
       await writeDeployMetadata(slug, meta);
-    } catch {
-      // best-effort
+    } catch (err) {
+      console.error(`[redeploy] Failed to write build-failure metadata for ${slug}:`, err instanceof Error ? err.message : err);
     }
     return;
   }
@@ -237,8 +241,8 @@ export async function redeploySite(slug: string): Promise<void> {
     };
     try {
       await writeDeployMetadata(slug, meta);
-    } catch {
-      // best-effort
+    } catch (writeErr) {
+      console.error(`[redeploy] Failed to write deploy-failure metadata for ${slug}:`, writeErr instanceof Error ? writeErr.message : writeErr);
     }
   }
 }

@@ -4,6 +4,7 @@ import FullWidth from '@agency/ui/layouts/FullWidth.astro';
 import Section from '@agency/ui/components/Section.astro';
 import CTA from '@agency/ui/components/CTA.astro';
 import { getDirectusImageUrl } from '@agency/utils';
+import { sanitizeHtml } from '@agency/utils/sanitize';
 import { getProperties, getPropertyBySlug } from '../../lib/directus';
 import config from '../../../site.config';
 
@@ -103,7 +104,7 @@ const features: string[] = p.features ?? [];
         </div>
 
         {p.description && (
-          <div class="prose prose-lg max-w-none text-neutral-700 mb-8" set:html={p.description} />
+          <div class="prose prose-lg max-w-none text-neutral-700 mb-8" set:html={sanitizeHtml(p.description)} />
         )}
 
         {features.length > 0 && (

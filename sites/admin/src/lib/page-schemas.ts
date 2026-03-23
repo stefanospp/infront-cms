@@ -111,12 +111,13 @@ export async function getPageSchema(
       const schemasDir = getSchemasDir(slug);
       await fs.mkdir(schemasDir, { recursive: true });
       await fs.writeFile(schemaPath, JSON.stringify(schema, null, 2), 'utf-8');
-    } catch {
-      // Non-critical — schema will be re-parsed next time
+    } catch (err) {
+      console.error(`[page-schemas] Failed to cache schema for ${slug}/${page}:`, err instanceof Error ? err.message : err);
     }
 
     return schema;
-  } catch {
+  } catch (err) {
+    console.error(`[page-schemas] Failed to parse page schema for ${slug}/${page}:`, err instanceof Error ? err.message : err);
     return null;
   }
 }

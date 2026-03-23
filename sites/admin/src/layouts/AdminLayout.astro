@@ -234,8 +234,13 @@ const currentPath = Astro.url.pathname;
       overlay?.addEventListener('click', closeSidebar);
 
       logoutBtn?.addEventListener('click', async () => {
-        await fetch('/api/auth/logout', { method: 'POST' });
-        window.location.href = '/login';
+        // Sign out via central auth service, then redirect to login
+        const authBaseUrl = import.meta.env.PUBLIC_AUTH_SERVICE_URL || 'https://auth.infront.cy';
+        await fetch(`${authBaseUrl}/api/auth/sign-out`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+        window.location.href = `${authBaseUrl}/login`;
       });
     </script>
   </body>

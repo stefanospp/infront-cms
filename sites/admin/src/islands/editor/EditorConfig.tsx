@@ -407,7 +407,8 @@ export default function EditorConfig({ slug, isOpen, onClose }: EditorConfigProp
         const data = await res.json().catch(() => ({ error: 'Save failed' }));
         setError(data.error ?? 'Failed to save');
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to save site config:', err instanceof Error ? err.message : err);
       setError('Network error');
     } finally {
       setIsSaving(false);

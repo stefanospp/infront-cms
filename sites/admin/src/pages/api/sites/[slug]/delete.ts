@@ -8,6 +8,7 @@ import {
   deleteDnsRecord,
   deleteWorker,
 } from '@/lib/cloudflare';
+import { auditLog } from '@agency/utils/logger';
 
 export const prerender = false;
 
@@ -18,6 +19,8 @@ export const DELETE: APIRoute = async ({ params }) => {
       status,
       headers: { 'Content-Type': 'application/json' },
     });
+
+  auditLog('site.delete', { slug });
 
   // ---- Validation ----
 

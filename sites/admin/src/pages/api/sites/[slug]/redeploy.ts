@@ -1,8 +1,12 @@
 import type { APIRoute } from 'astro';
 import { redeploySite, readDeployMetadata } from '@/lib/deploy';
+import { auditLog } from '@agency/utils/logger';
+
+export const prerender = false;
 
 export const POST: APIRoute = async ({ params }) => {
   const slug = params.slug!;
+  auditLog('site.redeploy', { slug });
   const meta = await readDeployMetadata(slug);
 
   if (!meta) {

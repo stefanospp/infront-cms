@@ -1209,8 +1209,8 @@ export default function SiteWizard({ initialTemplateId }: SiteWizardProps) {
             }));
           }
         }
-      } catch {
-        // Templates will be fetched when reaching step 2
+      } catch (err) {
+        console.error('Failed to prefetch templates:', err instanceof Error ? err.message : err);
       } finally {
         setTemplatesLoading(false);
       }
@@ -1330,8 +1330,8 @@ export default function SiteWizard({ initialTemplateId }: SiteWizardProps) {
         if (data.status === 'live' || data.status === 'failed') {
           clearInterval(interval);
         }
-      } catch {
-        // keep polling on transient errors
+      } catch (err) {
+        console.error('Deploy status poll error:', err instanceof Error ? err.message : err);
       }
     }, 3000);
 

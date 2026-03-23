@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { generateSite } from '@/lib/generator';
 import type { CreateSitePayload } from '@/lib/generator';
 import { writeDeployMetadata, deployNewSite } from '@/lib/deploy';
+import { auditLog } from '@agency/utils/logger';
+
+export const prerender = false;
 import type { DeployMetadata } from '@/lib/deploy';
 
 const addressSchema = z.object({
@@ -154,6 +157,9 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const payload: CreateSitePayload = parsed.data;
+
+    auditLog('site.create', { slug: payload.slug, tier: payload.tier, template: payload.templateId });
+
     const result = await generateSite(payload);
 
     if (!result.success) {

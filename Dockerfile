@@ -1,7 +1,10 @@
 FROM node:22-slim
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm with pinned version for reproducible builds
+RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
+
+# Install git (needed for versioning features)
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -33,8 +36,18 @@ EXPOSE 4321
 # the persistent Docker volume mounted at /app/sites.
 RUN cp -r /app/sites /app/_baked-sites && cp -r /app/infra /app/_baked-infra
 
+# Create non-root user for security
+RUN groupadd -r agency && useradd -r -g agency -d /app agency
+RUN chown -R agency:agency /app
+
 # Entrypoint script writes runtime env vars to JSON then starts the server
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:4321/health || exit 1
+
+USER agency
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

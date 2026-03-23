@@ -3,6 +3,8 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { getMonorepoRoot } from '@/lib/generator';
 
+export const prerender = false;
+
 export const GET: APIRoute = async ({ params }) => {
   const slug = params.slug!;
   const root = getMonorepoRoot();
@@ -18,7 +20,8 @@ export const GET: APIRoute = async ({ params }) => {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch {
+  } catch (err) {
+    console.error(`Failed to read component overrides for ${slug}:`, err instanceof Error ? err.message : err);
     return new Response(JSON.stringify({ files: [] }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },

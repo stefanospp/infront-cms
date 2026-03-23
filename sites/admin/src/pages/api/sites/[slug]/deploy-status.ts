@@ -1,6 +1,8 @@
 import type { APIRoute } from 'astro';
 import { readDeployMetadata } from '@/lib/deploy';
 
+export const prerender = false;
+
 export const GET: APIRoute = async ({ params }) => {
   const slug = params.slug!;
   const meta = await readDeployMetadata(slug);

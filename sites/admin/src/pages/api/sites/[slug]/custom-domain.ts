@@ -1,9 +1,13 @@
 import type { APIRoute } from 'astro';
 import { readDeployMetadata, writeDeployMetadata } from '@/lib/deploy';
 import { addWorkerCustomDomain, removeWorkerCustomDomain } from '@/lib/cloudflare';
+import { auditLog } from '@agency/utils/logger';
+
+export const prerender = false;
 
 export const POST: APIRoute = async ({ params, request }) => {
   const slug = params.slug!;
+  auditLog('site.custom-domain', { slug });
 
   let body: { domain?: string };
   try {

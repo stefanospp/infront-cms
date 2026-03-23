@@ -39,40 +39,47 @@ export const POST: APIRoute = async ({ request, url }) => {
   const db = getDb(env.DB);
   const stripe = getStripe(env.STRIPE_SECRET_KEY);
   const now = Math.floor(Date.now() / 1000);
-
-  // Create Stripe session first to get the ID
   const siteUrl = url.origin;
-  const sessionParams = createCheckoutParams(jobInputs.length, '', siteUrl);
 
-  // Add customer email
+  // Generate a temporary session placeholder for batch insert
+  const pendingId = `pending_${crypto.randomUUID()}`;
+
+  // Insert all pending jobs first using D1 batch for atomicity
+  const insertStatements = jobInputs.map((input) => {
+    const slug = uniqueSlug(input.title, input.country);
+    return env.DB.prepare(
+      `INSERT INTO jobs (slug, company_name, company_website, company_logo, contact_email, title, description, country, industry, salary_range, visa_support, relocation_pkg, working_language, apply_url, is_live, stripe_session_id, source, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, 'paid', ?)`
+    ).bind(
+      slug,
+      input.companyName,
+      input.companyWebsite || null,
+      input.companyLogo || null,
+      contactEmail,
+      input.title,
+      input.description,
+      input.country,
+      input.industry,
+      input.salaryRange || null,
+      input.visaSupport,
+      input.relocationPkg,
+      input.workingLanguage || null,
+      input.applyUrl,
+      pendingId,
+      now,
+    );
+  });
+
+  await env.DB.batch(insertStatements);
+
+  // Create Stripe session after jobs are safely in the database
+  const sessionParams = createCheckoutParams(jobInputs.length, pendingId, siteUrl);
   sessionParams.customer_email = contactEmail;
-
   const session = await stripe.checkout.sessions.create(sessionParams);
 
-  // Insert pending jobs with the session ID
-  for (const input of jobInputs) {
-    const slug = uniqueSlug(input.title, input.country);
-
-    await db.insert(jobs).values({
-      slug,
-      companyName: input.companyName,
-      companyWebsite: input.companyWebsite || null,
-      companyLogo: input.companyLogo || null,
-      contactEmail,
-      title: input.title,
-      description: input.description,
-      country: input.country,
-      industry: input.industry,
-      salaryRange: input.salaryRange || null,
-      visaSupport: input.visaSupport,
-      relocationPkg: input.relocationPkg,
-      workingLanguage: input.workingLanguage || null,
-      applyUrl: input.applyUrl,
-      isLive: 0,
-      stripeSessionId: session.id,
-      createdAt: now,
-    });
-  }
+  // Update jobs with the real Stripe session ID
+  await env.DB.prepare(
+    `UPDATE jobs SET stripe_session_id = ? WHERE stripe_session_id = ?`
+  ).bind(session.id, pendingId).run();
 
   return new Response(JSON.stringify({ url: session.url }), {
     headers: { 'Content-Type': 'application/json' },

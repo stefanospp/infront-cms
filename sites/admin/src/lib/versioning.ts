@@ -132,8 +132,8 @@ export async function getVersionHistory(
           sitePath,
         ]);
         filesChanged = diffStat.trim().split('\n').filter(Boolean).length;
-      } catch {
-        // Skip file count on error
+      } catch (err) {
+        console.error(`[versioning] Failed to get diff stats for ${slug}:`, err instanceof Error ? err.message : err);
       }
 
       entries.push({
@@ -147,7 +147,8 @@ export async function getVersionHistory(
     }
 
     return entries;
-  } catch {
+  } catch (err) {
+    console.error(`[versioning] Failed to get version history for ${slug}:`, err instanceof Error ? err.message : err);
     return [];
   }
 }

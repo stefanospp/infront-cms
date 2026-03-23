@@ -10,7 +10,7 @@ const PRICE_PER_JOB_CENTS = 8900; // €89.00
 
 export function createCheckoutParams(
   jobCount: number,
-  sessionId: string,
+  pendingId: string,
   siteUrl: string,
 ): Stripe.Checkout.SessionCreateParams {
   return {
@@ -30,7 +30,7 @@ export function createCheckoutParams(
       },
     ],
     metadata: {
-      session_id: sessionId,
+      pending_id: pendingId,
     },
     success_url: `${siteUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${siteUrl}/post`,

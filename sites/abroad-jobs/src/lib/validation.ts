@@ -27,7 +27,10 @@ export const jobInputSchema = z.object({
   relocationPkg: z.enum(RELOCATION_OPTIONS),
   workingLanguage: z.string().max(100).optional().or(z.literal('')),
   description: z.string().min(20).max(10000),
-  applyUrl: z.string().min(1).max(500),
+  applyUrl: z.string().min(1).max(500).refine(
+    (url) => /^https?:\/\/|^mailto:/i.test(url),
+    { message: 'Apply URL must start with http://, https://, or mailto:' }
+  ),
 });
 
 export const checkoutSchema = z.object({

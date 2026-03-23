@@ -27,11 +27,14 @@ const resolvedOgImage = ogImage
     : `${siteUrl}${ogImage}`
   : undefined;
 
+// Auto-generate canonical URL from current page if not explicitly set
+const currentPath = Astro.url.pathname;
+const autoCanonical = `${siteUrl}${currentPath === '/' ? '' : currentPath}`;
 const resolvedCanonical = canonicalUrl
   ? canonicalUrl.startsWith('http')
     ? canonicalUrl
     : `${siteUrl}${canonicalUrl}`
-  : undefined;
+  : autoCanonical;
 ---
 
 <meta charset="utf-8" />
@@ -46,8 +49,14 @@ const resolvedCanonical = canonicalUrl
 {resolvedOgImage && <meta property="og:image" content={resolvedOgImage} />}
 {resolvedCanonical && <meta property="og:url" content={resolvedCanonical} />}
 
-<!-- Canonical -->
-{resolvedCanonical && <link rel="canonical" href={resolvedCanonical} />}
+<!-- Canonical (always set for SEO) -->
+<link rel="canonical" href={resolvedCanonical} />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+{resolvedOgImage && <meta name="twitter:image" content={resolvedOgImage} />}
 
 <!-- No Index -->
 {noIndex && <meta name="robots" content="noindex, nofollow" />}

@@ -1,6 +1,7 @@
 ---
 import type { SiteConfig } from '@agency/config';
 import SEOHead from '../components/SEOHead.astro';
+import CookieConsent from '../islands/CookieConsent.tsx';
 
 export interface Props {
   title: string;
@@ -53,6 +54,7 @@ const analyticsSiteId = config.analytics?.siteId;
 
     <slot />
 
+    {/* Privacy-friendly analytics: load without consent */}
     {
       analyticsProvider === 'plausible' && analyticsSiteId && (
         <script
@@ -71,22 +73,14 @@ const analyticsSiteId = config.analytics?.siteId;
         />
       )
     }
+    {/* Google Analytics: requires consent — loaded by CookieConsent island, NOT here */}
     {
       analyticsProvider === 'google' && analyticsSiteId && (
-        <Fragment>
-          <script
-            async
-            src={`https://www.googletagmanager.com/gtag/js?id=${analyticsSiteId}`}
-          />
-          <script
-            set:html={`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${analyticsSiteId}');
-            `}
-          />
-        </Fragment>
+        <CookieConsent
+          client:idle
+          analyticsProvider="google"
+          siteId={analyticsSiteId}
+        />
       )
     }
   </body>

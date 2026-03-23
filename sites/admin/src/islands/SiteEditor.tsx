@@ -140,11 +140,12 @@ export default function SiteEditor({ slug }: { slug: string }) {
               if (pollRef.current) clearInterval(pollRef.current);
               pollRef.current = null;
             }
-          } catch {
-            // silent
+          } catch (err) {
+            console.error('Dev server poll error:', err instanceof Error ? err.message : err);
           }
         }, 2000);
-      } catch {
+      } catch (err) {
+        console.error('Failed to start dev server:', err instanceof Error ? err.message : err);
         if (!cancelled) setDevServerStatus('error');
       }
     }
@@ -271,7 +272,8 @@ export default function SiteEditor({ slug }: { slug: string }) {
         const data = await res.json().catch(() => ({ error: 'Save failed' }));
         alert(data.error ?? 'Failed to save page');
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to save page:', err instanceof Error ? err.message : err);
       alert('Network error — could not save');
     } finally {
       setIsSaving(false);
@@ -290,7 +292,8 @@ export default function SiteEditor({ slug }: { slug: string }) {
         const data = await res.json().catch(() => ({ error: 'Publish failed' }));
         alert(data.error ?? 'Failed to publish');
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to publish site:', err instanceof Error ? err.message : err);
       alert('Network error — could not publish');
     }
   }

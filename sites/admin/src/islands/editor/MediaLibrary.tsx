@@ -116,7 +116,8 @@ export default function MediaLibrary({
           setSelectedImage(null);
         }
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to delete image:', err instanceof Error ? err.message : err);
       setError('Failed to delete image');
     }
   }

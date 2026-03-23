@@ -229,8 +229,8 @@ async function renderMermaidDiagrams() {
   try {
     const mermaid = await import('mermaid');
     await mermaid.default.run({ nodes: elements as NodeListOf<HTMLElement> });
-  } catch {
-    // Mermaid rendering failed silently
+  } catch (err) {
+    console.error('Mermaid diagram rendering failed:', err instanceof Error ? err.message : err);
   }
 }
 

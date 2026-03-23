@@ -94,8 +94,8 @@ export default function LoadMore({ query = '', country = '', industry = '', init
       setJobs((prev) => [...prev, ...data.jobs]);
       setHasMore(data.hasMore);
       setPage((p) => p + 1);
-    } catch {
-      // Silently fail
+    } catch (err) {
+      console.error('Failed to load more jobs:', err instanceof Error ? err.message : err);
     } finally {
       setLoading(false);
     }

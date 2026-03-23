@@ -1,33 +1,27 @@
 ---
-import '@/styles/global.css';
-import LoginForm from '@/islands/LoginForm';
+/**
+ * Login page — redirects to central auth service.
+ * Kept as a local route so bookmarks and direct links still work.
+ */
+import { env } from '@/lib/env';
+
+const authBaseUrl = env('AUTH_SERVICE_URL') ?? 'https://auth.infront.cy';
+
+// Validate redirect to prevent open redirect attacks
+const rawRedirect = Astro.url.searchParams.get('redirect');
+let redirect = Astro.url.origin;
+if (rawRedirect) {
+  try {
+    const redirectUrl = new URL(rawRedirect);
+    // Only allow redirects to same origin or the auth service
+    if (redirectUrl.origin === Astro.url.origin || redirectUrl.origin === new URL(authBaseUrl).origin) {
+      redirect = rawRedirect;
+    }
+  } catch {
+    // Invalid URL — use default
+  }
+}
+
+const loginUrl = `${authBaseUrl}/login?redirect=${encodeURIComponent(redirect)}`;
+return Astro.redirect(loginUrl, 302);
 ---
-
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Login — Agency Admin</title>
-    <meta name="robots" content="noindex, nofollow" />
-  </head>
-  <body class="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
-    <div class="w-full max-w-sm">
-      <div class="text-center mb-8">
-        <div
-          class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-primary-600 text-white font-bold text-lg mb-4"
-        >
-          A
-        </div>
-        <h1 class="text-2xl font-bold text-neutral-900">Agency Admin</h1>
-        <p class="mt-1 text-sm text-neutral-500">
-          Sign in to manage your sites
-        </p>
-      </div>
-
-      <div class="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
-        <LoginForm client:load />
-      </div>
-    </div>
-  </body>
-</html>

@@ -79,7 +79,7 @@ const borderRadiusClass =
     <!-- Mobile Nav (React Island) -->
     <div class="md:hidden">
       <MobileNav
-        client:load
+        client:idle
         items={nav.items.map((item) => ({ label: item.label, href: item.href }))}
         cta={nav.cta ? { label: nav.cta.label, href: nav.cta.href } : undefined}
       />

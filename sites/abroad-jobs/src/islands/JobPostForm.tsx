@@ -108,7 +108,8 @@ export default function JobPostForm() {
 
       // Redirect to Stripe Checkout
       window.location.href = data.url;
-    } catch {
+    } catch (err) {
+      console.error('Job post checkout failed:', err instanceof Error ? err.message : err);
       setErrors({ form: 'Network error. Please check your connection and try again.' });
       setSubmitting(false);
     }

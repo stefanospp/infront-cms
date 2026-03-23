@@ -2,6 +2,7 @@
 import "../../styles/global.css";
 import FullWidth from '@agency/ui/layouts/FullWidth.astro';
 import { getDirectusImageUrl } from '@agency/utils';
+import { sanitizeHtml } from '@agency/utils/sanitize';
 import { getProjects, getProjectBySlug } from '../../lib/directus';
 import config from '../../../site.config';
 
@@ -71,7 +72,7 @@ function formatProjectType(type: string | null | undefined): string {
           </h1>
 
           {p.description && (
-            <div class="mt-10 max-w-prose text-lg font-light leading-relaxed text-neutral-600" set:html={p.description} />
+            <div class="mt-10 max-w-prose text-lg font-light leading-relaxed text-neutral-600" set:html={sanitizeHtml(p.description)} />
           )}
 
           {/* Image gallery */}
