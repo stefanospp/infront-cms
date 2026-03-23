@@ -43,5 +43,6 @@ function loadEnv(): Record<string, string> {
 }
 
 export function env(key: string): string | undefined {
-  return loadEnv()[key];
+  // Check runtime-env.json first, then fall back to process.env
+  return loadEnv()[key] ?? process.env[key];
 }
