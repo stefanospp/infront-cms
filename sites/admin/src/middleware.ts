@@ -3,6 +3,7 @@ import { env } from './lib/env';
 import { logger } from '@agency/utils/logger';
 
 const AUTH_BASE_URL = env('AUTH_SERVICE_URL') ?? 'https://auth.infront.cy';
+const PUBLIC_ADMIN_URL = env('PUBLIC_ADMIN_URL') ?? 'https://web.infront.cy';
 const AUTH_TIMEOUT_MS = 5000;
 const SESSION_CACHE_TTL_MS = 60_000; // Cache sessions for 60 seconds
 const SESSION_COOKIE_NAME = 'better-auth.session_token';
@@ -20,17 +21,18 @@ function isPublicRoute(pathname: string): boolean {
   return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
-function isValidOrigin(request: Request, siteUrl: URL): boolean {
+function isValidOrigin(request: Request): boolean {
   const origin = request.headers.get('origin');
   const referer = request.headers.get('referer');
-  const expected = siteUrl.origin;
+  // Check against the public URL (not container's localhost)
+  const publicOrigin = new URL(PUBLIC_ADMIN_URL).origin;
 
   // Origin header is most reliable
-  if (origin) return origin === expected;
+  if (origin) return origin === publicOrigin;
   // Fall back to referer
   if (referer) {
     try {
-      return new URL(referer).origin === expected;
+      return new URL(referer).origin === publicOrigin;
     } catch {
       return false;
     }
@@ -52,7 +54,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   // CSRF protection: verify Origin header on mutation requests to API routes
   if (MUTATION_METHODS.has(context.request.method) && pathname.startsWith('/api/')) {
-    if (!isValidOrigin(context.request, context.url)) {
+    if (!isValidOrigin(context.request)) {
       return new Response(JSON.stringify({ error: 'CSRF validation failed' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },
@@ -92,14 +94,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     clearTimeout(timeout);
 
     if (!res.ok) {
-      const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(context.url.pathname)}`;
+      const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(PUBLIC_ADMIN_URL + context.url.pathname)}`;
       return context.redirect(loginUrl);
     }
 
     const data = await res.json();
 
     if (!data?.user) {
-      const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(context.url.pathname)}`;
+      const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(PUBLIC_ADMIN_URL + context.url.pathname)}`;
       return context.redirect(loginUrl);
     }
 
@@ -131,7 +133,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       return new Response('Auth service unavailable. Please try again shortly.', { status: 503 });
     }
 
-    const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(context.url.pathname)}`;
+    const loginUrl = `${AUTH_BASE_URL}/login?redirect=${encodeURIComponent(PUBLIC_ADMIN_URL + context.url.pathname)}`;
     return context.redirect(loginUrl);
   }
 });
