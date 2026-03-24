@@ -30,6 +30,7 @@ const config: SiteConfig = {
 
   nav: {
     items: [
+      { label: 'Tutoring', href: '/tutoring' },
       { label: 'Resources', href: '/resources' },
       { label: 'Courses', href: '/courses' },
     ],
