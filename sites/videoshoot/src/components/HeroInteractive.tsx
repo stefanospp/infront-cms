@@ -60,7 +60,7 @@ export default function HeroInteractive({
   return (
     <section
       className="relative overflow-hidden bg-neutral-950"
-      style={{ height: '100dvh', maxHeight: '100dvh' }}
+      style={{ height: '100dvh', marginTop: '-72px', paddingTop: '0' }}
     >
       {/* Background poster — visible while video loads */}
       {backgroundPoster && (
@@ -82,7 +82,8 @@ export default function HeroInteractive({
       />
 
       {/* Gradient — bottom-up on mobile, left-right on desktop */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/40 lg:to-black/20" />
+      {/* Gradient — darker on mobile for text readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 lg:bg-gradient-to-r lg:from-black/80 lg:via-black/40 lg:to-black/20" />
 
       {/* Content — pinned to bottom via absolute */}
       <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 sm:px-6 sm:pb-12 lg:mx-auto lg:flex lg:max-w-7xl lg:items-end lg:justify-between lg:px-8 lg:pb-20">

@@ -3,6 +3,7 @@ import "../styles/global.css";
 import VideoLayout from '../components/VideoLayout.astro';
 import Hero from '../components/Hero.astro';
 import HeroInteractive from '../components/HeroInteractive';
+import ReelsShowcase from '../components/ReelsShowcase.astro';
 import TestimonialCarousel from '../components/TestimonialCarousel.astro';
 import ValuesSection from '../components/ValuesSection.astro';
 import ServiceCard from '../components/ServiceCard.astro';
@@ -19,21 +20,21 @@ const projects = [
 
 const testimonials = [
   {
-    quote: 'Nikolas captured our resort in a way we never imagined. His drone work and editing turned our property into a cinematic experience that boosted our bookings overnight.',
-    author: 'Maya Suryani',
-    role: 'Resort Owner, Bali',
+    quote: 'Nikolas has an incredible eye for storytelling. He understood our vision instantly and delivered content that exceeded every expectation. Highly recommend.',
+    author: 'Satisfied Client',
+    role: 'Brand Partnership',
     image: '/images/testimonial-1.jpg',
   },
   {
-    quote: 'Working with Nikolas was effortless. He understood the vibe of our brand instantly and delivered content that truly resonated with our audience. A real creative force.',
-    author: 'Luca Martins',
-    role: 'Travel Brand Director',
+    quote: 'Professional, creative, and incredibly easy to work with. The final videos were stunning — exactly what we needed to elevate our brand presence online.',
+    author: 'Happy Client',
+    role: 'Content Campaign',
     image: '/images/testimonial-2.jpg',
   },
   {
-    quote: 'The reels Nikolas created for our destination campaign reached over a million views. His eye for storytelling and natural beauty is unmatched.',
-    author: 'Elena Vasiliou',
-    role: 'Tourism Board, Cyprus',
+    quote: 'The quality of Nikolas\'s work speaks for itself. His reels consistently perform well and his attention to detail in every frame is unmatched.',
+    author: 'Returning Client',
+    role: 'Ongoing Collaboration',
     image: '/images/testimonial-3.jpg',
   },
 ];
@@ -54,32 +55,32 @@ const valueVideos = [
 
 const services = [
   {
-    title: 'Cinematic Travel Content',
-    description: 'Stunning cinematic reels and videos that showcase destinations, resorts, and experiences with a storytelling-first approach.',
-    tags: ['Travel Reels', 'Destination Films', 'Resort Showcases', 'Drone Footage'],
+    title: 'Video Production',
+    description: 'From concept to final cut, I handle the entire production process. Scripting, filming, editing — delivering polished content that tells your story.',
+    tags: ['Commercials', 'Brand Films', 'Short Films', 'Reels'],
     href: '/services',
   },
   {
-    title: 'Brand Collaborations',
-    description: 'Authentic content creation for travel brands, hotels, and lifestyle companies. Reaching engaged audiences across Instagram and social platforms.',
-    tags: ['Influencer Campaigns', 'Sponsored Content', 'Brand Stories', 'UGC'],
+    title: 'Creative Direction',
+    description: 'I work closely with you to develop unique concepts and visual narratives that resonate with your audience and elevate your brand.',
+    tags: ['Concept Development', 'Storyboarding', 'Art Direction', 'Brand Identity'],
     href: '/services',
   },
   {
-    title: 'Content Creation & Editing',
-    description: 'End-to-end video production from concept to final cut. Professional editing, color grading, and sound design that brings your vision to life.',
-    tags: ['Video Editing', 'Color Grading', 'Aerial & Drone', 'Social Media'],
+    title: 'Content Creation',
+    description: 'Professional content for social media, websites, and campaigns. Optimized for engagement and crafted to stand out in crowded feeds.',
+    tags: ['Social Media', 'Instagram Reels', 'YouTube', 'Campaign Content'],
     href: '/services',
   },
 ];
 
 const works = [
   { title: 'Stay True to Yourself', subtitle: 'Cinematic Self-Expression', image: '/images/project-1.jpg', videoSrc: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4' },
-  { title: 'Madeira', subtitle: 'Rocky Coast Adventures', image: '/images/project-2.jpg', videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4' },
-  { title: 'Love Cyprus', subtitle: 'Aerial Paradise', image: '/images/project-3.jpg', videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4' },
+  { title: 'Coastal Stories', subtitle: 'Where Land Meets Sea', image: '/images/project-2.jpg', videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4' },
+  { title: 'Aerial Perspectives', subtitle: 'A View From Above', image: '/images/project-3.jpg', videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4' },
   { title: 'Mountain Adventures', subtitle: 'Exploring New Heights', image: '/images/project-4.jpg', videoSrc: 'https://videos.pexels.com/video-files/34085713/14457217_640_360_60fps.mp4' },
   { title: 'Underwater World', subtitle: 'Beneath the Surface', image: '/images/project-5.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4' },
-  { title: 'Turquoise Waters', subtitle: 'Aerial Perspectives', image: '/images/project-6.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4' },
+  { title: 'Golden Hour', subtitle: 'Chasing the Light', image: '/images/project-6.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4' },
 ];
 
 ---
@@ -89,13 +90,12 @@ const works = [
   description={config.seo.defaultDescription}
   config={config}
 >
-  {/* Interactive Hero — video changes on click, previews on hover */}
-  <div class="-mt-[72px]">
-    <HeroInteractive
+  {/* Interactive Hero */}
+  <HeroInteractive
       client:load
-      eyebrow="Digital Creator · Bali Influencer"
+      eyebrow="Videographer · Content Creator"
       heading="Stay true to yourself."
-      subheading="Cinematic travel content from Bali, Cyprus, Madeira, and beyond. Capturing the beauty of the world, one frame at a time."
+      subheading="High-quality video content that engages, inspires, and tells stories worth sharing."
       ctaText="Get in touch"
       ctaHref="/contact"
       secondaryCtaText="Watch showreel"
@@ -103,13 +103,12 @@ const works = [
       backgroundVideo="https://videos.pexels.com/video-files/5933986/5933986-sd_960_506_24fps.mp4"
       backgroundPoster="/images/hero-bg.jpg"
       projects={projects}
-    />
-  </div>
+  />
 
   {/* Values / About Section */}
   <ValuesSection
-    heading="I create cinematic content that captures the soul of every destination and tells stories that move people."
-    description="From the rice terraces of Bali to the shores of Cyprus, I turn travel experiences into visual stories that inspire wanderlust and authentic connection."
+    heading="I create visual content that captures moments and tells stories that move people."
+    description="Every project is an opportunity to push creative boundaries. I turn ideas into powerful visual stories that leave a lasting impact and deliver real results."
     linkText="About me"
     linkHref="/about"
     values={values}
@@ -121,8 +120,8 @@ const works = [
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="mb-14 flex items-end justify-between">
         <div>
-          <p class="text-sm font-medium uppercase tracking-widest text-neutral-500">What we do</p>
-          <h2 class="mt-2 text-3xl font-bold text-neutral-900 sm:text-4xl lg:text-5xl">Our services.</h2>
+          <p class="text-sm font-medium uppercase tracking-widest text-neutral-500">What I offer</p>
+          <h2 class="mt-2 text-3xl font-bold text-neutral-900 sm:text-4xl lg:text-5xl">My services.</h2>
         </div>
         <a
           href="/services"
@@ -170,6 +169,13 @@ const works = [
       </HorizontalScroller>
     </div>
   </section>
+
+  {/* Instagram Reels */}
+  <ReelsShowcase
+    eyebrow="@nikolaspetrouu"
+    heading="Follow the journey."
+    reelIds={['C14N94RKhK_', 'DFM7L9Uugq9', 'CjA5aKVguYE', 'DDBQo9sTKR0', 'DB_ZIJTh3Fe']}
+  />
 
   {/* Testimonials */}
   <TestimonialCarousel testimonials={testimonials} />

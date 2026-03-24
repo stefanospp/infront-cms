@@ -4,51 +4,43 @@ import VideoLayout from '../components/VideoLayout.astro';
 import Hero from '../components/Hero.astro';
 import ValuesSection from '../components/ValuesSection.astro';
 import ProjectCard from '../components/ProjectCard.astro';
-import TeamGrid from '@agency/ui/components/TeamGrid.astro';
 import config from '../../site.config';
 
 const values = [
-  { number: '01.', title: 'Unleashing Boundless Creativity' },
-  { number: '02.', title: 'Stories That Inspire & Engage' },
+  { number: '01.', title: 'Creativity Without Limits' },
+  { number: '02.', title: 'Authentic Storytelling' },
   { number: '03.', title: 'Excellence in Every Frame' },
-  { number: '04.', title: 'Driven by Innovation & Passion' },
+  { number: '04.', title: 'Passion-Driven Work' },
 ];
 
 const valueVideos = [
-  { image: '/images/project-1.jpg', title: 'Whispers of Nature' },
-  { image: '/images/project-2.jpg', title: 'Beyond the Horizon' },
-  { image: '/images/project-3.jpg', title: 'Frozen Symphony' },
-  { image: '/images/project-4.jpg', title: 'Chasing the Light' },
+  { image: '/images/project-1.jpg', title: 'Visual Stories' },
+  { image: '/images/project-2.jpg', title: 'Creative Direction' },
+  { image: '/images/project-3.jpg', title: 'Cinematic Quality' },
+  { image: '/images/project-4.jpg', title: 'Brand Content' },
 ];
 
 const works = [
   { title: 'Stay True to Yourself', subtitle: 'Cinematic Self-Expression', image: '/images/project-1.jpg', videoSrc: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4' },
-  { title: 'Madeira', subtitle: 'Rocky Coast Adventures', image: '/images/project-2.jpg', videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4' },
-  { title: 'Love Cyprus', subtitle: 'Aerial Paradise', image: '/images/project-3.jpg', videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4' },
+  { title: 'Coastal Stories', subtitle: 'Where Land Meets Sea', image: '/images/project-2.jpg', videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4' },
+  { title: 'Aerial Perspectives', subtitle: 'A View From Above', image: '/images/project-3.jpg', videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4' },
   { title: 'Mountain Adventures', subtitle: 'Exploring New Heights', image: '/images/project-4.jpg', videoSrc: 'https://videos.pexels.com/video-files/34085713/14457217_640_360_60fps.mp4' },
   { title: 'Underwater World', subtitle: 'Beneath the Surface', image: '/images/project-5.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4' },
-  { title: 'Turquoise Waters', subtitle: 'Aerial Perspectives', image: '/images/project-6.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4' },
-];
-
-const team = [
-  { name: 'Sophia Carter', role: 'Creative Director', photo: '/images/team-1.jpg' },
-  { name: 'Ava Reynolds', role: 'Director of Photography', photo: '/images/team-2.jpg' },
-  { name: 'Marcus Chen', role: 'Lead Editor', photo: '/images/team-3.jpg' },
-  { name: 'Elena Petrova', role: 'Producer', photo: '/images/team-4.jpg' },
+  { title: 'Golden Hour', subtitle: 'Chasing the Light', image: '/images/project-6.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4' },
 ];
 ---
 
 <VideoLayout
-  title="About Us"
-  description="Bringing stories to life, one frame at a time."
+  title="About Nikolas"
+  description="Videographer and content creator telling stories through film."
   config={config}
 >
   {/* Hero */}
   <Hero
     variant="minimal"
     eyebrow="The story behind the lens."
-    heading="Nikolas Petrou — Digital Creator from Cyprus."
-    subheading="Based in Bali, originally from Cyprus. I create cinematic travel content that captures the soul of every destination and inspires people to explore the world."
+    heading="I tell stories through film."
+    subheading="I'm Nikolas Petrou — a videographer and content creator focused on crafting cinematic visuals that capture real moments and deliver results for brands."
     ctaText="Get in touch"
     ctaHref="/contact"
   />
@@ -59,27 +51,15 @@ const team = [
       <div class="relative">
         <img
           src="/images/about-hero.jpg"
-          alt="Video production in action"
+          alt="Nikolas Petrou filming on location"
           class="h-[400px] w-full rounded-xl object-cover sm:h-[500px]"
           loading="lazy"
         />
-        {/* Floating testimonial */}
         <div class="absolute bottom-3 right-3 max-w-[calc(100%-1.5rem)] rounded-xl bg-white/95 p-4 shadow-lg backdrop-blur-sm sm:bottom-6 sm:right-6 sm:max-w-sm sm:p-6">
-          <div class="mb-3 flex items-center gap-3">
-            <img
-              src="/images/testimonial-1.jpg"
-              alt="Rebeca Ma"
-              class="h-10 w-10 rounded-full object-cover"
-              loading="lazy"
-            />
-            <div>
-              <p class="text-sm font-semibold text-neutral-900">Rebeca Ma</p>
-              <p class="text-xs text-neutral-500">Content Creator</p>
-            </div>
-          </div>
           <p class="text-sm leading-relaxed text-neutral-700">
-            &ldquo;Their creative vision and attention to detail exceeded our expectations. They didn&rsquo;t just produce a video&mdash;they brought our message to life.&rdquo;
+            &ldquo;His creative vision and attention to detail exceeded my expectations. He didn&rsquo;t just produce a video&mdash;he brought my message to life.&rdquo;
           </p>
+          <p class="mt-3 text-xs font-semibold text-neutral-500">— Happy Client</p>
         </div>
       </div>
     </div>
@@ -87,8 +67,8 @@ const team = [
 
   {/* Values */}
   <ValuesSection
-    heading="From the rice terraces of Bali to the shores of Madeira, I turn travel into visual stories."
-    description="With 12.5K followers and over 1.2M views on a single reel, I create content that resonates. Every destination has a story — I find it and share it with the world."
+    heading="I believe every project deserves the same passion, creativity, and attention to detail — no matter the size."
+    description="My approach is simple: understand the story, capture it authentically, and edit it to perfection. Every frame matters."
     linkText="Work with me"
     linkHref="/contact"
     values={values}
@@ -100,11 +80,11 @@ const team = [
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="mb-12 flex items-center justify-between">
         <div>
-          <p class="text-sm font-medium uppercase tracking-widest text-neutral-500">Captured Moments</p>
-          <h2 class="mt-2 text-3xl font-bold text-neutral-900 sm:text-4xl">Visual masterpieces, frame by frame.</h2>
+          <p class="text-sm font-medium uppercase tracking-widest text-neutral-500">Selected work</p>
+          <h2 class="mt-2 text-3xl font-bold text-neutral-900 sm:text-4xl">Recent projects.</h2>
         </div>
         <a href="/works" class="text-sm font-semibold text-neutral-900 underline underline-offset-4 transition-colors hover:text-neutral-600">
-          Learn more
+          View all
         </a>
       </div>
 
@@ -121,33 +101,16 @@ const team = [
     </div>
   </section>
 
-  {/* Team */}
-  <section class="bg-neutral-50 py-20 sm:py-28">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="mb-12 flex items-center justify-between">
-        <div>
-          <p class="text-sm font-medium uppercase tracking-widest text-neutral-500">Behind the lens</p>
-          <h2 class="mt-2 text-3xl font-bold text-neutral-900 sm:text-4xl">Passionate creators, masterful storytellers.</h2>
-        </div>
-      </div>
-
-      <TeamGrid
-        variant="default"
-        members={team}
-      />
-    </div>
-  </section>
-
   {/* CTA */}
   <section class="bg-neutral-950 py-20 sm:py-28">
     <div class="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-      <p class="text-sm font-medium uppercase tracking-widest text-neutral-400">Frame the Moment</p>
-      <h2 class="mt-4 text-3xl font-bold text-white sm:text-4xl">Craft stunning visual stories with us.</h2>
+      <p class="text-sm font-medium uppercase tracking-widest text-neutral-400">Ready to create?</p>
+      <h2 class="mt-4 text-3xl font-bold text-white sm:text-4xl">Got a project? Let's talk.</h2>
       <a
         href="/contact"
         class="mt-8 inline-flex items-center rounded-full border-2 border-white px-8 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-neutral-900"
       >
-        Let's create together
+        Get in touch
       </a>
     </div>
   </section>

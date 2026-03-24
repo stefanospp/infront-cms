@@ -2,26 +2,26 @@ import type { SiteConfig } from '@agency/config';
 
 const config: SiteConfig = {
   name: 'Nikolas Petrou',
-  tagline: 'Digital Creator & Bali Influencer',
+  tagline: 'Videographer & Content Creator',
   url: 'https://videoshoot.infront.cy',
   locale: 'en-GB',
 
   contact: {
     email: 'hello@nikolaspetrou.com',
-    phone: '+357 25 000 000',
+    phone: '',
     address: {
       street: '',
-      city: 'Bali',
+      city: '',
       postcode: '',
-      country: 'Indonesia',
+      country: '',
     },
   },
 
   seo: {
-    defaultTitle: 'Nikolas Petrou — Digital Creator & Videographer',
+    defaultTitle: 'Nikolas Petrou — Videographer & Content Creator',
     titleTemplate: '%s | Nikolas Petrou',
     defaultDescription:
-      'Digital creator and Bali influencer crafting cinematic travel content. Explore stunning visual stories from Bali, Cyprus, Madeira, and beyond.',
+      'Professional videographer and content creator. Cinematic video production, creative direction, and storytelling that captures attention and delivers results.',
     defaultOgImage: '/og-default.svg',
   },
 
