@@ -79,8 +79,7 @@ export function readCosts(): CostItem[] {
     const content = fs.readFileSync(getCostsFilePath(), 'utf-8');
     return JSON.parse(content) as CostItem[];
   } catch {
-    // File doesn't exist — create with defaults
-    saveCosts(DEFAULT_COSTS);
+    // File doesn't exist — return defaults without writing (avoids EACCES in Docker)
     return DEFAULT_COSTS;
   }
 }
