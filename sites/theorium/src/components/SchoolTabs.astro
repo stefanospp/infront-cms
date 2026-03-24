@@ -43,7 +43,7 @@ const tabLabels = schools.map(s =>
 
   <!-- School cards (all rendered, only first visible) -->
   {schools.map((school, idx) => (
-    <div data-school={idx} class:list={['school-card overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow-lg)]', idx > 0 && 'hidden']}>
+    <div data-school={idx} class:list={['school-card overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow-lg)] min-h-[320px]', idx > 0 && 'hidden']}>
       <!-- Header -->
       <div class="flex flex-col gap-3 border-b border-neutral-200 sm:flex-row sm:items-center">
         <div class="bg-[var(--th-black)] px-7 py-5 sm:shrink-0 sm:rounded-br-lg">
@@ -76,7 +76,7 @@ const tabLabels = schools.map(s =>
             i === 2 && 'sm:border-l-0 lg:border-l',
           ]}>
             <div class="h-[4px]" style={`background-color: ${accentColors[subject.accentColor]}`} />
-            <div class="p-6">
+            <div class="p-6 min-h-[140px]">
               <h4 class="text-lg font-extrabold">{subject.name}</h4>
               <p class="mt-3 text-[15px] font-medium leading-relaxed text-neutral-500">{subject.topics}</p>
             </div>

@@ -24,7 +24,7 @@ const statusStyles: Record<string, { bg: string; text: string }> = {
 const status = statusStyles[course.course_status] || statusStyles.upcoming;
 ---
 
-<div class="flex flex-col overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow-lg)]">
+<div class="flex h-full flex-col overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow-lg)]">
   <!-- Color bar -->
   <div class="h-[4px]" style={`background-color: ${subjectColors[course.subject] || 'var(--th-green)'}`} />
 
