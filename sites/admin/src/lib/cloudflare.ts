@@ -38,17 +38,17 @@ async function cfFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
       clearTimeout(timeout);
 
+      // Retry on 5xx before parsing body (response may not be JSON)
+      if (res.status >= 500 && attempt < CF_MAX_ATTEMPTS) {
+        lastError = new Error(`Cloudflare API error: ${res.status} ${res.statusText}`);
+        continue;
+      }
+
       const body = (await res.json()) as {
         success: boolean;
         result: T;
         errors?: { message: string; code: number }[];
       };
-
-      // Retry on 5xx errors
-      if (res.status >= 500 && attempt < CF_MAX_ATTEMPTS) {
-        lastError = new Error(`Cloudflare API error: ${res.status} ${res.statusText}`);
-        continue;
-      }
 
       if (!res.ok || !body.success) {
         const msg =
@@ -76,6 +76,33 @@ async function cfFetch<T>(path: string, options?: RequestInit): Promise<T> {
 // ---------------------------------------------------------------------------
 // Workers
 // ---------------------------------------------------------------------------
+
+/**
+ * List all Workers in the account.
+ * Returns script name (id) and last modified timestamp.
+ */
+export async function listWorkers(): Promise<{ id: string; modified_on: string }[]> {
+  const accountId = env('CLOUDFLARE_ACCOUNT_ID');
+  if (!accountId) throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
+
+  return cfFetch<{ id: string; modified_on: string }[]>(
+    `/accounts/${accountId}/workers/scripts`,
+  );
+}
+
+/**
+ * Get the account's workers.dev subdomain (e.g. "myaccount").
+ * Workers are available at {name}.{subdomain}.workers.dev.
+ */
+export async function getWorkersSubdomain(): Promise<string> {
+  const accountId = env('CLOUDFLARE_ACCOUNT_ID');
+  if (!accountId) throw new Error('CLOUDFLARE_ACCOUNT_ID is not set');
+
+  const result = await cfFetch<{ subdomain: string }>(
+    `/accounts/${accountId}/workers/subdomain`,
+  );
+  return result.subdomain;
+}
 
 /**
  * Delete a Cloudflare Worker.

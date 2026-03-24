@@ -27,9 +27,10 @@ docker run -d \
   --name infront-admin \
   --restart unless-stopped \
   -p 127.0.0.1:4321:4321 \
-  -v infront-admin-sites:/app/sites \
-  -v infront-admin-infra:/app/infra \
+  -v /opt/infront-cms/sites:/data/sites \
+  -v /opt/infront-cms/infra:/data/infra:ro \
   --env-file "$ENV_FILE" \
+  -e MONOREPO_ROOT=/data \
   infront-admin
 
 sleep 3

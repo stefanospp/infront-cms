@@ -17,7 +17,8 @@ servers:
       publish:
         - "127.0.0.1:4321:4321"    # Only exposed to localhost — tunnel connects here
       volume:
-        - infront-admin-sites:/app/sites
+        - /opt/infront-cms/sites:/data/sites
+        - /opt/infront-cms/infra:/data/infra:ro
 
 registry:
   server: ghcr.io
@@ -39,6 +40,7 @@ env:
     HOST: "0.0.0.0"
     PORT: "4321"
     NODE_ENV: "production"
+    MONOREPO_ROOT: "/data"
     AUTH_SERVICE_URL: "https://auth.infront.cy"
     PUBLIC_AUTH_SERVICE_URL: "https://auth.infront.cy"
   secret:

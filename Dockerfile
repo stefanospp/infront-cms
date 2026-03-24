@@ -31,11 +31,6 @@ ENV HOST=0.0.0.0
 ENV PORT=4321
 EXPOSE 4321
 
-# Stage baked-in sites and infra so the entrypoint can sync them into the
-# volume at startup. This ensures sites added via git are not masked by
-# the persistent Docker volume mounted at /app/sites.
-RUN cp -r /app/sites /app/_baked-sites && cp -r /app/infra /app/_baked-infra
-
 # Create non-root user for security
 RUN groupadd -r agency && useradd -r -g agency -d /app agency
 RUN chown -R agency:agency /app
@@ -46,7 +41,7 @@ RUN chmod +x /app/docker-entrypoint.sh
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD curl -f http://localhost:4321/health || exit 1
+  CMD node -e "fetch('http://localhost:4321/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
 USER agency
 

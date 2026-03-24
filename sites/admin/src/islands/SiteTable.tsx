@@ -7,10 +7,11 @@ interface SiteInfo {
   tier: 'static' | 'cms';
   lastModified: string;
   isTemplate: boolean;
-  deployStatus?: 'pending' | 'building' | 'deploying' | 'live' | 'failed' | null;
-  stagingUrl?: string;
-  productionUrl?: string;
-  lastDeployAt?: string;
+  deployStatus: 'live' | 'building' | 'deploying' | null;
+  stagingUrl: string | null;
+  workersDevUrl: string | null;
+  productionUrl: string | null;
+  lastDeployAt: string | null;
 }
 
 type LoadState = 'loading' | 'loaded' | 'error';
@@ -24,8 +25,6 @@ const deployStatusBadge: Record<string, { bg: string; text: string; label: strin
   live: { bg: 'bg-green-100', text: 'text-green-700', label: 'Live' },
   building: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Building', pulse: true },
   deploying: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Deploying', pulse: true },
-  pending: { bg: 'bg-neutral-100', text: 'text-neutral-500', label: 'Pending' },
-  failed: { bg: 'bg-red-100', text: 'text-red-700', label: 'Failed' },
 };
 
 const defaultDeployBadge: { bg: string; text: string; label: string; pulse?: boolean } = { bg: 'bg-neutral-100', text: 'text-neutral-400', label: 'Not deployed' };

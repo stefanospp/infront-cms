@@ -2791,10 +2791,10 @@ docker build -t infront-admin /opt/infront-cms
 \`\`\`bash
 docker run -d --name infront-admin --restart unless-stopped \\
   -p 127.0.0.1:4321:4321 \\
-  -v infront-admin-sites:/app/sites \\
+  -v /opt/infront-cms/sites:/data/sites \\
+  -v /opt/infront-cms/infra:/data/infra:ro \\
+  -e MONOREPO_ROOT=/data \\
   -e HOST=0.0.0.0 -e PORT=4321 -e NODE_ENV=production \\
-  -e ADMIN_PASSWORD_HASH=... \\
-  -e SESSION_SECRET=... \\
   -e CLOUDFLARE_API_TOKEN=... \\
   -e CLOUDFLARE_ACCOUNT_ID=... \\
   -e CLOUDFLARE_ZONE_ID=... \\
@@ -2803,7 +2803,8 @@ docker run -d --name infront-admin --restart unless-stopped \\
 
 **Key points:**
 - Binds to \`127.0.0.1:4321\` only (localhost, not exposed)
-- Docker volume \`infront-admin-sites\` persists generated site files
+- Bind mounts from git repo so site discovery always reflects the latest code
+- \`MONOREPO_ROOT=/data\` tells the admin to read sites/infra from the bind mounts
 - Environment variables prompted interactively if not set
 
 ### 4. Set up Cloudflare Tunnel
@@ -2942,7 +2943,8 @@ servers:
       publish:
         - "127.0.0.1:4321:4321"
       volume:
-        - infront-admin-sites:/app/sites
+        - /opt/infront-cms/sites:/data/sites
+        - /opt/infront-cms/infra:/data/infra:ro
 registry:
   server: ghcr.io
   username: <github-username>
