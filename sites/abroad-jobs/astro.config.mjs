@@ -2,7 +2,7 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
-import { componentOverridePlugin } from '@agency/utils';
+import { componentOverridePlugin, editorBridgePlugin } from '@agency/utils';
 
 export default defineConfig({
   site: 'https://abroadjobs.eu',
@@ -13,6 +13,7 @@ export default defineConfig({
     plugins: [
       tailwindcss(),
       componentOverridePlugin(import.meta.dirname),
+      editorBridgePlugin(),
     ],
   },
 });

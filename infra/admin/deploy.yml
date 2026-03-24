@@ -41,6 +41,7 @@ env:
     PORT: "4321"
     NODE_ENV: "production"
     MONOREPO_ROOT: "/data"
+    APP_ROOT: "/app"
     AUTH_SERVICE_URL: "https://auth.infront.cy"
     PUBLIC_AUTH_SERVICE_URL: "https://auth.infront.cy"
   secret:

@@ -2,6 +2,7 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
+import { componentOverridePlugin, editorBridgePlugin } from '@agency/utils';
 
 export default defineConfig({
   site: 'https://example.com',
@@ -11,7 +12,11 @@ export default defineConfig({
     sitemap(),
   ],
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [
+      tailwindcss(),
+      componentOverridePlugin(import.meta.dirname),
+      editorBridgePlugin(),
+    ],
   },
   image: {
     domains: ['cms.example.com'],

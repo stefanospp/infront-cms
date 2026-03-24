@@ -12,7 +12,10 @@ import type { Plugin } from 'vite';
  * Only active when the page is loaded inside an iframe (the editor preview).
  */
 export function editorBridgePlugin(options?: { origin?: string }): Plugin {
-  const targetOrigin = options?.origin ?? 'https://admin.infront.cy';
+  // Use '*' since the admin URL varies (localhost in dev, web.infront.cy in prod,
+  // and the preview proxy changes the origin context). Safe because the bridge
+  // self-disables outside of iframes and messages are editor-specific only.
+  const targetOrigin = options?.origin ?? '*';
   return {
     name: 'agency-editor-bridge',
     enforce: 'post',

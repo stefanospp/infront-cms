@@ -5,6 +5,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 // ---------------------------------------------------------------------------
 
 interface EditorPreviewProps {
+  slug: string;
   currentPage: string;
   devServerPort: number | null;
   devServerStatus: 'starting' | 'running' | 'stopped' | 'error';
@@ -32,6 +33,7 @@ const deviceLabels: Record<DeviceMode, string> = {
 // ---------------------------------------------------------------------------
 
 export default function EditorPreview({
+  slug,
   currentPage,
   devServerPort,
   devServerStatus,
@@ -44,8 +46,9 @@ export default function EditorPreview({
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const pagePath = currentPage === 'index' ? '/' : `/${currentPage}`;
+  // Use reverse proxy instead of direct localhost — works both locally and on production
   const iframeSrc =
-    devServerPort !== null ? `http://localhost:${devServerPort}${pagePath}` : '';
+    devServerPort !== null ? `/api/sites/${slug}/preview${pagePath}` : '';
 
   const handleRefresh = useCallback(() => {
     setBridgeReady(false);

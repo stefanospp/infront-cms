@@ -3,6 +3,7 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
+import { componentOverridePlugin, editorBridgePlugin } from '@agency/utils';
 
 export default defineConfig({
   site: 'https://theorium.infront.cy',
@@ -18,6 +19,8 @@ export default defineConfig({
   vite: {
     plugins: [
       tailwindcss(),
+      componentOverridePlugin(import.meta.dirname),
+      editorBridgePlugin(),
     ],
   },
 });

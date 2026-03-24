@@ -385,6 +385,7 @@ export default function SiteEditor({ slug }: { slug: string }) {
 
         {/* Center: preview iframe */}
         <EditorPreview
+          slug={slug}
           currentPage={currentPage}
           devServerPort={devServerPort}
           devServerStatus={devServerStatus}

@@ -8,6 +8,47 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { getMonorepoRoot } from './generator';
 
+/**
+ * Get the app root where node_modules and package.json live.
+ * In Docker: /app (the built image). Locally: same as monorepo root.
+ */
+function getAppRoot(): string {
+  return process.env.APP_ROOT || getMonorepoRoot();
+}
+
+/**
+ * In Docker, site files live at /data/sites/{slug} (bind mount) but the
+ * dev server needs them at /app/sites/{slug} (where node_modules are).
+ * Create a symlink if needed so the workspace resolver finds the site.
+ */
+function ensureSiteSymlink(slug: string): void {
+  const dataRoot = getMonorepoRoot();
+  const appRoot = getAppRoot();
+  if (dataRoot === appRoot) return; // Local dev — no symlink needed
+
+  const source = path.join(dataRoot, 'sites', slug);
+  const target = path.join(appRoot, 'sites', slug);
+
+  // If target already exists and is the real directory (baked into image), remove it
+  // and replace with a symlink to the bind-mounted source
+  try {
+    const stat = fs.lstatSync(target);
+    if (stat.isSymbolicLink()) {
+      // Already a symlink — check it points to the right place
+      const existing = fs.readlinkSync(target);
+      if (existing === source) return;
+      fs.unlinkSync(target);
+    } else if (stat.isDirectory()) {
+      // Real directory from Docker image — replace with symlink
+      fs.rmSync(target, { recursive: true });
+    }
+  } catch {
+    // Target doesn't exist — that's fine
+  }
+
+  fs.symlinkSync(source, target, 'dir');
+}
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -70,12 +111,18 @@ export class DevServerManager {
       this.usedPorts.delete(existing.info.port);
     }
 
-    // Validate site directory exists
-    const root = getMonorepoRoot();
-    const siteDir = path.join(root, 'sites', slug);
+    // Validate site directory exists (check bind-mounted data root)
+    const dataRoot = getMonorepoRoot();
+    const siteDir = path.join(dataRoot, 'sites', slug);
     if (!fs.existsSync(siteDir)) {
       throw new Error(`Site directory not found: sites/${slug}`);
     }
+
+    // In Docker: symlink /data/sites/{slug} -> /app/sites/{slug}
+    // so the workspace resolver finds the site under the app root
+    ensureSiteSymlink(slug);
+
+    const appRoot = getAppRoot();
 
     // Allocate a port
     const port = this.allocatePort();
@@ -108,12 +155,12 @@ export class DevServerManager {
       }
     }
 
-    // Spawn the dev server process
+    // Spawn the dev server process from app root (where node_modules live)
     const child = spawn(
       'npm',
       ['run', 'dev', `--workspace=sites/${slug}`, '--', '--port', String(port)],
       {
-        cwd: root,
+        cwd: appRoot,
         env: sanitizedEnv,
         stdio: ['ignore', 'pipe', 'pipe'],
         detached: false,

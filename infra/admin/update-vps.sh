@@ -31,6 +31,7 @@ docker run -d \
   -v /opt/infront-cms/infra:/data/infra:ro \
   --env-file "$ENV_FILE" \
   -e MONOREPO_ROOT=/data \
+  -e APP_ROOT=/app \
   infront-admin
 
 sleep 3
