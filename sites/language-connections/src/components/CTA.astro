@@ -1,0 +1,103 @@
+---
+export interface Props {
+  variant?: 'default' | 'split' | 'minimal';
+  heading: string;
+  description?: string;
+  buttonText: string;
+  buttonHref: string;
+  image?: string;
+  imageAlt?: string;
+  avatarLabel?: string;
+  class?: string;
+}
+
+const {
+  variant = 'default',
+  heading,
+  description,
+  buttonText,
+  buttonHref,
+  avatarLabel,
+  class: className,
+} = Astro.props;
+---
+
+{/* BrightMind CTA — white bg, avatar stack, purple pill button */}
+{variant === 'default' && (
+  <section
+    class:list={[
+      'section-spacing',
+      className,
+    ]}
+  >
+    <div class="mx-auto max-w-3xl text-center">
+      {/* Stacked avatar photos */}
+      <div class="mb-6 flex items-center justify-center gap-3">
+        <div class="flex -space-x-3">
+          <img src="/images/avatar-1.jpg" alt="" class="h-11 w-11 rounded-full border-2 border-white object-cover shadow-sm" />
+          <img src="/images/avatar-2.jpg" alt="" class="h-11 w-11 rounded-full border-2 border-white object-cover shadow-sm" />
+          <img src="/images/avatar-3.jpg" alt="" class="h-11 w-11 rounded-full border-2 border-white object-cover shadow-sm" />
+          <img src="/images/avatar-4.jpg" alt="" class="h-11 w-11 rounded-full border-2 border-white object-cover shadow-sm" />
+        </div>
+      </div>
+
+      <h2>{heading}</h2>
+
+      {description && (
+        <p class="mx-auto mt-4 max-w-xl text-neutral-600">
+          {description}
+        </p>
+      )}
+
+      <div class="mt-8">
+        <a href={buttonHref} class="btn-primary">
+          {buttonText}
+        </a>
+      </div>
+    </div>
+  </section>
+)}
+
+{variant === 'split' && (
+  <section
+    class:list={[
+      'section-spacing bg-primary-500',
+      className,
+    ]}
+  >
+    <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:px-8">
+      <div>
+        <h2 class="text-white">{heading}</h2>
+        {description && (
+          <p class="mt-4 text-lg text-primary-100">{description}</p>
+        )}
+        <div class="mt-8">
+          <a href={buttonHref} class="btn-secondary border-white text-white hover:bg-white/10">
+            {buttonText}
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+)}
+
+{variant === 'minimal' && (
+  <section
+    class:list={[
+      'border-t border-neutral-200 bg-neutral-50 px-6 py-16 lg:px-8',
+      className,
+    ]}
+  >
+    <div class="mx-auto flex max-w-4xl flex-col items-center gap-6 sm:flex-row sm:justify-between">
+      <div>
+        <h3 class="text-2xl font-bold sm:text-3xl">{heading}</h3>
+        {description && (
+          <p class="mt-2 text-neutral-600">{description}</p>
+        )}
+      </div>
+      <a href={buttonHref} class="btn-primary flex-shrink-0">
+        {buttonText}
+      </a>
+    </div>
+  </section>
+)}

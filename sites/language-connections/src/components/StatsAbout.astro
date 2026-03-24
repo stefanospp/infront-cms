@@ -1,0 +1,83 @@
+---
+export interface Props {
+  image?: string;
+  imageAlt?: string;
+  badgeValue: string;
+  badgeLabel: string;
+  heading: string;
+  headingHighlight?: string;
+  description: string;
+  stats: Array<{ value: string; label: string }>;
+  ctaText?: string;
+  ctaHref?: string;
+  class?: string;
+}
+
+const {
+  image,
+  imageAlt = '',
+  badgeValue,
+  badgeLabel,
+  heading,
+  headingHighlight,
+  description,
+  stats,
+  ctaText,
+  ctaHref,
+  class: className,
+} = Astro.props;
+
+const parts = headingHighlight ? heading.split(headingHighlight) : null;
+---
+
+{/* BrightMind-style stats section — large image + floating badge + text */}
+<section class:list={['section-spacing', className]}>
+  <div class="mx-auto grid max-w-7xl items-center gap-12 px-6 lg:grid-cols-2 lg:gap-16 lg:px-8">
+    {/* Left — image with floating badge */}
+    <div class="relative">
+      <div class="overflow-hidden rounded-2xl">
+        <img
+          src={image || '/images/stats-group.jpg'}
+          alt={imageAlt || 'Students in a group lesson'}
+          class="h-full w-full object-cover"
+          loading="lazy"
+        />
+      </div>
+
+      {/* Floating badge */}
+      <div class="absolute -right-3 top-8 rounded-2xl bg-white px-6 py-4 shadow-xl sm:-right-6">
+        <p class="text-sm font-medium text-neutral-500">{badgeLabel}</p>
+        <p class="text-3xl font-bold text-primary-500">{badgeValue}</p>
+      </div>
+    </div>
+
+    {/* Right — text + stats */}
+    <div>
+      <h2>
+        {parts ? (
+          <>
+            {parts[0]}<span class="text-primary-500">{headingHighlight}</span>{parts[1]}
+          </>
+        ) : heading}
+      </h2>
+
+      <p class="mt-5 text-neutral-600">{description}</p>
+
+      {/* Stats */}
+      <div class="mt-10 grid grid-cols-2 gap-8">
+        {stats.map((stat) => (
+          <div>
+            <p class="text-4xl font-bold text-[--color-dark]">{stat.value}</p>
+            <p class="mt-1 text-sm font-medium text-neutral-500">{stat.label}</p>
+          </div>
+        ))}
+      </div>
+
+      {ctaText && ctaHref && (
+        <div class="mt-10">
+          <a href={ctaHref} class="btn-primary">{ctaText}</a>
+        </div>
+      )}
+    </div>
+  </div>
+</section>

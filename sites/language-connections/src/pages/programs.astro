@@ -1,0 +1,106 @@
+---
+import "../styles/global.css";
+import BaseLayout from '@agency/ui/layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import CTA from '../components/CTA.astro';
+import config from '../../site.config';
+
+const title = 'Our Programs';
+const description = 'English courses for Young Learners, Teenagers, Adults, and Exam Preparation in Paralimni, Cyprus.';
+
+const programs = [
+  {
+    id: 'young-learners', title: 'Young Learners', subtitle: 'Dimotiko (Ages 6–12) — Building strong foundations', bgColor: '',
+    features: [
+      { icon: '🎮', title: 'Fun, Interactive Lessons', desc: 'Games, songs, and activities — children learn to love English from the start.' },
+      { icon: '📖', title: 'Phonics & Reading', desc: 'Structured phonics programme that builds reading confidence ahead of school.' },
+      { icon: '📝', title: 'Cambridge Starters, Movers & Flyers', desc: 'First international exams at ages 7–12. A great motivator and proof of progress.' },
+      { icon: '🏫', title: 'Supplements School English', desc: 'Goes beyond the Dimotiko curriculum to give your child a real advantage.' },
+    ],
+  },
+  {
+    id: 'teenagers', title: 'Teenagers', subtitle: 'Gymnasio & Lykeio (Ages 13–17) — Exam success for university', bgColor: 'bg-neutral-50',
+    features: [
+      { icon: '🎯', title: 'KET (A2), PET (B1) & FCE (B2)', desc: 'The exams that matter for university admission. B2 is the minimum for most Cyprus universities.' },
+      { icon: '✍️', title: 'Grammar, Writing & Speaking', desc: 'Balanced skills development — not just grammar drills, but real communication confidence.' },
+      { icon: '📊', title: 'Mock Exams & Exam Strategy', desc: 'Regular full-length practice under exam conditions, with individual feedback.' },
+      { icon: '🏫', title: 'School English Support', desc: 'Better English at school means better grades across all subjects.' },
+    ],
+  },
+  {
+    id: 'adults', title: 'Adults', subtitle: 'Ages 18+ — Career advancement & professional English', bgColor: '',
+    features: [
+      { icon: '🏨', title: 'Tourism & Hospitality English', desc: 'Practical English for hotels, restaurants, and tourism — ideal for Protaras and Ayia Napa professionals.' },
+      { icon: '💼', title: 'Business & Professional English', desc: 'Meetings, presentations, email correspondence, and workplace communication.' },
+      { icon: '📜', title: 'Cambridge FCE, CAE & CPE', desc: 'Advanced certifications (B2–C2) for career advancement and international recognition.' },
+      { icon: '🕐', title: 'Evening Classes & Private Lessons', desc: 'Flexible scheduling designed for working adults. Mon–Fri, 18:00–20:00.' },
+    ],
+  },
+  {
+    id: 'exam-prep', title: 'Exam Intensive', subtitle: 'All Ages — Focused preparation with a 93% pass rate', bgColor: 'bg-neutral-50',
+    features: [
+      { icon: '📅', title: 'June & December Sessions', desc: 'Intensive preparation aligned with Cambridge exam dates. Start early for best results.' },
+      { icon: '🏅', title: 'Full Cambridge Range', desc: 'YLE Starters to CPE (C2). We prepare for every level of the Cambridge exam pathway.' },
+      { icon: '🌍', title: 'IELTS & Michigan ECCE', desc: 'For university admission abroad, immigration, or professional registration.' },
+      { icon: '📋', title: 'Individual Revision Plans', desc: 'Mock exams, past papers, and personalised feedback targeting each student\'s weak areas.' },
+    ],
+  },
+];
+---
+
+<BaseLayout title={title} description={description} config={config}>
+  <Fragment slot="head">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  </Fragment>
+
+  <Nav config={config} />
+
+  <main id="main-content">
+    <Hero
+      variant="minimal"
+      heading="Our English Programs"
+      headingHighlight="English Programs"
+      subheading="From first words to exam success — tailored courses for every age and level."
+    />
+
+    {programs.map((program) => (
+      <div class:list={['section-spacing', program.bgColor]} id={program.id}>
+        <div class="mx-auto max-w-7xl px-6 lg:px-8">
+          <div class="mb-10 flex flex-wrap items-center gap-4">
+            <div>
+              <h2>{program.title}</h2>
+              <p class="mt-2 text-neutral-600">{program.subtitle}</p>
+            </div>
+            {program.id === 'exam-prep' && (
+              <span class="rounded-full bg-primary-500 px-4 py-2 text-sm font-bold text-white shadow-sm">93% Pass Rate</span>
+            )}
+          </div>
+          <div class="grid gap-6 sm:grid-cols-2">
+            {program.features.map((f) => (
+              <div class="rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+                <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-[--color-purple-light] text-2xl">
+                  {f.icon}
+                </div>
+                <h3 class="text-lg font-bold">{f.title}</h3>
+                <p class="mt-2 text-sm text-neutral-600">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    ))}
+
+    <CTA
+      heading="Not Sure Which Program Is Right?"
+      description="Get in touch — we'll help you find the perfect fit for your level and goals."
+      buttonText="Let's Talk"
+      buttonHref="/contact"
+    />
+  </main>
+
+  <Footer config={config} />
+</BaseLayout>

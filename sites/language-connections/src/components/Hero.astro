@@ -1,0 +1,218 @@
+---
+export interface Props {
+  variant: 'centered' | 'split' | 'fullscreen' | 'minimal' | 'video';
+  heading: string;
+  headingHighlight?: string;
+  subheading?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
+  backgroundImage?: string;
+  backgroundVideo?: string;
+  poster?: string;
+  imageAlt?: string;
+  floatingStatValue?: string;
+  floatingStatLabel?: string;
+  floatingQuote?: string;
+  floatingQuoteAuthor?: string;
+  floatingQuoteRole?: string;
+  class?: string;
+}
+
+const {
+  variant,
+  heading,
+  headingHighlight,
+  subheading,
+  ctaText,
+  ctaHref,
+  secondaryCtaText,
+  secondaryCtaHref,
+  backgroundImage,
+  imageAlt = heading,
+  floatingStatValue,
+  floatingStatLabel,
+  floatingQuote,
+  floatingQuoteAuthor,
+  floatingQuoteRole,
+  class: className,
+} = Astro.props;
+
+const parts = headingHighlight ? heading.split(headingHighlight) : null;
+---
+
+{/* ============================================
+    SPLIT VARIANT — Fits exactly in viewport
+    ============================================ */}
+{variant === 'split' && (
+  <section
+    class:list={[
+      'relative h-[calc(100dvh-90px)] overflow-hidden px-6 lg:px-8',
+      className,
+    ]}
+  >
+    <div class="mx-auto grid h-full max-w-7xl items-center gap-6 lg:grid-cols-2 lg:gap-12">
+      {/* Left column — text + CTAs + trust signals */}
+      <div class="order-2 lg:order-1">
+        <h1 class="text-[clamp(2rem,4vw,3.75rem)] leading-[1.1]">
+          {parts ? (
+            <>
+              {parts[0]}<span class="text-primary-500">{headingHighlight}</span>{parts[1]}
+            </>
+          ) : heading}
+        </h1>
+
+        {subheading && (
+          <p class="mt-4 max-w-md text-[15px] font-medium leading-relaxed text-neutral-500">
+            {subheading}
+          </p>
+        )}
+
+        {(ctaText || secondaryCtaText) && (
+          <div class="mt-6 flex flex-wrap items-center gap-3">
+            {ctaText && ctaHref && (
+              <a href={ctaHref} class="btn-primary">
+                {ctaText}
+              </a>
+            )}
+            {secondaryCtaText && secondaryCtaHref && (
+              <a href={secondaryCtaHref} class="btn-secondary">
+                {secondaryCtaText}
+              </a>
+            )}
+          </div>
+        )}
+
+        <div class="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-neutral-200 pt-5">
+          {[
+            { value: '500+', label: 'Students' },
+            { value: '15+', label: 'Years' },
+            { value: '93%', label: 'Pass Rate' },
+          ].map((item) => (
+            <div class="flex items-center gap-1.5">
+              <span class="text-sm font-bold text-primary-500">{item.value}</span>
+              <span class="text-xs font-medium text-neutral-400">{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Right column — image (visible on all screens, image above text on mobile) */}
+      <div class="order-1 lg:order-2 lg:h-full lg:max-h-[calc(100dvh-90px-4rem)] lg:py-8">
+        <div class="h-52 overflow-hidden rounded-2xl sm:h-64 lg:h-full">
+          <img
+            src={backgroundImage || '/images/hero-kids.jpg'}
+            alt={imageAlt || 'Children learning English in classroom'}
+            class="h-full w-full object-cover"
+            loading="eager"
+            fetchpriority="high"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+)}
+
+{/* ============================================
+    MINIMAL VARIANT — inner page headers
+    ============================================ */}
+{variant === 'minimal' && (
+  <section
+    class:list={[
+      'px-6 pb-10 pt-20 sm:px-8 sm:pt-24 lg:px-8',
+      className,
+    ]}
+  >
+    <div class="mx-auto max-w-4xl text-center">
+      <h1>
+        {parts ? (
+          <>
+            {parts[0]}<span class="text-primary-500">{headingHighlight}</span>{parts[1]}
+          </>
+        ) : heading}
+      </h1>
+      {subheading && (
+        <p class="mx-auto mt-5 max-w-2xl text-lg text-neutral-600">
+          {subheading}
+        </p>
+      )}
+    </div>
+  </section>
+)}
+
+{/* ============================================
+    CENTERED VARIANT — minimal + CTA button
+    ============================================ */}
+{variant === 'centered' && (
+  <section
+    class:list={[
+      'section-spacing',
+      className,
+    ]}
+  >
+    <div class="mx-auto max-w-4xl text-center">
+      <h1>
+        {parts ? (
+          <>
+            {parts[0]}<span class="text-primary-500">{headingHighlight}</span>{parts[1]}
+          </>
+        ) : heading}
+      </h1>
+      {subheading && (
+        <p class="mx-auto mt-6 max-w-2xl text-lg text-neutral-600">
+          {subheading}
+        </p>
+      )}
+      {ctaText && ctaHref && (
+        <div class="mt-10">
+          <a href={ctaHref} class="btn-primary">
+            {ctaText}
+          </a>
+        </div>
+      )}
+    </div>
+  </section>
+)}
+
+{/* ============================================
+    FULLSCREEN VARIANT — background image overlay
+    ============================================ */}
+{variant === 'fullscreen' && (
+  <section
+    class:list={[
+      'relative flex min-h-screen items-center justify-center px-6 lg:px-8',
+      className,
+    ]}
+  >
+    {backgroundImage && (
+      <div class="absolute inset-0 z-0">
+        <img
+          src={backgroundImage}
+          alt={imageAlt}
+          class="h-full w-full object-cover"
+          loading="eager"
+          fetchpriority="high"
+        />
+        <div class="absolute inset-0 bg-[--color-dark]/60" />
+      </div>
+    )}
+    <div class="relative z-10 mx-auto max-w-4xl text-center">
+      <h1 class="text-white">
+        {heading}
+      </h1>
+      {subheading && (
+        <p class="mx-auto mt-6 max-w-2xl text-lg text-neutral-200">
+          {subheading}
+        </p>
+      )}
+      {ctaText && ctaHref && (
+        <div class="mt-10">
+          <a href={ctaHref} class="btn-primary">
+            {ctaText}
+          </a>
+        </div>
+      )}
+    </div>
+  </section>
+)}

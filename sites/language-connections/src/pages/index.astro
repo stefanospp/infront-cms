@@ -1,0 +1,222 @@
+---
+import "../styles/global.css";
+import BaseLayout from '@agency/ui/layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import Hero from '../components/Hero.astro';
+import CTA from '../components/CTA.astro';
+import ProgramCards from '../components/ProgramCards.astro';
+import StatsAbout from '../components/StatsAbout.astro';
+import Testimonials from '../components/Testimonials.astro';
+import FAQ from '../components/FAQ.astro';
+import config from '../../site.config';
+---
+
+<BaseLayout
+  title={config.seo.defaultTitle}
+  description={config.seo.defaultDescription}
+  config={config}
+>
+  <Fragment slot="head">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  </Fragment>
+
+  <Nav config={config} />
+
+  <main id="main-content">
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'EducationalOrganization',
+      name: config.name,
+      url: config.url,
+      description: config.seo.defaultDescription,
+      ...(config.contact.email && { email: `mailto:${config.contact.email}` }),
+      ...(config.contact.phone && { telephone: config.contact.phone }),
+      ...(config.contact.address && {
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: config.contact.address.street,
+          addressLocality: config.contact.address.city,
+          postalCode: config.contact.address.postcode,
+          addressCountry: config.contact.address.country,
+        },
+      }),
+    })} />
+
+    <Hero
+      variant="split"
+      heading="Your Child's Path to English Fluency"
+      headingHighlight="Fluency"
+      subheading="Paralimni's trusted private English institute. From Cambridge Young Learners to CPE, we prepare students of all ages with small classes and personalised attention."
+      ctaText="Our Programs"
+      ctaHref="/programs"
+      secondaryCtaText="Let's Talk"
+      secondaryCtaHref="/contact"
+    />
+
+    {/* Exam board logos */}
+    <div class="border-y border-neutral-100 py-10">
+      <p class="mb-8 text-center text-xs font-semibold uppercase tracking-widest text-neutral-400">
+        Preparing students for internationally recognised exams
+      </p>
+      <div class="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-12 gap-y-6 px-6">
+        <img src="/images/logo-cambridge.svg" alt="Cambridge English" class="h-7 opacity-70 transition-opacity hover:opacity-100" />
+        <img src="/images/logo-ielts.svg" alt="IELTS" class="h-7 opacity-70 transition-opacity hover:opacity-100" />
+        <img src="/images/logo-michigan.svg" alt="Michigan Language Assessment" class="h-7 opacity-70 transition-opacity hover:opacity-100" />
+        <img src="/images/logo-anglia.svg" alt="Anglia Examinations" class="h-7 opacity-70 transition-opacity hover:opacity-100" />
+      </div>
+    </div>
+
+    {/* Programs — pastel category cards */}
+    <div class="section-spacing">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="mb-12 text-center">
+          <h2>Programs for <span class="text-primary-500">Every Age</span> & Goal</h2>
+        </div>
+        <ProgramCards
+          programs={[
+            {
+              title: 'Young Learners',
+              ageRange: 'Dimotiko • Starters, Movers & Flyers',
+              description: '',
+              features: [],
+              icon: 'young-learners',
+              href: '/programs#young-learners',
+            },
+            {
+              title: 'Teenagers',
+              ageRange: 'Gymnasio & Lykeio • KET, PET & FCE',
+              description: '',
+              features: [],
+              icon: 'teenagers',
+              href: '/programs#teenagers',
+            },
+            {
+              title: 'Adults',
+              ageRange: 'Ages 18+ • FCE, CAE & CPE',
+              description: '',
+              features: [],
+              icon: 'adults',
+              href: '/programs#adults',
+            },
+            {
+              title: 'Exam Intensive',
+              ageRange: 'All Ages • Focused Exam Preparation',
+              description: '',
+              features: [],
+              icon: 'exam-prep',
+              href: '/programs#exam-prep',
+            },
+          ]}
+        />
+        <div class="mt-10 text-center">
+          <a href="/programs" class="inline-flex items-center gap-2 text-base font-semibold text-primary-500 transition-colors hover:text-primary-600">
+            View All Programs
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    {/* Stats section */}
+    <StatsAbout
+      badgeValue="93%"
+      badgeLabel="Cambridge pass rate"
+      heading="Why We Are the Right Choice"
+      headingHighlight="Right Choice"
+      description="Public school English isn't enough for university admission or career success. Our students don't just pass exams — they gain real confidence to use English in the classroom, at university, and in the workplace. With small classes of 6–10 students and a Cambridge-certified examiner as your teacher, every student gets the attention they deserve."
+      stats={[
+        { value: '500+', label: 'Graduates since 2009' },
+        { value: '6–10', label: 'Students per class' },
+      ]}
+      ctaText="About Our Approach"
+      ctaHref="/about"
+    />
+
+    {/* Testimonials */}
+    <div class="section-spacing">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="mb-12 text-center">
+          <h2>What <span class="text-primary-500">Local Families</span> Say About Us</h2>
+        </div>
+        <Testimonials
+          variant="carousel"
+          testimonials={[
+            {
+              quote: 'Both my children attend Language Connections — my son in Young Learners and my daughter preparing for PET. Annie knows exactly how to teach each age group. The small classes mean they actually get to speak English, not just do grammar exercises.',
+              author: 'Androulla Kyriacou',
+              role: 'Parent from Paralimni',
+              image: '/images/avatar-1.jpg',
+            },
+            {
+              quote: 'I needed B2 for my university application and passed FCE with a Grade A in June. The mock exams and individual feedback made all the difference. I felt completely prepared on exam day.',
+              author: 'Marios Pavlou',
+              role: 'FCE Graduate — now at University of Cyprus',
+              image: '/images/avatar-2.jpg',
+            },
+            {
+              quote: 'I work in a hotel in Protaras and needed better English for dealing with guests and management. The evening classes fit my schedule perfectly, and Annie focuses on practical communication, not just textbook theory.',
+              author: 'Eleni Nicolaou',
+              role: 'Hotel receptionist, Protaras',
+              image: '/images/avatar-3.jpg',
+            },
+            {
+              quote: 'We moved from Deryneia specifically because of the exam results. Our daughter went from a B in school English to passing her Cambridge PET in one year. The difference a good frontistirio makes is incredible.',
+              author: 'Panayiotis Loizou',
+              role: 'Parent from Deryneia',
+              image: '/images/avatar-4.jpg',
+            },
+          ]}
+        />
+      </div>
+    </div>
+
+    {/* FAQ */}
+    <div class="section-spacing bg-neutral-50">
+      <div class="mx-auto max-w-7xl px-6 lg:px-8">
+        <div class="mb-12 text-center">
+          <h2>Frequently Asked <span class="text-primary-500">Questions</span></h2>
+        </div>
+        <FAQ
+          items={[
+            {
+              question: 'When do classes start and can I enrol mid-year?',
+              answer: 'Our main programme runs from September to June, aligned with the school year. However, we accept rolling enrolment throughout the year for both group classes and private lessons. Contact us to assess your level and find the right group.',
+            },
+            {
+              question: 'Which Cambridge exams do you prepare for?',
+              answer: 'We prepare students for the full range: Young Learners (Starters, Movers, Flyers), KET (A2), PET (B1), FCE (B2), CAE (C1), and CPE (C2). We also prepare for IELTS and Michigan ECCE. Exams are held in June and December.',
+            },
+            {
+              question: 'Will lessons help my child keep up at school?',
+              answer: 'Absolutely. Our programme is designed to complement school English, not replace it. Students build stronger foundations than what the public school curriculum provides, which naturally improves their school grades alongside preparing them for international exams.',
+            },
+            {
+              question: 'How do I get started?',
+              answer: 'Simply contact us by phone (+357 99 875604) or through the contact form. We\'ll discuss your goals, assess your level, and recommend the right program. We\'re happy to meet in person so you can see the institute first-hand.',
+            },
+            {
+              question: 'How much do lessons cost?',
+              answer: 'Fees vary by programme level and class format (group vs private). Contact us for our current fee schedule — we\'re happy to discuss options that work for your family.',
+            },
+          ]}
+        />
+      </div>
+    </div>
+
+    {/* CTA */}
+    <CTA
+      heading="Ready to Get Started?"
+      description="Get in touch to discuss your goals, find the right program, and take the first step."
+      buttonText="Let's Talk"
+      buttonHref="/contact"
+      avatarLabel="Join 500+ students from the Famagusta district"
+    />
+  </main>
+
+  <Footer config={config} />
+</BaseLayout>

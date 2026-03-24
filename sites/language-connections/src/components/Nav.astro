@@ -1,0 +1,76 @@
+---
+import type { SiteConfig } from '@agency/config';
+import MobileNav from '@agency/ui/islands/MobileNav';
+
+export interface Props {
+  config: SiteConfig;
+  class?: string;
+}
+
+const { config, class: className } = Astro.props;
+const { nav, name } = config;
+
+// Split site name: first word in near-black, second word in purple
+const nameParts = name.split(' ');
+const firstName = nameParts[0];
+const restName = nameParts.slice(1).join(' ');
+---
+
+<header
+  class:list={[
+    'sticky top-0 z-40 bg-white',
+    className,
+  ]}
+  data-testid="nav-header"
+>
+  <nav
+    class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-8"
+    aria-label="Main navigation"
+    data-testid="main-nav"
+  >
+    {/* Logo */}
+    <a
+      href="/"
+      class="text-xl font-bold font-heading transition-colors"
+      data-testid="nav-logo"
+    >
+      <span class="text-[--color-dark]">{firstName}</span>{' '}
+      <span class="text-primary-500">{restName}</span>
+    </a>
+
+    {/* Desktop Nav Links — centered */}
+    <div class="hidden items-center gap-8 md:flex" data-testid="desktop-nav">
+      {nav.items.map((item) => (
+        <a
+          href={item.href}
+          class="text-base font-medium text-[--color-dark] transition-colors hover:text-primary-500"
+          data-testid="nav-link"
+        >
+          {item.label}
+        </a>
+      ))}
+    </div>
+
+    {/* CTA Button — right */}
+    <div class="hidden md:flex items-center">
+      {nav.cta && (
+        <a
+          href={nav.cta.href}
+          class="btn-primary"
+          data-testid="nav-cta"
+        >
+          {nav.cta.label}
+        </a>
+      )}
+    </div>
+
+    {/* Mobile Nav (React Island) */}
+    <div class="md:hidden">
+      <MobileNav
+        client:idle
+        items={nav.items.map((item) => ({ label: item.label, href: item.href }))}
+        cta={nav.cta ? { label: nav.cta.label, href: nav.cta.href } : undefined}
+      />
+    </div>
+  </nav>
+</header>

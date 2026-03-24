@@ -1,0 +1,29 @@
+---
+import "../styles/global.css";
+import BaseLayout from '@agency/ui/layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import config from '../../site.config';
+---
+
+<BaseLayout title="Page Not Found" description="The page you're looking for doesn't exist." config={config}>
+  <Fragment slot="head">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet" />
+  </Fragment>
+
+  <Nav config={config} />
+  <main id="main-content">
+    <div class="flex flex-col items-center justify-center py-32 text-center">
+      <h1 class="text-8xl font-bold text-primary-500">404</h1>
+      <p class="mt-4 text-xl text-neutral-600">
+        Sorry, the page you're looking for doesn't exist or has been moved.
+      </p>
+      <div class="mt-8">
+        <a href="/" class="btn-primary">Go back home</a>
+      </div>
+    </div>
+  </main>
+  <Footer config={config} />
+</BaseLayout>
