@@ -1,10 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
+
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 export default function ParticleNetwork() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
+  const initializedRef = useRef(false);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -30,18 +33,17 @@ export default function ParticleNetwork() {
     let particles: Particle[] = [];
     let w = 0;
     let h = 0;
+    let running = false;
 
-    function resize() {
-      const rect = canvas!.getBoundingClientRect();
-      w = rect.width || window.innerWidth;
-      h = rect.height || window.innerHeight;
+    function init(width: number, height: number) {
       const dpr = window.devicePixelRatio || 1;
-      canvas!.width = w * dpr;
-      canvas!.height = h * dpr;
+      w = width;
+      h = height;
+      canvas!.width = Math.round(w * dpr);
+      canvas!.height = Math.round(h * dpr);
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
 
-    function createParticles() {
+      // Create particles
       particles = [];
       for (let i = 0; i < particleCount; i++) {
         particles.push({
@@ -54,9 +56,15 @@ export default function ParticleNetwork() {
           opacity: Math.random() * 0.4 + 0.4,
         });
       }
+
+      if (!running) {
+        running = true;
+        loop();
+      }
     }
 
     function draw() {
+      if (w === 0 || h === 0) return;
       ctx!.clearRect(0, 0, w, h);
 
       // Draw links
@@ -66,9 +74,8 @@ export default function ParticleNetwork() {
           const dy = particles[i]!.y - particles[j]!.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < linkDistance) {
-            const opacity = (1 - dist / linkDistance) * 0.3;
             ctx!.strokeStyle = linkColor;
-            ctx!.globalAlpha = opacity;
+            ctx!.globalAlpha = (1 - dist / linkDistance) * 0.3;
             ctx!.lineWidth = 1;
             ctx!.beginPath();
             ctx!.moveTo(particles[i]!.x, particles[i]!.y);
@@ -77,14 +84,13 @@ export default function ParticleNetwork() {
           }
         }
 
-        // Draw mouse links
+        // Mouse grab lines
         const mdx = particles[i]!.x - mouse.x;
         const mdy = particles[i]!.y - mouse.y;
         const mDist = Math.sqrt(mdx * mdx + mdy * mdy);
         if (mDist < 200) {
-          const opacity = (1 - mDist / 200) * 0.5;
           ctx!.strokeStyle = linkColor;
-          ctx!.globalAlpha = opacity;
+          ctx!.globalAlpha = (1 - mDist / 200) * 0.5;
           ctx!.lineWidth = 1.5;
           ctx!.beginPath();
           ctx!.moveTo(particles[i]!.x, particles[i]!.y);
@@ -109,16 +115,15 @@ export default function ParticleNetwork() {
       for (const p of particles) {
         p.x += p.vx;
         p.y += p.vy;
-
         if (p.x < 0 || p.x > w) p.vx *= -1;
         if (p.y < 0 || p.y > h) p.vy *= -1;
-
         p.x = Math.max(0, Math.min(w, p.x));
         p.y = Math.max(0, Math.min(h, p.y));
       }
     }
 
     function loop() {
+      if (!running) return;
       update();
       draw();
       animRef.current = requestAnimationFrame(loop);
@@ -135,25 +140,37 @@ export default function ParticleNetwork() {
       mouse.y = -1000;
     }
 
-    // Wait for layout to settle before measuring canvas size
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        resize();
-        createParticles();
-        loop();
-      });
+    // Observe the grandparent (the absolute inset-0 div) for size changes
+    // The canvas itself is absolutely positioned so its contentRect may be 0
+    const observeTarget = canvas.closest('.absolute') || canvas.parentElement || canvas;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          init(width, height);
+        }
+      }
     });
+    observer.observe(observeTarget);
 
-    window.addEventListener('resize', () => {
-      resize();
-      createParticles();
-    });
+    // Fallback: also try after a short delay in case ResizeObserver doesn't fire
+    const fallbackTimer = setTimeout(() => {
+      if (w === 0 || h === 0) {
+        const rect = canvas.getBoundingClientRect();
+        const fw = rect.width || window.innerWidth;
+        const fh = rect.height || window.innerHeight;
+        if (fw > 0 && fh > 0) init(fw, fh);
+      }
+    }, 200);
+
     canvas.addEventListener('mousemove', handleMouseMove);
     canvas.addEventListener('mouseleave', handleMouseLeave);
 
     return () => {
+      running = false;
       cancelAnimationFrame(animRef.current);
-      window.removeEventListener('resize', resize);
+      clearTimeout(fallbackTimer);
+      observer.disconnect();
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('mouseleave', handleMouseLeave);
     };
