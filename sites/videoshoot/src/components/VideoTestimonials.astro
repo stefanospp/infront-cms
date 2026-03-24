@@ -108,27 +108,77 @@ const { testimonials, class: className } = Astro.props;
   .testimonial-card:hover .testimonial-play {
     opacity: 0;
   }
+
+  /* Touch: tap-expanded state */
+  .testimonial-card.touch-expanded .testimonial-quote {
+    color: rgba(255, 255, 255, 0.9);
+    max-height: 200px;
+  }
+  .testimonial-card.touch-expanded .testimonial-play {
+    opacity: 0;
+  }
 </style>
 
 <script>
-  document.querySelectorAll('.testimonial-card').forEach((el) => {
+  const isTouchTestimonial = window.matchMedia('(hover: none)').matches;
+  const allTestimonialCards = document.querySelectorAll('.testimonial-card');
+  let activeTestimonial: HTMLElement | null = null;
+
+  allTestimonialCards.forEach((el) => {
     const htmlEl = el as HTMLElement;
     const src = htmlEl.dataset.testimonialVideo;
     if (!src) return;
 
     const video = htmlEl.querySelector('.testimonial-video') as HTMLVideoElement;
-    const play = htmlEl.querySelector('.testimonial-play') as HTMLElement;
 
-    el.addEventListener('mouseenter', () => {
+    function activate() {
       if (!video.src) { video.src = src; video.load(); }
       video.currentTime = 0;
       video.play().catch(() => {});
       video.style.opacity = '1';
-    });
+    }
 
-    el.addEventListener('mouseleave', () => {
+    function deactivate() {
       video.pause();
       video.style.opacity = '0';
-    });
+    }
+
+    if (isTouchTestimonial) {
+      el.addEventListener('click', () => {
+        if (activeTestimonial === htmlEl) {
+          deactivate();
+          htmlEl.classList.remove('touch-expanded');
+          activeTestimonial = null;
+          // Reset all flex
+          allTestimonialCards.forEach(c => {
+            (c as HTMLElement).style.flex = '';
+            (c as HTMLElement).style.filter = '';
+          });
+        } else {
+          // Deactivate previous
+          if (activeTestimonial) {
+            const prevVid = activeTestimonial.querySelector('.testimonial-video') as HTMLVideoElement;
+            if (prevVid) { prevVid.pause(); prevVid.style.opacity = '0'; }
+            activeTestimonial.classList.remove('touch-expanded');
+          }
+          activate();
+          htmlEl.classList.add('touch-expanded');
+          activeTestimonial = htmlEl;
+          // Expand active, shrink others
+          allTestimonialCards.forEach(c => {
+            if (c === el) {
+              (c as HTMLElement).style.flex = '4';
+              (c as HTMLElement).style.filter = 'brightness(1)';
+            } else {
+              (c as HTMLElement).style.flex = '0.4';
+              (c as HTMLElement).style.filter = 'brightness(0.6)';
+            }
+          });
+        }
+      });
+    } else {
+      el.addEventListener('mouseenter', activate);
+      el.addEventListener('mouseleave', deactivate);
+    }
   });
 </script>

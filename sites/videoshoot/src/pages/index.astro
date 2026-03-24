@@ -148,66 +148,69 @@ const works = [
     </div>
   </section>
 
-  {/* Services section-level video script */}
+  {/* Services section-level video script — works on both hover and touch */}
   <script>
     const section = document.getElementById('services-section');
     if (section) {
+      const isTouchDevice = window.matchMedia('(hover: none)').matches;
       let video: HTMLVideoElement | null = null;
       let overlay: HTMLDivElement | null = null;
+      let activeServiceCard: Element | null = null;
       const cards = section.querySelectorAll('.service-card');
 
+      function ensureVideoElements() {
+        if (!video) {
+          video = document.createElement('video');
+          video.muted = true; video.loop = true; video.playsInline = true;
+          video.className = 'absolute inset-0 h-full w-full object-cover';
+          video.style.transition = 'opacity 0.6s ease';
+          video.style.opacity = '0'; video.style.zIndex = '1';
+          section.prepend(video);
+          overlay = document.createElement('div');
+          overlay.className = 'absolute inset-0';
+          overlay.style.background = 'rgba(245,245,245,0.75)';
+          overlay.style.transition = 'opacity 0.6s ease';
+          overlay.style.opacity = '0'; overlay.style.zIndex = '2';
+          video.after(overlay);
+        }
+      }
+
+      function activateCard(card: Element) {
+        const src = (card as HTMLElement).dataset.serviceVideo;
+        if (!src) return;
+        ensureVideoElements();
+        if (video!.src !== src) { video!.src = src; video!.load(); }
+        video!.play().catch(() => {});
+        video!.style.opacity = '1';
+        if (overlay) overlay.style.opacity = '1';
+        cards.forEach((c) => {
+          (c as HTMLElement).style.transition = 'opacity 0.4s ease';
+          (c as HTMLElement).style.opacity = c === card ? '1' : '0.5';
+        });
+        activeServiceCard = card;
+      }
+
+      function deactivateAll() {
+        if (video) video.style.opacity = '0';
+        if (overlay) overlay.style.opacity = '0';
+        cards.forEach((c) => { (c as HTMLElement).style.opacity = '1'; });
+        activeServiceCard = null;
+      }
+
       cards.forEach((card) => {
-        card.addEventListener('mouseenter', () => {
-          const src = (card as HTMLElement).dataset.serviceVideo;
-          if (!src) return;
-
-          // Create shared video + overlay on first hover
-          if (!video) {
-            video = document.createElement('video');
-            video.muted = true;
-            video.loop = true;
-            video.playsInline = true;
-            video.className = 'absolute inset-0 h-full w-full object-cover';
-            video.style.transition = 'opacity 0.6s ease';
-            video.style.opacity = '0';
-            video.style.zIndex = '1';
-            section.prepend(video);
-
-            overlay = document.createElement('div');
-            overlay.className = 'absolute inset-0';
-            overlay.style.background = 'rgba(245,245,245,0.75)';
-            overlay.style.transition = 'opacity 0.6s ease';
-            overlay.style.opacity = '0';
-            overlay.style.zIndex = '2';
-            video.after(overlay);
-          }
-
-          // Set video source and play
-          if (video.src !== src) {
-            video.src = src;
-            video.load();
-          }
-          video.play().catch(() => {});
-          video.style.opacity = '1';
-          if (overlay) overlay.style.opacity = '1';
-
-          // Dim other cards
-          cards.forEach((c) => {
-            (c as HTMLElement).style.transition = 'opacity 0.4s ease';
-            if (c !== card) {
-              (c as HTMLElement).style.opacity = '0.5';
+        if (isTouchDevice) {
+          card.addEventListener('click', (e) => {
+            if (activeServiceCard === card) {
+              deactivateAll();
+            } else {
+              e.preventDefault();
+              activateCard(card);
             }
           });
-        });
-
-        card.addEventListener('mouseleave', () => {
-          if (video) video.style.opacity = '0';
-          if (overlay) overlay.style.opacity = '0';
-          // Restore all cards
-          cards.forEach((c) => {
-            (c as HTMLElement).style.opacity = '1';
-          });
-        });
+        } else {
+          card.addEventListener('mouseenter', () => activateCard(card));
+          card.addEventListener('mouseleave', deactivateAll);
+        }
       });
     }
   </script>

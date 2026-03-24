@@ -113,17 +113,33 @@ const { heading, description, linkText, linkHref, videos = [], class: className 
   .video-scale-item:hover .video-scale-play {
     opacity: 0;
   }
+
+  /* Touch device: tap activates same as hover */
+  .video-scale-item.touch-active {
+    opacity: 1 !important;
+    transform: scale(2.05);
+    z-index: 20;
+    border-radius: 0.75rem;
+  }
+  .video-scale-item.touch-active .video-scale-overlay { opacity: 0.1; }
+  .video-scale-item.touch-active .video-scale-play { opacity: 0; }
+  .video-scale-item.touch-active ~ .video-scale-item,
+  .video-scale-item:has(~ .touch-active) { opacity: 0.3; }
 </style>
 
 <script>
-  document.querySelectorAll('.video-scale-item').forEach((el) => {
+  const isTouch = window.matchMedia('(hover: none)').matches;
+  const allScaleItems = document.querySelectorAll('.video-scale-item');
+  let activeScaleItem: HTMLElement | null = null;
+
+  allScaleItems.forEach((el) => {
     const htmlEl = el as HTMLElement;
     const src = htmlEl.dataset.videoSrc;
     if (!src) return;
 
     let video: HTMLVideoElement | null = null;
 
-    el.addEventListener('mouseenter', () => {
+    function activate() {
       if (!video) {
         video = document.createElement('video');
         video.muted = true;
@@ -139,10 +155,34 @@ const { heading, description, linkText, linkHref, videos = [], class: className 
       video.currentTime = 0;
       video.play().catch(() => {});
       requestAnimationFrame(() => { if (video) video.style.opacity = '1'; });
-    });
+    }
 
-    el.addEventListener('mouseleave', () => {
+    function deactivate() {
       if (video) { video.pause(); video.style.opacity = '0'; }
-    });
+    }
+
+    if (isTouch) {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (activeScaleItem === htmlEl) {
+          deactivate();
+          htmlEl.classList.remove('touch-active');
+          activeScaleItem = null;
+        } else {
+          // Deactivate previous
+          if (activeScaleItem) {
+            activeScaleItem.classList.remove('touch-active');
+            const prevVideo = activeScaleItem.querySelector('video');
+            if (prevVideo) { (prevVideo as HTMLVideoElement).pause(); (prevVideo as HTMLVideoElement).style.opacity = '0'; }
+          }
+          activate();
+          htmlEl.classList.add('touch-active');
+          activeScaleItem = htmlEl;
+        }
+      });
+    } else {
+      el.addEventListener('mouseenter', activate);
+      el.addEventListener('mouseleave', deactivate);
+    }
   });
 </script>
