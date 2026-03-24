@@ -1,5 +1,8 @@
 import * as http from 'node:http';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { getMonorepoRoot } from './paths';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -50,20 +53,41 @@ export interface InfrastructureData {
 }
 
 // ---------------------------------------------------------------------------
-// Fixed cost configuration
+// Cost configuration (stored in /data/costs.json, editable via dashboard)
 // ---------------------------------------------------------------------------
 
-const MONTHLY_COSTS: CostItem[] = [
-  { name: 'Hetzner CX22 VPS', monthlyCost: 5.39, currency: 'EUR', notes: '2 vCPU, 4GB RAM, 40GB disk' },
-  { name: 'Cloudflare Workers', monthlyCost: 0, currency: 'EUR', notes: 'Free tier (100k requests/day)' },
+const DEFAULT_COSTS: CostItem[] = [
+  { name: 'Hetzner CX43 VPS', monthlyCost: 9.49, currency: 'EUR', notes: '8 vCPU, 16GB RAM, 160GB disk' },
+  { name: 'Extra storage (40GB)', monthlyCost: 2.50, currency: 'EUR', notes: 'Additional volume' },
+  { name: 'Backups (20% of plan)', monthlyCost: 1.90, currency: 'EUR', notes: 'Automated backups' },
   { name: 'Domain: infront.cy', monthlyCost: 1.67, currency: 'EUR', notes: '~€20/year' },
   { name: 'Domain: atelierkosta.cy', monthlyCost: 1.67, currency: 'EUR', notes: '~€20/year' },
   { name: 'Domain: meridianproperties.cy', monthlyCost: 1.67, currency: 'EUR', notes: '~€20/year' },
   { name: 'Domain: abroadjobs.eu', monthlyCost: 0.83, currency: 'EUR', notes: '~€10/year' },
-  { name: 'Doppler (Secrets)', monthlyCost: 0, currency: 'EUR', notes: 'Free tier' },
+  { name: 'Cloudflare Workers', monthlyCost: 0, currency: 'EUR', notes: 'Free tier' },
+  { name: 'Doppler', monthlyCost: 0, currency: 'EUR', notes: 'Free tier' },
   { name: 'Coolify', monthlyCost: 0, currency: 'EUR', notes: 'Self-hosted' },
   { name: 'Directus', monthlyCost: 0, currency: 'EUR', notes: 'Self-hosted' },
 ];
+
+function getCostsFilePath(): string {
+  return path.join(getMonorepoRoot(), 'costs.json');
+}
+
+export function readCosts(): CostItem[] {
+  try {
+    const content = fs.readFileSync(getCostsFilePath(), 'utf-8');
+    return JSON.parse(content) as CostItem[];
+  } catch {
+    // File doesn't exist — create with defaults
+    saveCosts(DEFAULT_COSTS);
+    return DEFAULT_COSTS;
+  }
+}
+
+export function saveCosts(costs: CostItem[]): void {
+  fs.writeFileSync(getCostsFilePath(), JSON.stringify(costs, null, 2), 'utf-8');
+}
 
 // ---------------------------------------------------------------------------
 // Docker Engine API client (via Unix socket)
@@ -149,12 +173,13 @@ export async function getInfrastructure(): Promise<InfrastructureData> {
     getVpsInfo(),
   ]);
 
-  const totalMonthlyCost = MONTHLY_COSTS.reduce((sum, c) => sum + c.monthlyCost, 0);
+  const costs = readCosts();
+  const totalMonthlyCost = costs.reduce((sum, c) => sum + c.monthlyCost, 0);
 
   const data: InfrastructureData = {
     containers,
     disk,
-    costs: MONTHLY_COSTS,
+    costs,
     totalMonthlyCost: Math.round(totalMonthlyCost * 100) / 100,
     vps,
   };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface Container {
   id: string; name: string; image: string; status: string;
@@ -312,39 +312,177 @@ export default function InfrastructureDashboard() {
       </div>
 
       {/* Monthly Costs */}
-      <div className="bg-white rounded-xl shadow-sm border border-neutral-200">
-        <div className="px-6 py-4 border-b border-neutral-100">
-          <h2 className="text-lg font-semibold text-neutral-900">Monthly Costs</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-neutral-100 text-left text-neutral-500">
-                <th className="px-6 py-3 font-medium">Item</th>
-                <th className="px-6 py-3 font-medium text-right">Monthly Cost</th>
-                <th className="px-6 py-3 font-medium">Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {infra.costs.map((c) => (
-                <tr key={c.name} className="border-b border-neutral-50 hover:bg-neutral-50">
-                  <td className="px-6 py-3 text-neutral-900">{c.name}</td>
-                  <td className={`px-6 py-3 text-right ${c.monthlyCost === 0 ? 'text-neutral-400' : 'text-neutral-700'}`}>
-                    {c.currency}{c.monthlyCost.toFixed(2)}
-                  </td>
-                  <td className="px-6 py-3 text-neutral-500">{c.notes}</td>
-                </tr>
-              ))}
-              <tr className="bg-neutral-50">
-                <td className="px-6 py-3 font-semibold text-neutral-900">Total</td>
-                <td className="px-6 py-3 text-right font-semibold text-neutral-900">
-                  {'\u20AC'}{infra.totalMonthlyCost.toFixed(2)}
+      <CostsSection costs={infra.costs} totalMonthlyCost={infra.totalMonthlyCost} />
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Editable Costs Section
+// ---------------------------------------------------------------------------
+
+interface CostItem {
+  name: string;
+  monthlyCost: number;
+  currency: string;
+  notes: string;
+}
+
+function CostsSection({ costs: initialCosts, totalMonthlyCost: initialTotal }: { costs: CostItem[]; totalMonthlyCost: number }) {
+  const [editing, setEditing] = useState(false);
+  const [costs, setCosts] = useState<CostItem[]>(initialCosts);
+  const [saving, setSaving] = useState(false);
+
+  const total = costs.reduce((s, c) => s + c.monthlyCost, 0);
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/costs', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(costs),
+      });
+      if (!res.ok) throw new Error('Save failed');
+      setEditing(false);
+    } catch (err) {
+      alert('Failed to save costs');
+    } finally {
+      setSaving(false);
+    }
+  }, [costs]);
+
+  const updateCost = (index: number, field: keyof CostItem, value: string | number) => {
+    setCosts(prev => prev.map((c, i) => i === index ? { ...c, [field]: value } : c));
+  };
+
+  const addCost = () => {
+    setCosts(prev => [...prev, { name: '', monthlyCost: 0, currency: 'EUR', notes: '' }]);
+  };
+
+  const removeCost = (index: number) => {
+    setCosts(prev => prev.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-neutral-200">
+      <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-neutral-900">Monthly Costs</h2>
+        {editing ? (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setCosts(initialCosts); setEditing(false); }}
+              className="px-3 py-1.5 text-sm text-neutral-600 hover:text-neutral-800 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-3 py-1.5 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            >
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setEditing(true)}
+            className="px-3 py-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+          >
+            Edit
+          </button>
+        )}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-neutral-100 text-left text-neutral-500">
+              <th className="px-6 py-3 font-medium">Item</th>
+              <th className="px-6 py-3 font-medium text-right">Monthly Cost</th>
+              <th className="px-6 py-3 font-medium">Notes</th>
+              {editing && <th className="px-6 py-3 w-10" />}
+            </tr>
+          </thead>
+          <tbody>
+            {costs.map((c, i) => (
+              <tr key={i} className="border-b border-neutral-50 hover:bg-neutral-50">
+                <td className="px-6 py-2">
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={c.name}
+                      onChange={(e) => updateCost(i, 'name', e.target.value)}
+                      className="w-full px-2 py-1 border border-neutral-200 rounded text-sm text-neutral-900"
+                    />
+                  ) : (
+                    <span className="text-neutral-900">{c.name}</span>
+                  )}
                 </td>
-                <td className="px-6 py-3" />
+                <td className="px-6 py-2 text-right">
+                  {editing ? (
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={c.monthlyCost}
+                      onChange={(e) => updateCost(i, 'monthlyCost', parseFloat(e.target.value) || 0)}
+                      className="w-24 px-2 py-1 border border-neutral-200 rounded text-sm text-right text-neutral-900"
+                    />
+                  ) : (
+                    <span className={c.monthlyCost === 0 ? 'text-neutral-400' : 'text-neutral-700'}>
+                      {c.currency}{c.monthlyCost.toFixed(2)}
+                    </span>
+                  )}
+                </td>
+                <td className="px-6 py-2">
+                  {editing ? (
+                    <input
+                      type="text"
+                      value={c.notes}
+                      onChange={(e) => updateCost(i, 'notes', e.target.value)}
+                      className="w-full px-2 py-1 border border-neutral-200 rounded text-sm text-neutral-500"
+                    />
+                  ) : (
+                    <span className="text-neutral-500">{c.notes}</span>
+                  )}
+                </td>
+                {editing && (
+                  <td className="px-3 py-2">
+                    <button
+                      onClick={() => removeCost(i)}
+                      className="text-red-400 hover:text-red-600 transition-colors"
+                      title="Remove"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </td>
+                )}
               </tr>
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {editing && (
+              <tr className="border-b border-neutral-50">
+                <td colSpan={4} className="px-6 py-2">
+                  <button
+                    onClick={addCost}
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
+                  >
+                    + Add item
+                  </button>
+                </td>
+              </tr>
+            )}
+            <tr className="bg-neutral-50">
+              <td className="px-6 py-3 font-semibold text-neutral-900">Total</td>
+              <td className="px-6 py-3 text-right font-semibold text-neutral-900">
+                {'\u20AC'}{total.toFixed(2)}
+              </td>
+              <td className="px-6 py-3" />
+              {editing && <td />}
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );
