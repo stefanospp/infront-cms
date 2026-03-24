@@ -28,7 +28,7 @@ const { testimonials, class: className } = Astro.props;
         <div
           class="testimonial-card group relative flex-1 overflow-hidden rounded-xl cursor-pointer"
           data-testimonial-video={t.videoSrc}
-          style="transition: flex 0.6s cubic-bezier(0.4, 0, 0.2, 1); min-width: 0;"
+          style="transition: flex 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.5s ease; min-width: 0;"
         >
           {/* Poster image */}
           {t.image && (
@@ -51,7 +51,7 @@ const { testimonials, class: className } = Astro.props;
           />
 
           {/* Dark overlay */}
-          <div class="absolute inset-0 bg-black/40 transition-opacity duration-300 group-hover:bg-black/20" />
+          <div class="absolute inset-0 bg-black/40 transition-all duration-500 group-hover:bg-black/10" />
 
           {/* Content — visible when expanded */}
           <div class="absolute inset-x-0 bottom-0 p-5 z-10 sm:p-6">
@@ -68,7 +68,7 @@ const { testimonials, class: className } = Astro.props;
           </div>
 
           {/* Play indicator — center */}
-          <div class="absolute inset-0 flex items-center justify-center testimonial-play" style="transition: opacity 0.3s ease;">
+          <div class="absolute inset-0 flex items-center justify-center testimonial-play" style="transition: opacity 0.5s ease;">
             <div class="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
               <svg class="ml-1 h-6 w-6 text-white" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z" />
@@ -91,16 +91,19 @@ const { testimonials, class: className } = Astro.props;
     }
   }
 
-  /* Hover: expand the hovered card */
+  /* Hover: expand the hovered card smoothly */
   .testimonial-flex:hover .testimonial-card {
-    flex: 0.5;
+    flex: 0.4;
+    filter: brightness(0.6);
   }
   .testimonial-flex .testimonial-card:hover {
-    flex: 3;
+    flex: 4;
+    filter: brightness(1);
   }
   .testimonial-card:hover .testimonial-quote {
     color: rgba(255, 255, 255, 0.9);
     max-height: 200px;
+    transition: color 0.5s ease 0.2s, max-height 0.6s ease 0.15s;
   }
   .testimonial-card:hover .testimonial-play {
     opacity: 0;
