@@ -9,7 +9,8 @@ export const prerender = false;
  * Requires env: PLATFORM_API_URL (e.g. https://api-v2.infront.cy)
  */
 
-const PLATFORM_API_URL = import.meta.env.PLATFORM_API_URL || process.env.PLATFORM_API_URL || 'http://localhost:3002';
+const PLATFORM_API_URL = process.env.PLATFORM_API_URL || 'http://localhost:3002';
+const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
 
 const json = (body: Record<string, unknown>, status: number) =>
   new Response(JSON.stringify(body), {
@@ -22,9 +23,10 @@ async function proxyRequest(request: Request, path: string): Promise<Response> {
 
   try {
     const headers = new Headers();
-    // Forward cookies for auth
-    const cookie = request.headers.get('cookie');
-    if (cookie) headers.set('cookie', cookie);
+    // Authenticate via internal API key (admin middleware already verified the user)
+    if (INTERNAL_API_KEY) {
+      headers.set('x-internal-key', INTERNAL_API_KEY);
+    }
 
     // Forward content-type for POST/PATCH
     const contentType = request.headers.get('content-type');
