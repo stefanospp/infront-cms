@@ -29,6 +29,7 @@ docker run -d \
   -p 127.0.0.1:4321:4321 \
   -v /opt/infront-cms/sites:/data/sites \
   -v /opt/infront-cms/infra:/data/infra:ro \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
   --env-file "$ENV_FILE" \
   -e MONOREPO_ROOT=/data \
   -e APP_ROOT=/app \

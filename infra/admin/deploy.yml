@@ -19,6 +19,7 @@ servers:
       volume:
         - /opt/infront-cms/sites:/data/sites
         - /opt/infront-cms/infra:/data/infra:ro
+        - /var/run/docker.sock:/var/run/docker.sock:ro
 
 registry:
   server: ghcr.io
