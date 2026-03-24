@@ -31,17 +31,12 @@ export default function HeroInteractive({
   backgroundPoster,
   projects,
 }: Props) {
-  // Start with first project video (not the generic background)
-  const allVideos = projects.length > 0
-    ? projects.map(p => p.video)
-    : [backgroundVideo];
-
   const [activeIndex, setActiveIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
-  const progressRef = useRef<number>(0);
   const rafRef = useRef<number>(0);
+  const videoCount = projects.length || 1;
 
   // Set hero height to exact viewport
   useEffect(() => {
@@ -64,42 +59,40 @@ export default function HeroInteractive({
   // Load and play the active video
   useEffect(() => {
     const v = mainVideoRef.current;
-    if (v) {
-      v.src = allVideos[activeIndex] || backgroundVideo;
-      v.load();
-      v.play().catch(() => {});
-    }
-  }, [activeIndex, allVideos, backgroundVideo]);
+    if (!v) return;
+    const src = projects[activeIndex]?.video || backgroundVideo;
+    v.src = src;
+    v.loop = false;
+    v.load();
+    v.play().catch(() => {});
+    setProgress(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndex]);
 
-  // Track video progress and auto-advance
+  // Track progress via requestAnimationFrame
   useEffect(() => {
     const v = mainVideoRef.current;
     if (!v) return;
 
     const updateProgress = () => {
-      if (v.duration && v.duration > 0) {
-        const p = (v.currentTime / v.duration) * 100;
-        progressRef.current = p;
-        setProgress(p);
+      if (v.duration && v.duration > 0 && !v.paused) {
+        setProgress((v.currentTime / v.duration) * 100);
       }
       rafRef.current = requestAnimationFrame(updateProgress);
     };
 
     const handleEnded = () => {
-      // Auto-advance to next video
-      setActiveIndex(prev => (prev + 1) % allVideos.length);
+      setActiveIndex(prev => (prev + 1) % videoCount);
     };
 
     v.addEventListener('ended', handleEnded);
-    // Don't loop the main video — we handle advancement
-    v.loop = false;
     rafRef.current = requestAnimationFrame(updateProgress);
 
     return () => {
       v.removeEventListener('ended', handleEnded);
       cancelAnimationFrame(rafRef.current);
     };
-  }, [activeIndex, allVideos.length]);
+  }, [videoCount]);
 
   const goToVideo = useCallback((index: number) => {
     setActiveIndex(index);
