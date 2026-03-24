@@ -31,13 +31,19 @@ export default function HeroInteractive({
   backgroundPoster,
   projects,
 }: Props) {
-  const [activeVideo, setActiveVideo] = useState(backgroundVideo);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const mainVideoRef = useRef<HTMLVideoElement>(null);
-  const carouselRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
+  // Start with first project video (not the generic background)
+  const allVideos = projects.length > 0
+    ? projects.map(p => p.video)
+    : [backgroundVideo];
 
-  // Set hero height to exact viewport — measure nav dynamically
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const mainVideoRef = useRef<HTMLVideoElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const progressRef = useRef<number>(0);
+  const rafRef = useRef<number>(0);
+
+  // Set hero height to exact viewport
   useEffect(() => {
     const setHeight = () => {
       if (!sectionRef.current) return;
@@ -55,25 +61,49 @@ export default function HeroInteractive({
     };
   }, []);
 
+  // Load and play the active video
   useEffect(() => {
     const v = mainVideoRef.current;
     if (v) {
-      v.src = activeVideo;
+      v.src = allVideos[activeIndex] || backgroundVideo;
       v.load();
       v.play().catch(() => {});
     }
-  }, [activeVideo]);
+  }, [activeIndex, allVideos, backgroundVideo]);
 
-  const handleProjectClick = useCallback((project: ProjectItem, index: number) => {
-    setActiveVideo(project.video);
+  // Track video progress and auto-advance
+  useEffect(() => {
+    const v = mainVideoRef.current;
+    if (!v) return;
+
+    const updateProgress = () => {
+      if (v.duration && v.duration > 0) {
+        const p = (v.currentTime / v.duration) * 100;
+        progressRef.current = p;
+        setProgress(p);
+      }
+      rafRef.current = requestAnimationFrame(updateProgress);
+    };
+
+    const handleEnded = () => {
+      // Auto-advance to next video
+      setActiveIndex(prev => (prev + 1) % allVideos.length);
+    };
+
+    v.addEventListener('ended', handleEnded);
+    // Don't loop the main video — we handle advancement
+    v.loop = false;
+    rafRef.current = requestAnimationFrame(updateProgress);
+
+    return () => {
+      v.removeEventListener('ended', handleEnded);
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [activeIndex, allVideos.length]);
+
+  const goToVideo = useCallback((index: number) => {
     setActiveIndex(index);
-  }, []);
-
-  const scrollCarousel = useCallback((direction: 1 | -1) => {
-    if (!carouselRef.current) return;
-    const child = carouselRef.current.firstElementChild as HTMLElement | null;
-    const amount = child ? child.offsetWidth + 16 : carouselRef.current.offsetWidth * 0.6;
-    carouselRef.current.scrollBy({ left: direction * amount, behavior: 'smooth' });
+    setProgress(0);
   }, []);
 
   return (
@@ -82,7 +112,7 @@ export default function HeroInteractive({
       className="relative overflow-hidden bg-neutral-950"
       style={{ height: '100vh' }}
     >
-      {/* Background poster — visible while video loads */}
+      {/* Background poster */}
       {backgroundPoster && (
         <img
           src={backgroundPoster}
@@ -91,24 +121,22 @@ export default function HeroInteractive({
         />
       )}
 
-      {/* Background video */}
+      {/* Background video — no loop, advances on end */}
       <video
         ref={mainVideoRef}
         autoPlay
         muted
-        loop
         playsInline
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700"
       />
 
-      {/* Gradient — bottom-up on mobile, left-right on desktop */}
-      {/* Gradient — darker on mobile for text readability */}
+      {/* Gradient */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 lg:bg-gradient-to-r lg:from-black/80 lg:via-black/40 lg:to-black/20" />
 
-      {/* Content — pinned to bottom via absolute */}
+      {/* Content */}
       <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 sm:px-6 sm:pb-12 lg:mx-auto lg:flex lg:max-w-7xl lg:items-end lg:justify-between lg:px-8 lg:pb-20">
 
-        {/* Text — centered on mobile */}
+        {/* Text */}
         <div className="text-center lg:max-w-lg lg:text-left">
           {eyebrow && (
             <p className="text-xs font-medium uppercase tracking-widest text-neutral-400 sm:text-sm">
@@ -146,134 +174,125 @@ export default function HeroInteractive({
           </div>
         </div>
 
-        {/* Project carousel — compact strip on mobile, full cards on desktop */}
+        {/* Project slider with progress rings */}
         {projects.length > 0 && (
           <div className="mt-5 sm:mt-8 lg:mt-0 lg:ml-12 lg:max-w-lg">
-            {/* Mobile: compact horizontal strip */}
-            <div
-              className="flex gap-2.5 overflow-x-auto pb-2 snap-x snap-mandatory sm:gap-3 lg:hidden"
+            {/* Mobile + Desktop: thumbnail cards with progress */}
+            <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory sm:gap-4"
               style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
             >
               {projects.map((project, index) => (
                 <button
                   key={index}
                   type="button"
-                  className="relative w-36 flex-shrink-0 snap-start overflow-hidden rounded-lg outline-none sm:w-44"
-                  onClick={() => handleProjectClick(project, index)}
+                  className={`relative flex-shrink-0 snap-start overflow-hidden rounded-xl outline-none transition-all duration-500 ${
+                    activeIndex === index
+                      ? 'w-40 sm:w-48 lg:w-56 ring-2 ring-white/40'
+                      : 'w-28 sm:w-36 lg:w-44 opacity-60 hover:opacity-90'
+                  }`}
+                  onClick={() => goToVideo(index)}
                 >
-                  <div className="aspect-[3/4] relative bg-neutral-800">
-                    {project.poster ? (
-                      <img src={project.poster} alt={project.title} className="absolute inset-0 h-full w-full object-cover" />
-                    ) : (
-                      <div className="absolute inset-0 bg-neutral-700" />
+                  <div className="aspect-[3/4] relative">
+                    {/* Poster */}
+                    {project.poster && (
+                      <img
+                        src={project.poster}
+                        alt={project.title}
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
                     )}
-                    <div className="absolute inset-0 bg-black/20 transition-opacity" />
+                    {/* Overlay */}
+                    <div className={`absolute inset-0 transition-all duration-500 ${
+                      activeIndex === index ? 'bg-black/10' : 'bg-black/40'
+                    }`} />
+
+                    {/* Circular progress indicator — only on active */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 sm:h-10 sm:w-10">
-                        <svg className="ml-0.5 h-4 w-4 text-neutral-900" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M8 5v14l11-7z" />
+                      <div className="relative h-12 w-12 sm:h-14 sm:w-14">
+                        {/* Background ring */}
+                        <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 48 48">
+                          <circle
+                            cx="24" cy="24" r="20"
+                            fill="none"
+                            stroke="rgba(255,255,255,0.2)"
+                            strokeWidth="2.5"
+                          />
+                          {/* Progress ring — animated */}
+                          <circle
+                            cx="24" cy="24" r="20"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeDasharray={`${2 * Math.PI * 20}`}
+                            strokeDashoffset={`${2 * Math.PI * 20 * (1 - (activeIndex === index ? progress / 100 : 0))}`}
+                            style={{ transition: 'stroke-dashoffset 0.1s linear' }}
+                          />
                         </svg>
+                        {/* Play/active icon */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          {activeIndex === index ? (
+                            <div className="h-3 w-3 rounded-sm bg-white" style={{ clipPath: 'polygon(0 0, 35% 0, 35% 100%, 0 100%, 0 0, 65% 0, 65% 100%, 100% 100%, 100% 0, 65% 0)' }}>
+                              {/* Playing indicator — two bars */}
+                            </div>
+                          ) : (
+                            <svg className="ml-0.5 h-4 w-4 text-white" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 px-1.5 py-1">
-                      <p className="truncate text-[10px] font-medium text-white sm:text-xs">{project.title}</p>
+
+                    {/* Title */}
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 px-3 py-2">
+                      <p className="truncate text-[11px] font-medium text-white sm:text-xs">{project.title}</p>
                     </div>
                   </div>
                 </button>
               ))}
             </div>
 
-            {/* Desktop: full-size card carousel */}
-            <div
-              ref={carouselRef}
-              className="hidden gap-4 overflow-x-auto pb-4 snap-x snap-mandatory lg:flex"
-              style={{ scrollbarWidth: 'none', scrollBehavior: 'smooth' }}
-            >
-              {projects.map((project, index) => (
-                <div key={index} className="w-56 flex-shrink-0 snap-start">
-                  <ProjectThumbnail
-                    project={project}
-                    isActive={activeIndex === index}
-                    onClick={() => handleProjectClick(project, index)}
-                  />
-                </div>
-              ))}
-            </div>
-
             {/* Desktop nav arrows */}
-            {projects.length > 2 && (
-              <div className="mt-4 hidden items-center gap-3 lg:flex">
-                <button
-                  type="button"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-500 text-white transition-colors hover:border-white"
-                  aria-label="Previous project"
-                  onClick={() => scrollCarousel(-1)}
-                >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-500 text-white transition-colors hover:border-white"
-                  aria-label="Next project"
-                  onClick={() => scrollCarousel(1)}
-                >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-                <div className="ml-4 h-px flex-1 bg-neutral-600" />
+            <div className="mt-4 hidden items-center gap-3 lg:flex">
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-500 text-white transition-colors hover:border-white"
+                aria-label="Previous project"
+                onClick={() => goToVideo((activeIndex - 1 + projects.length) % projects.length)}
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-500 text-white transition-colors hover:border-white"
+                aria-label="Next project"
+                onClick={() => goToVideo((activeIndex + 1) % projects.length)}
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              {/* Progress dots */}
+              <div className="ml-4 flex items-center gap-2">
+                {projects.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
+                      activeIndex === i ? 'w-8 bg-white' : 'w-1.5 bg-neutral-500 hover:bg-neutral-400'
+                    }`}
+                    onClick={() => goToVideo(i)}
+                    aria-label={`Go to video ${i + 1}`}
+                  />
+                ))}
               </div>
-            )}
+            </div>
           </div>
         )}
       </div>
     </section>
-  );
-}
-
-function ProjectThumbnail({ project, isActive, onClick }: { project: ProjectItem; isActive: boolean; onClick: () => void }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isHovering, setIsHovering] = useState(false);
-
-  return (
-    <button
-      type="button"
-      className="group relative block w-full overflow-hidden rounded-lg cursor-pointer outline-none"
-      onClick={onClick}
-      onMouseEnter={() => {
-        setIsHovering(true);
-        if (videoRef.current) {
-          if (!videoRef.current.src) { videoRef.current.src = project.video; videoRef.current.load(); }
-          videoRef.current.currentTime = 0;
-          videoRef.current.play().catch(() => {});
-          videoRef.current.style.opacity = '1';
-        }
-      }}
-      onMouseLeave={() => {
-        setIsHovering(false);
-        if (videoRef.current) {
-          videoRef.current.pause();
-          videoRef.current.style.opacity = '0';
-        }
-      }}
-    >
-      <div className="aspect-[3/4] relative bg-neutral-800">
-        {project.poster && (
-          <img src={project.poster} alt={project.title} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
-        )}
-        <video ref={videoRef} muted loop playsInline preload="none" className="absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
-        <div className={`absolute inset-0 transition-opacity duration-300 ${isHovering ? 'bg-black/10' : 'bg-black/30'}`} />
-        <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`}>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg">
-            <svg className="ml-1 h-5 w-5 text-neutral-900" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-          </div>
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-4">
-          <h3 className="text-sm font-semibold text-white">{project.title}</h3>
-        </div>
-      </div>
-    </button>
   );
 }
