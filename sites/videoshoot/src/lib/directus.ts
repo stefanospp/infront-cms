@@ -18,6 +18,11 @@ export interface Project {
   sort_order: number;
   featured_in_hero?: boolean;
   hero_sort_order?: number;
+  description?: string;
+  client?: string;
+  year?: string;
+  category?: string;
+  gallery?: string[];
 }
 
 export interface Service {

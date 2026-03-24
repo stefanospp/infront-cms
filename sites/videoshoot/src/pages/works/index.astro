@@ -1,0 +1,46 @@
+---
+import "../../styles/global.css";
+import VideoLayout from '../../components/VideoLayout.astro';
+import Hero from '../../components/Hero.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import config from '../../../site.config';
+
+const works = [
+  { title: 'Stay True to Yourself', subtitle: 'Cinematic Self-Expression', image: '/images/project-1.jpg', videoSrc: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4', slug: 'stay-true' },
+  { title: 'Coastal Stories', subtitle: 'Where Land Meets Sea', image: '/images/project-2.jpg', videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4', slug: 'coastal' },
+  { title: 'Aerial Perspectives', subtitle: 'A View From Above', image: '/images/project-3.jpg', videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4', slug: 'aerial' },
+  { title: 'Mountain Adventures', subtitle: 'Exploring New Heights', image: '/images/project-4.jpg', videoSrc: 'https://videos.pexels.com/video-files/34085713/14457217_640_360_60fps.mp4', slug: 'mountains' },
+  { title: 'Underwater World', subtitle: 'Beneath the Surface', image: '/images/project-5.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4', slug: 'underwater' },
+  { title: 'Golden Hour', subtitle: 'Chasing the Light', image: '/images/project-6.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4', slug: 'golden-hour' },
+];
+---
+
+<VideoLayout
+  title="Works"
+  description="Selected video production projects and creative work."
+  config={config}
+>
+  {/* Hero */}
+  <Hero
+    variant="minimal"
+    heading="My work."
+    subheading="Selected projects showcasing brand films, creative content, and visual storytelling."
+  />
+
+  {/* Portfolio Grid */}
+  <section class="bg-white pb-20 sm:pb-28">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {works.map((work) => (
+          <ProjectCard
+            title={work.title}
+            subtitle={work.subtitle}
+            image={work.image}
+            videoSrc={work.videoSrc}
+            href={`/works/${work.slug}`}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+</VideoLayout>
