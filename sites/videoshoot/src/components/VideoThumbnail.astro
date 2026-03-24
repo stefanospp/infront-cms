@@ -1,0 +1,105 @@
+---
+export interface Props {
+  image?: string;
+  alt?: string;
+  title?: string;
+  href?: string;
+  videoSrc?: string;
+  reelUrl?: string;
+  class?: string;
+}
+
+const { image, alt = '', title, href, videoSrc, reelUrl, class: className } = Astro.props;
+
+// Click opens the video in overlay (Pexels video, not the reel)
+const overlayTarget = videoSrc;
+const isOverlayTrigger = !!overlayTarget;
+const Tag = isOverlayTrigger ? 'button' : href ? 'a' : 'div';
+---
+
+<Tag
+  href={!isOverlayTrigger ? href : undefined}
+  type={isOverlayTrigger ? 'button' : undefined}
+  data-video-overlay={overlayTarget}
+  data-video-hover={videoSrc}
+  class:list={[
+    'group relative block overflow-hidden rounded-lg',
+    (href || isOverlayTrigger) && 'cursor-pointer',
+    isOverlayTrigger && 'video-overlay-trigger outline-none',
+    className,
+  ]}
+>
+  {/* Video thumbnail — first frame shows as poster via preload="metadata" */}
+  {videoSrc ? (
+    <video
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      class="h-full w-full object-cover video-thumb"
+    >
+      <source src={videoSrc} type="video/mp4" />
+    </video>
+  ) : image ? (
+    <img
+      src={image}
+      alt={alt || title || ''}
+      class="h-full w-full object-cover"
+      loading="lazy"
+    />
+  ) : null}
+
+  {/* Dark overlay */}
+  <div class="absolute inset-0 bg-black/30 transition-opacity duration-300 group-hover:bg-black/20 video-overlay-dim" />
+
+  {/* Play button — hides on hover when video plays */}
+  <div class="absolute inset-0 flex items-center justify-center video-play-btn transition-opacity duration-300">
+    <div class="relative">
+      <div class="absolute inset-0 rounded-full bg-white/20 animate-pulse-ring" />
+      <div class="relative flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform duration-300 group-hover:scale-110">
+        <svg class="ml-1 h-5 w-5 text-neutral-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  {/* Title */}
+  {title && (
+    <div class="absolute bottom-0 left-0 right-0 p-4 z-10 bg-gradient-to-t from-black/60">
+      <h3 class="text-base font-semibold text-white">{title}</h3>
+    </div>
+  )}
+</Tag>
+
+<script>
+  // Click → open overlay
+  document.querySelectorAll('.video-overlay-trigger[data-video-overlay]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const src = (el as HTMLElement).dataset.videoOverlay;
+      if (src) {
+        window.dispatchEvent(new CustomEvent('open-video-overlay', { detail: src }));
+      }
+    });
+  });
+
+  // Hover → play video inline
+  document.querySelectorAll('[data-video-hover]').forEach((el) => {
+    const video = el.querySelector('video.video-thumb') as HTMLVideoElement | null;
+    if (!video) return;
+
+    el.addEventListener('mouseenter', () => {
+      video.currentTime = 0;
+      video.play().catch(() => {});
+      const btn = el.querySelector('.video-play-btn') as HTMLElement;
+      if (btn) btn.style.opacity = '0';
+    });
+
+    el.addEventListener('mouseleave', () => {
+      video.pause();
+      const btn = el.querySelector('.video-play-btn') as HTMLElement;
+      if (btn) btn.style.opacity = '1';
+    });
+  });
+</script>

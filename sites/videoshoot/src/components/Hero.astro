@@ -1,0 +1,205 @@
+---
+import VideoThumbnail from './VideoThumbnail.astro';
+
+export interface ProjectItem {
+  title: string;
+  image: string;
+  href?: string;
+}
+
+export interface Props {
+  variant?: 'fullscreen' | 'centered' | 'split' | 'minimal' | 'video';
+  heading: string;
+  subheading?: string;
+  eyebrow?: string;
+  ctaText?: string;
+  ctaHref?: string;
+  secondaryCtaText?: string;
+  secondaryCtaHref?: string;
+  backgroundImage?: string;
+  backgroundVideo?: string;
+  projects?: ProjectItem[];
+  class?: string;
+}
+
+const {
+  variant = 'fullscreen',
+  heading,
+  subheading,
+  eyebrow,
+  ctaText,
+  ctaHref,
+  secondaryCtaText,
+  secondaryCtaHref,
+  backgroundImage,
+  backgroundVideo,
+  projects = [],
+  class: className,
+} = Astro.props;
+---
+
+{/* Fullscreen cinematic hero — homepage */}
+{variant === 'fullscreen' && (
+  <section
+    class:list={['relative -mt-[72px] min-h-screen overflow-hidden bg-neutral-950', className]}
+  >
+    {/* Background video or image */}
+    {backgroundVideo ? (
+      <video
+        autoplay
+        muted
+        loop
+        playsinline
+        poster={backgroundImage}
+        class="absolute inset-0 h-full w-full object-cover"
+      >
+        <source src={backgroundVideo} type="video/mp4" />
+      </video>
+    ) : backgroundImage ? (
+      <img
+        src={backgroundImage}
+        alt=""
+        class="absolute inset-0 h-full w-full object-cover"
+        loading="eager"
+        fetchpriority="high"
+      />
+    ) : null}
+
+    {/* Gradient overlay */}
+    <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
+
+    {/* Content */}
+    <div class="relative z-10 mx-auto flex min-h-screen max-w-7xl flex-col justify-end px-4 pb-16 pt-32 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8 lg:pb-20">
+      {/* Left — text content */}
+      <div class="max-w-xl lg:max-w-lg">
+        {eyebrow && (
+          <p class="text-sm font-medium uppercase tracking-widest text-neutral-300">
+            {eyebrow}
+          </p>
+        )}
+        <h1 class="mt-4 text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+          {heading}
+        </h1>
+        {subheading && (
+          <p class="mt-6 text-base leading-relaxed text-neutral-300 sm:text-lg">
+            {subheading}
+          </p>
+        )}
+
+        {/* CTAs */}
+        <div class="mt-8 flex flex-wrap items-center gap-4">
+          {ctaText && ctaHref && (
+            <a
+              href={ctaHref}
+              class="inline-flex items-center rounded-full border-2 border-white bg-transparent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-neutral-900"
+            >
+              {ctaText}
+            </a>
+          )}
+          {secondaryCtaText && secondaryCtaHref && (
+            <a
+              href={secondaryCtaHref}
+              class="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-colors hover:text-neutral-300"
+            >
+              {secondaryCtaText}
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Right — project carousel */}
+      {projects.length > 0 && (
+        <div class="mt-10 lg:mt-0 lg:ml-12 lg:max-w-lg">
+          <div class="flex gap-4 overflow-x-auto scrollbar-hide pb-4 snap-x snap-mandatory" data-hero-carousel>
+            {projects.map((project) => (
+              <div class="w-48 flex-shrink-0 snap-start sm:w-56">
+                <VideoThumbnail
+                  image={project.image}
+                  title={project.title}
+                  href={project.href}
+                  class="aspect-[3/4]"
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Carousel navigation */}
+          {projects.length > 2 && (
+            <div class="mt-4 flex items-center gap-3">
+              <button
+                type="button"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-500 text-white transition-colors hover:border-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                aria-label="Previous project"
+                data-hero-prev
+              >
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-500 text-white transition-colors hover:border-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                aria-label="Next project"
+                data-hero-next
+              >
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+              <div class="ml-4 h-px flex-1 bg-neutral-600" />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  </section>
+)}
+
+{/* Minimal hero — inner pages */}
+{variant === 'minimal' && (
+  <section class:list={['bg-white pt-28 pb-16 sm:pt-32 sm:pb-24', className]}>
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      {eyebrow && (
+        <p class="text-sm font-medium uppercase tracking-widest text-neutral-500">
+          {eyebrow}
+        </p>
+      )}
+      <h1 class="mt-4 text-4xl font-bold text-neutral-900 sm:text-5xl lg:text-6xl">
+        {heading}
+      </h1>
+      {subheading && (
+        <p class="mt-6 max-w-2xl text-lg leading-relaxed text-neutral-600">
+          {subheading}
+        </p>
+      )}
+      {ctaText && ctaHref && (
+        <a
+          href={ctaHref}
+          class="mt-8 inline-flex items-center rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
+        >
+          {ctaText}
+        </a>
+      )}
+    </div>
+  </section>
+)}
+
+<script>
+  const heroCarousel = document.querySelector('[data-hero-carousel]') as HTMLElement | null;
+  const heroPrev = document.querySelector('[data-hero-prev]');
+  const heroNext = document.querySelector('[data-hero-next]');
+
+  if (heroCarousel) {
+    function scrollHero(direction: 1 | -1) {
+      const child = heroCarousel!.firstElementChild as HTMLElement | null;
+      const amount = child ? child.offsetWidth + 16 : heroCarousel!.offsetWidth * 0.6;
+      heroCarousel!.scrollBy({ left: direction * amount, behavior: 'smooth' });
+    }
+
+    heroPrev?.addEventListener('click', () => scrollHero(-1));
+    heroNext?.addEventListener('click', () => scrollHero(1));
+  }
+</script>

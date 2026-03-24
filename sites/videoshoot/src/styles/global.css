@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@source "../../../../packages/ui/src/**/*.{astro,tsx}";
+@source "../components/**/*.{astro,tsx}";
+
+@theme {
+  /* Primary — Pure Black */
+  --color-primary-50: #fafafa;
+  --color-primary-100: #f5f5f5;
+  --color-primary-200: #e5e5e5;
+  --color-primary-300: #d4d4d4;
+  --color-primary-400: #a3a3a3;
+  --color-primary-500: #737373;
+  --color-primary-600: #525252;
+  --color-primary-700: #404040;
+  --color-primary-800: #262626;
+  --color-primary-900: #171717;
+  --color-primary-950: #0a0a0a;
+
+  /* Secondary — Cool Gray */
+  --color-secondary-50: #f9fafb;
+  --color-secondary-100: #f3f4f6;
+  --color-secondary-200: #e5e7eb;
+  --color-secondary-300: #d1d5db;
+  --color-secondary-400: #9ca3af;
+  --color-secondary-500: #6b7280;
+  --color-secondary-600: #4b5563;
+  --color-secondary-700: #374151;
+  --color-secondary-800: #1f2937;
+  --color-secondary-900: #111827;
+  --color-secondary-950: #030712;
+
+  /* Accent — Warm Stone */
+  --color-accent-50: #fafaf9;
+  --color-accent-100: #f5f5f4;
+  --color-accent-200: #e7e5e4;
+  --color-accent-300: #d6d3d1;
+  --color-accent-400: #a8a29e;
+  --color-accent-500: #78716c;
+  --color-accent-600: #57534e;
+  --color-accent-700: #44403c;
+  --color-accent-800: #292524;
+  --color-accent-900: #1c1917;
+  --color-accent-950: #0c0a09;
+
+  /* Neutral — Off-white to black */
+  --color-neutral-50: #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+
+  /* Fonts — clean sans-serif, editorial feel */
+  --font-heading: "Inter", "Helvetica Neue", sans-serif;
+  --font-body: "Inter", "Helvetica Neue", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-neutral-900);
+  background-color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+}
+
+/* Video play button pulse */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.5; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+/* Hide scrollbar for horizontal scrollers */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

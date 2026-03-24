@@ -1,0 +1,87 @@
+---
+import "../styles/global.css";
+import SingleColumn from '@agency/ui/layouts/SingleColumn.astro';
+import Section from '@agency/ui/components/Section.astro';
+import config from '../../site.config';
+
+const title = 'Privacy Policy';
+const description = `Privacy policy for ${config.name}.`;
+---
+
+<SingleColumn title={title} description={description} config={config}>
+  <Section>
+    <h1 class="text-4xl font-heading font-bold text-neutral-900 mb-6">Privacy Policy</h1>
+    <div class="prose prose-lg max-w-none text-neutral-700">
+      <p><strong>Last updated:</strong> March 2026</p>
+
+      <h2>Data Controller</h2>
+      <p>
+        {config.name} ("we", "us", or "our") is the data controller responsible for your personal
+        data. You can reach us at <a href={`mailto:${config.contact.email}`}>{config.contact.email}</a>.
+      </p>
+
+      <h2>What Data We Collect</h2>
+      <p>We collect personal data that you provide directly:</p>
+      <ul>
+        <li><strong>Contact form submissions:</strong> name, email address, and message content</li>
+        <li><strong>Technical data:</strong> IP address, browser type, and pages visited (via privacy-focused analytics)</li>
+      </ul>
+
+      <h2>Legal Basis for Processing (GDPR Article 6)</h2>
+      <ul>
+        <li><strong>Consent:</strong> When you submit a contact form or accept analytics cookies</li>
+        <li><strong>Legitimate interest:</strong> To improve our website and respond to enquiries</li>
+        <li><strong>Legal obligation:</strong> To comply with applicable laws</li>
+      </ul>
+
+      <h2>How We Use Your Data</h2>
+      <ul>
+        <li>Respond to your enquiries</li>
+        <li>Improve our website and services</li>
+        <li>Analyse website usage (aggregated, non-identifying)</li>
+        <li>Comply with legal obligations</li>
+      </ul>
+
+      <h2>Data Retention</h2>
+      <p>
+        Contact form submissions are retained for up to 12 months after your last interaction.
+        Analytics data is aggregated and does not contain personally identifiable information.
+      </p>
+
+      <h2>Your Rights</h2>
+      <p>Under GDPR, you have the right to:</p>
+      <ul>
+        <li><strong>Access</strong> your personal data</li>
+        <li><strong>Rectify</strong> inaccurate data</li>
+        <li><strong>Erase</strong> your data ("right to be forgotten")</li>
+        <li><strong>Restrict</strong> processing of your data</li>
+        <li><strong>Data portability</strong> — receive your data in a structured format</li>
+        <li><strong>Object</strong> to processing based on legitimate interest</li>
+        <li><strong>Withdraw consent</strong> at any time</li>
+      </ul>
+      <p>
+        To exercise any of these rights, contact us at{' '}
+        <a href={`mailto:${config.contact.email}`}>{config.contact.email}</a>.
+      </p>
+
+      <h2>Third-Party Services</h2>
+      <ul>
+        <li><strong>Hosting:</strong> Cloudflare (global CDN — data may be processed outside the EU)</li>
+        <li><strong>Analytics:</strong> Privacy-focused analytics that does not use cookies or track individuals</li>
+        <li><strong>Email:</strong> Contact form submissions are delivered via Resend (US-based, with EU data processing)</li>
+      </ul>
+
+      <h2>Cookies</h2>
+      <p>
+        This website does not use tracking cookies by default. If Google Analytics is enabled,
+        a cookie consent banner will appear before any tracking cookies are set.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        For privacy-related enquiries, contact us at{' '}
+        <a href={`mailto:${config.contact.email}`}>{config.contact.email}</a>.
+      </p>
+    </div>
+  </Section>
+</SingleColumn>

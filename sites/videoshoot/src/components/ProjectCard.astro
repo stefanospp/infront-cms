@@ -1,0 +1,103 @@
+---
+export interface Props {
+  title: string;
+  subtitle?: string;
+  image?: string;
+  href?: string;
+  videoSrc?: string;
+  reelUrl?: string;
+  showPlayButton?: boolean;
+  class?: string;
+}
+
+const { title, subtitle, image, href, videoSrc, reelUrl, showPlayButton = false, class: className } = Astro.props;
+
+const overlayTarget = videoSrc;
+const isOverlayTrigger = !!overlayTarget;
+const Tag = isOverlayTrigger ? 'button' : href ? 'a' : 'div';
+const hasPlay = showPlayButton || isOverlayTrigger;
+---
+
+<Tag
+  href={!isOverlayTrigger ? href : undefined}
+  type={isOverlayTrigger ? 'button' : undefined}
+  data-video-overlay={overlayTarget}
+  data-project-hover={videoSrc}
+  class:list={[
+    'group block text-left',
+    (href || isOverlayTrigger) && 'cursor-pointer',
+    isOverlayTrigger && 'project-overlay-trigger outline-none',
+    className,
+  ]}
+>
+  <div class="relative overflow-hidden rounded-lg">
+    {/* Video thumbnail or image */}
+    {videoSrc ? (
+      <video
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        class="aspect-[4/3] w-full object-cover project-video-thumb"
+      >
+        <source src={videoSrc} type="video/mp4" />
+      </video>
+    ) : image ? (
+      <img
+        src={image}
+        alt={title}
+        class="aspect-[4/3] w-full object-cover"
+        loading="lazy"
+      />
+    ) : null}
+
+    {hasPlay && (
+      <div class="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity duration-300 group-hover:bg-black/10 project-play-btn">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform duration-300 group-hover:scale-110">
+          <svg class="ml-1 h-5 w-5 text-neutral-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+      </div>
+    )}
+  </div>
+
+  <div class="mt-4">
+    <h3 class="text-lg font-bold text-neutral-900 group-hover:text-neutral-600 transition-colors">{title}</h3>
+    {subtitle && (
+      <p class="mt-1 text-sm text-neutral-500">{subtitle}</p>
+    )}
+  </div>
+</Tag>
+
+<script>
+  // Click → open overlay
+  document.querySelectorAll('.project-overlay-trigger[data-video-overlay]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const src = (el as HTMLElement).dataset.videoOverlay;
+      if (src) {
+        window.dispatchEvent(new CustomEvent('open-video-overlay', { detail: src }));
+      }
+    });
+  });
+
+  // Hover → play video inline
+  document.querySelectorAll('[data-project-hover]').forEach((el) => {
+    const video = el.querySelector('video.project-video-thumb') as HTMLVideoElement | null;
+    if (!video) return;
+
+    el.addEventListener('mouseenter', () => {
+      video.currentTime = 0;
+      video.play().catch(() => {});
+      const btn = el.querySelector('.project-play-btn') as HTMLElement;
+      if (btn) btn.style.opacity = '0';
+    });
+
+    el.addEventListener('mouseleave', () => {
+      video.pause();
+      const btn = el.querySelector('.project-play-btn') as HTMLElement;
+      if (btn) btn.style.opacity = '1';
+    });
+  });
+</script>

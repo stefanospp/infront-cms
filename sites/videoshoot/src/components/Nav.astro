@@ -1,0 +1,113 @@
+---
+import type { SiteConfig } from '@agency/config';
+import MobileNav from '@agency/ui/islands/MobileNav';
+
+export interface Props {
+  config: SiteConfig;
+  class?: string;
+}
+
+const { config, class: className } = Astro.props;
+const { nav, name } = config;
+---
+
+<header
+  class:list={[
+    'fixed top-0 left-0 right-0 z-40 transition-all duration-300',
+    className,
+  ]}
+  id="site-nav"
+  data-testid="nav-header"
+>
+  <nav
+    class="mx-auto flex max-w-7xl items-center justify-between px-4 py-5 sm:px-6 lg:px-8"
+    aria-label="Main navigation"
+    data-testid="main-nav"
+  >
+    {/* Logo */}
+    <a
+      href="/"
+      class="flex items-center gap-2 text-xl font-bold transition-colors nav-text"
+      data-testid="nav-logo"
+    >
+      <svg class="h-6 w-6" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/>
+        <polygon points="13,10 13,22 23,16" fill="currentColor"/>
+      </svg>
+      {name}
+    </a>
+
+    {/* Desktop links */}
+    <div class="hidden items-center gap-8 md:flex" data-testid="desktop-nav">
+      {nav.items.map((item) => (
+        <a
+          href={item.href}
+          class="text-sm font-medium transition-colors nav-link"
+          data-testid="nav-link"
+        >
+          {item.label}
+        </a>
+      ))}
+      {nav.cta && (
+        <a
+          href={nav.cta.href}
+          class="inline-flex items-center rounded-full px-5 py-2.5 text-sm font-semibold transition-colors nav-cta"
+          data-testid="nav-cta"
+        >
+          {nav.cta.label}
+        </a>
+      )}
+    </div>
+
+    {/* Mobile */}
+    <div class="md:hidden">
+      <MobileNav
+        client:idle
+        items={nav.items.map((item) => ({ label: item.label, href: item.href }))}
+        cta={nav.cta ? { label: nav.cta.label, href: nav.cta.href } : undefined}
+      />
+    </div>
+  </nav>
+</header>
+
+<style>
+  /* Default: transparent with white text */
+  #site-nav {
+    background: transparent;
+  }
+  #site-nav .nav-text { color: white; }
+  #site-nav .nav-link { color: rgba(255, 255, 255, 0.8); }
+  #site-nav .nav-link:hover { color: white; }
+  #site-nav .nav-cta {
+    background-color: white;
+    color: #171717;
+  }
+  #site-nav .nav-cta:hover { background-color: #f5f5f5; }
+
+  /* Scrolled: white bg with dark text */
+  #site-nav.scrolled {
+    background: rgba(255, 255, 255, 0.97);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #e5e5e5;
+  }
+  #site-nav.scrolled .nav-text { color: #171717; }
+  #site-nav.scrolled .nav-link { color: #525252; }
+  #site-nav.scrolled .nav-link:hover { color: #171717; }
+  #site-nav.scrolled .nav-cta {
+    background-color: #171717;
+    color: white;
+  }
+  #site-nav.scrolled .nav-cta:hover { background-color: #262626; }
+</style>
+
+<script>
+  const nav = document.getElementById('site-nav');
+  if (nav) {
+    // Toggle solid bg after scrolling 100px
+    function onScroll() {
+      nav!.classList.toggle('scrolled', window.scrollY > 100);
+    }
+    onScroll(); // Set initial state
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+</script>
