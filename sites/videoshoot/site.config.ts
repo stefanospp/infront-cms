@@ -70,6 +70,10 @@ const config: SiteConfig = {
     text: '© 2026 Nikolas Petrou. All rights reserved.',
   },
 
+  cms: {
+    url: 'https://cms.nikolaspetrou.com',
+  },
+
   theme: {
     navStyle: 'fixed',
     footerStyle: 'multi-column',

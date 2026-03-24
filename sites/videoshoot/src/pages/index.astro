@@ -10,6 +10,9 @@ import ServiceCard from '../components/ServiceCard.astro';
 import HorizontalScroller from '../components/HorizontalScroller.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import config from '../../site.config';
+// CMS integration ready — uncomment when Directus is deployed:
+// import { getProjects, getServices, getTestimonials, getReels, getHero } from '../lib/directus';
+// import { getDirectusImageUrl } from '@agency/utils';
 
 const projects = [
   { title: 'Stay True to Yourself', video: '/images/pv1.mp4', poster: '/images/project-1.jpg' },

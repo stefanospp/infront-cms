@@ -18,4 +18,7 @@ export default defineConfig({
       editorBridgePlugin(),
     ],
   },
+  image: {
+    domains: ['cms.nikolaspetrou.com'],
+  },
 });
