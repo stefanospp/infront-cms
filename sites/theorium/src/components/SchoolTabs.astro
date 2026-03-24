@@ -28,7 +28,7 @@ const tabLabels = schools.map(s =>
 
 <div id="school-tabs">
   <!-- Tab buttons -->
-  <div class="flex gap-2 mb-8 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible sm:pb-0">
+  <div class="hide-scrollbar flex gap-2 mb-8 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible sm:pb-0">
     {tabLabels.map((label, i) => (
       <button
         data-tab={i}
@@ -88,6 +88,13 @@ const tabLabels = schools.map(s =>
 </div>
 
 <style>
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
   .school-tab[data-active="true"] {
     background-color: var(--th-black);
     color: white;
