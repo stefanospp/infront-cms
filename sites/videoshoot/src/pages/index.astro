@@ -46,10 +46,10 @@ const values = [
 ];
 
 const valueVideos = [
-  { title: 'Turquoise Waters', videoSrc: 'https://videos.pexels.com/video-files/32860581/14006554_640_360_60fps.mp4', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/DKRuKXIy2n9/' },
-  { title: 'Underwater World', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/DB_ZIJTh3Fe/' },
-  { title: 'Bali Temples', videoSrc: 'https://videos.pexels.com/video-files/36473011/15466001_640_360_30fps.mp4', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/C8Ccm9_Bg-4/' },
-  { title: 'Island Life', videoSrc: 'https://videos.pexels.com/video-files/36473811/15466323_640_360_30fps.mp4', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/C7wQGUihiG7/' },
+  { image: '/images/project-1.jpg', title: 'Turquoise Waters', videoSrc: 'https://videos.pexels.com/video-files/32860581/14006554_640_360_60fps.mp4' },
+  { image: '/images/project-2.jpg', title: 'Underwater World', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4' },
+  { image: '/images/project-3.jpg', title: 'Bali Temples', videoSrc: 'https://videos.pexels.com/video-files/36473011/15466001_640_360_30fps.mp4' },
+  { image: '/images/project-4.jpg', title: 'Island Life', videoSrc: 'https://videos.pexels.com/video-files/36473811/15466323_640_360_30fps.mp4' },
 ];
 
 const services = [
@@ -74,12 +74,12 @@ const services = [
 ];
 
 const works = [
-  { title: 'Stay True to Yourself', subtitle: 'Cinematic Self-Expression', videoSrc: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/C14N94RKhK_/' },
-  { title: 'Madeira', subtitle: 'Rocky Coast Adventures', videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/CjA5aKVguYE/' },
-  { title: 'Love Cyprus', subtitle: 'Aerial Paradise', videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/DFM7L9Uugq9/' },
-  { title: 'Mountain Adventures', subtitle: 'Exploring New Heights', videoSrc: 'https://videos.pexels.com/video-files/34085713/14457217_640_360_60fps.mp4', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/DDBQo9sTKR0/' },
-  { title: 'Underwater World', subtitle: 'Beneath the Surface', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/DB_ZIJTh3Fe/' },
-  { title: 'Turquoise Waters', subtitle: 'Aerial Perspectives', videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/DKRuKXIy2n9/' },
+  { title: 'Stay True to Yourself', subtitle: 'Cinematic Self-Expression', image: '/images/project-1.jpg', videoSrc: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4' },
+  { title: 'Madeira', subtitle: 'Rocky Coast Adventures', image: '/images/project-2.jpg', videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4' },
+  { title: 'Love Cyprus', subtitle: 'Aerial Paradise', image: '/images/project-3.jpg', videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4' },
+  { title: 'Mountain Adventures', subtitle: 'Exploring New Heights', image: '/images/project-4.jpg', videoSrc: 'https://videos.pexels.com/video-files/34085713/14457217_640_360_60fps.mp4' },
+  { title: 'Underwater World', subtitle: 'Beneath the Surface', image: '/images/project-5.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4' },
+  { title: 'Turquoise Waters', subtitle: 'Aerial Perspectives', image: '/images/project-6.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4' },
 ];
 
 ---
@@ -162,8 +162,8 @@ const works = [
             <ProjectCard
               title={work.title}
               subtitle={work.subtitle}
+              image={work.image}
               videoSrc={work.videoSrc}
-              reelUrl={work.reelUrl}
             />
           </div>
         ))}

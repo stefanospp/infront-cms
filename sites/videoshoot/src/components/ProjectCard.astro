@@ -31,25 +31,15 @@ const hasPlay = showPlayButton || isOverlayTrigger;
   ]}
 >
   <div class="relative overflow-hidden rounded-lg">
-    {/* Video thumbnail or image */}
-    {videoSrc ? (
-      <video
-        muted
-        loop
-        playsinline
-        preload="auto"
-        class="aspect-[4/3] w-full object-cover project-video-thumb"
-      >
-        <source src={videoSrc} type="video/mp4" />
-      </video>
-    ) : image ? (
+    {/* Always show poster image */}
+    {image && (
       <img
         src={image}
         alt={title}
-        class="aspect-[4/3] w-full object-cover"
+        class="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105 project-hover-img"
         loading="lazy"
       />
-    ) : null}
+    )}
 
     {hasPlay && (
       <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 project-play-btn" style="transition: opacity 0.3s ease, background-color 0.3s ease;">
@@ -82,21 +72,39 @@ const hasPlay = showPlayButton || isOverlayTrigger;
     });
   });
 
-  // Hover → play video inline
+  // Hover → play video inline (dynamic video element)
   document.querySelectorAll('[data-project-hover]').forEach((el) => {
-    const video = el.querySelector('video.project-video-thumb') as HTMLVideoElement | null;
-    if (!video) return;
+    const htmlEl = el as HTMLElement;
+    const src = htmlEl.dataset.projectHover;
+    if (!src) return;
+
+    let video: HTMLVideoElement | null = null;
+    const container = htmlEl.querySelector('.rounded-lg') as HTMLElement;
+    if (!container) return;
 
     el.addEventListener('mouseenter', () => {
+      if (!video) {
+        video = document.createElement('video');
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.className = 'absolute inset-0 h-full w-full object-cover z-[1]';
+        video.style.transition = 'opacity 0.3s ease';
+        video.style.opacity = '0';
+        video.src = src;
+        const img = container.querySelector('.project-hover-img');
+        if (img) img.after(video);
+      }
       video.currentTime = 0;
       video.play().catch(() => {});
-      const btn = el.querySelector('.project-play-btn') as HTMLElement;
+      requestAnimationFrame(() => { if (video) video.style.opacity = '1'; });
+      const btn = container.querySelector('.project-play-btn') as HTMLElement;
       if (btn) btn.style.opacity = '0';
     });
 
     el.addEventListener('mouseleave', () => {
-      video.pause();
-      const btn = el.querySelector('.project-play-btn') as HTMLElement;
+      if (video) { video.pause(); video.style.opacity = '0'; }
+      const btn = container.querySelector('.project-play-btn') as HTMLElement;
       if (btn) btn.style.opacity = '1';
     });
   });

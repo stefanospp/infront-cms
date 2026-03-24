@@ -84,8 +84,8 @@ export default function HeroInteractive({
       {/* Gradient — bottom-up on mobile, left-right on desktop */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/40 lg:to-black/20" />
 
-      {/* Content container — fills entire hero */}
-      <div className="relative z-10 flex h-full flex-col justify-end px-4 pb-6 sm:px-6 sm:pb-12 lg:mx-auto lg:max-w-7xl lg:flex-row lg:items-end lg:justify-between lg:px-8 lg:pb-20 lg:pt-32">
+      {/* Content — pinned to bottom via absolute */}
+      <div className="absolute inset-x-0 bottom-0 z-10 px-4 pb-6 sm:px-6 sm:pb-12 lg:mx-auto lg:flex lg:max-w-7xl lg:items-end lg:justify-between lg:px-8 lg:pb-20">
 
         {/* Text — centered on mobile */}
         <div className="text-center lg:max-w-lg lg:text-left">
@@ -137,10 +137,10 @@ export default function HeroInteractive({
                 <button
                   key={index}
                   type="button"
-                  className="relative w-20 flex-shrink-0 snap-start overflow-hidden rounded-lg outline-none sm:w-28"
+                  className="relative w-36 flex-shrink-0 snap-start overflow-hidden rounded-lg outline-none sm:w-44"
                   onClick={() => handleProjectClick(project, index)}
                 >
-                  <div className="aspect-square relative bg-neutral-800">
+                  <div className="aspect-[3/4] relative bg-neutral-800">
                     {project.poster ? (
                       <img src={project.poster} alt={project.title} className="absolute inset-0 h-full w-full object-cover" />
                     ) : (
@@ -148,8 +148,8 @@ export default function HeroInteractive({
                     )}
                     <div className="absolute inset-0 bg-black/20 transition-opacity" />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/80 sm:h-8 sm:w-8">
-                        <svg className="ml-0.5 h-3 w-3 text-neutral-900 sm:h-3.5 sm:w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 sm:h-10 sm:w-10">
+                        <svg className="ml-0.5 h-4 w-4 text-neutral-900" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M8 5v14l11-7z" />
                         </svg>
                       </div>

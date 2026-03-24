@@ -11,7 +11,6 @@ export interface Props {
 
 const { image, alt = '', title, href, videoSrc, reelUrl, class: className } = Astro.props;
 
-// Click opens the video in overlay (Pexels video, not the reel)
 const overlayTarget = videoSrc;
 const isOverlayTrigger = !!overlayTarget;
 const Tag = isOverlayTrigger ? 'button' : href ? 'a' : 'div';
@@ -29,30 +28,20 @@ const Tag = isOverlayTrigger ? 'button' : href ? 'a' : 'div';
     className,
   ]}
 >
-  {/* Video thumbnail — first frame shows as poster via preload="auto" */}
-  {videoSrc ? (
-    <video
-      muted
-      loop
-      playsinline
-      preload="auto"
-      class="h-full w-full object-cover video-thumb"
-    >
-      <source src={videoSrc} type="video/mp4" />
-    </video>
-  ) : image ? (
+  {/* Always show poster image */}
+  {image && (
     <img
       src={image}
       alt={alt || title || ''}
-      class="h-full w-full object-cover"
+      class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 video-hover-img"
       loading="lazy"
     />
-  ) : null}
+  )}
 
   {/* Dark overlay */}
-  <div class="absolute inset-0 bg-black/30 transition-opacity duration-300 group-hover:bg-black/20 video-overlay-dim" />
+  <div class="absolute inset-0 bg-black/30 transition-all duration-300 group-hover:bg-black/20" />
 
-  {/* Play button — hides on hover when video plays */}
+  {/* Play button */}
   <div class="absolute inset-0 flex items-center justify-center video-play-btn" style="transition: opacity 0.3s ease;">
     <div class="relative">
       <div class="absolute inset-0 rounded-full bg-white/20 animate-pulse-ring" />
@@ -84,21 +73,37 @@ const Tag = isOverlayTrigger ? 'button' : href ? 'a' : 'div';
     });
   });
 
-  // Hover → play video inline
+  // Hover → play video inline (create video element dynamically)
   document.querySelectorAll('[data-video-hover]').forEach((el) => {
-    const video = el.querySelector('video.video-thumb') as HTMLVideoElement | null;
-    if (!video) return;
+    const htmlEl = el as HTMLElement;
+    const src = htmlEl.dataset.videoHover;
+    if (!src) return;
+
+    let video: HTMLVideoElement | null = null;
 
     el.addEventListener('mouseenter', () => {
+      if (!video) {
+        video = document.createElement('video');
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.className = 'absolute inset-0 h-full w-full object-cover z-[1]';
+        video.style.transition = 'opacity 0.3s ease';
+        video.style.opacity = '0';
+        video.src = src;
+        const img = htmlEl.querySelector('.video-hover-img');
+        if (img) img.after(video);
+      }
       video.currentTime = 0;
       video.play().catch(() => {});
-      const btn = el.querySelector('.video-play-btn') as HTMLElement;
+      requestAnimationFrame(() => { if (video) video.style.opacity = '1'; });
+      const btn = htmlEl.querySelector('.video-play-btn') as HTMLElement;
       if (btn) btn.style.opacity = '0';
     });
 
     el.addEventListener('mouseleave', () => {
-      video.pause();
-      const btn = el.querySelector('.video-play-btn') as HTMLElement;
+      if (video) { video.pause(); video.style.opacity = '0'; }
+      const btn = htmlEl.querySelector('.video-play-btn') as HTMLElement;
       if (btn) btn.style.opacity = '1';
     });
   });
