@@ -19,7 +19,8 @@ const json = (body: Record<string, unknown>, status: number) =>
   });
 
 async function proxyRequest(request: Request, path: string): Promise<Response> {
-  const url = `${PLATFORM_API_URL}/api/cdn-files/${path}${new URL(request.url).search}`;
+  const suffix = path ? `/${path}` : '';
+  const url = `${PLATFORM_API_URL}/api/cdn-files${suffix}${new URL(request.url).search}`;
 
   try {
     const headers = new Headers();
