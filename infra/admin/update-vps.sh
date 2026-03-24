@@ -30,6 +30,7 @@ docker run -d \
   -v /opt/infront-cms/sites:/data/sites \
   -v /opt/infront-cms/infra:/data/infra:ro \
   -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  --group-add "$(stat -c %g /var/run/docker.sock)" \
   --env-file "$ENV_FILE" \
   -e MONOREPO_ROOT=/data \
   -e APP_ROOT=/app \
