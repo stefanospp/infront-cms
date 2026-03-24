@@ -4,7 +4,7 @@ import BaseLayout from '@agency/ui/layouts/BaseLayout.astro';
 import Nav from '../components/Nav.astro';
 import Hero from '../components/Hero.astro';
 import Ticker from '../components/Ticker.astro';
-import SchoolTabs from '../islands/SchoolTabs.tsx';
+import SchoolTabs from '../components/SchoolTabs.astro';
 import ExamCard from '../components/ExamCard.astro';
 import MedicalBlock from '../components/MedicalBlock.astro';
 import ContactSection from '../components/ContactSection.astro';
@@ -71,7 +71,7 @@ const structuredData = {
         </p>
       </div>
 
-      <SchoolTabs client:visible schools={schools} />
+      <SchoolTabs />
     </section>
 
     <!-- University Entrance Exam Preparation band -->
