@@ -1,0 +1,18 @@
+---
+import ElementTile from './ElementTile.astro';
+---
+
+<footer class="border-t border-[var(--th-border)] bg-[var(--th-offwhite)] px-6 py-6 sm:px-10 lg:px-16">
+  <div class="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+    <!-- Logo -->
+    <a href="/" class="flex items-center gap-2.5" aria-label="Theorium home">
+      <ElementTile size="footer" />
+      <span class="text-sm font-bold tracking-tight">THEORIUM</span>
+    </a>
+
+    <!-- Copyright -->
+    <p class="font-mono text-[10px] uppercase tracking-wider text-neutral-500">
+      &copy; 2025 THEORIUM &middot; PRIVATE SCIENCE &amp; MATHS TUITION &middot; LARNACA, CYPRUS
+    </p>
+  </div>
+</footer>

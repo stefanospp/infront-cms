@@ -1,0 +1,114 @@
+---
+import '../styles/global.css';
+import BaseLayout from '@agency/ui/layouts/BaseLayout.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import Ticker from '../components/Ticker.astro';
+import SchoolTabs from '../islands/SchoolTabs.tsx';
+import ExamCard from '../components/ExamCard.astro';
+import MedicalBlock from '../components/MedicalBlock.astro';
+import ContactSection from '../components/ContactSection.astro';
+import Footer from '../components/Footer.astro';
+import { schools } from '../data/schools';
+import { examCards, medicalBlock } from '../data/exams';
+import config from '../../site.config';
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: 'Theorium',
+  description: config.seo.defaultDescription,
+  url: config.url,
+  telephone: config.contact.phone,
+  email: config.contact.email,
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Larnaca',
+    addressCountry: 'CY',
+  },
+  areaServed: {
+    '@type': 'City',
+    name: 'Larnaca',
+  },
+  priceRange: '$$',
+  knowsAbout: [
+    'Science tutoring',
+    'Mathematics tutoring',
+    'IGCSE preparation',
+    'A-Level preparation',
+    'IB Diploma preparation',
+    'UCAT preparation',
+    'SAT preparation',
+    'Pancyprian exam preparation',
+    'Medical school preparation',
+  ],
+};
+---
+
+<BaseLayout
+  title={config.seo.defaultTitle}
+  description={config.seo.defaultDescription}
+  structuredData={structuredData}
+  config={config}
+>
+  <Nav />
+
+  <main id="main-content">
+    <Hero />
+    <Ticker />
+
+    <!-- Curriculum by School -->
+    <section id="subjects" class="px-6 py-20 sm:px-10 sm:py-28 lg:px-16">
+      <div class="mb-12 text-center">
+        <span class="mb-4 inline-block rounded-md border border-neutral-300 bg-[var(--th-yellow)] px-4 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em]">
+          Curriculum Coverage
+        </span>
+        <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]">
+          Your school. <mark>Your subjects.</mark>
+        </h2>
+        <p class="mx-auto mt-4 max-w-2xl text-base text-neutral-500 sm:text-lg">
+          Lessons tailored to the specific curriculum, exam board, and syllabus at each school.
+        </p>
+      </div>
+
+      <SchoolTabs client:visible schools={schools} />
+    </section>
+
+    <!-- University Entrance Exam Preparation band -->
+    <div class="flex items-center justify-center border-y border-[var(--th-border)] bg-[var(--th-black)] py-4 rounded-none">
+      <span class="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-white sm:text-xs">
+        ■&nbsp; University Entrance Exam Preparation
+      </span>
+    </div>
+
+    <!-- University Exams -->
+    <section id="exams" class="px-6 py-20 sm:px-10 sm:py-28 lg:px-16">
+      <div class="mb-12 text-center">
+        <span class="mb-4 inline-block rounded-md border border-neutral-300 bg-[var(--th-orange)] px-4 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em]">
+          Higher Education
+        </span>
+        <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]">
+          University exams &<br /><mark>medical school.</mark>
+        </h2>
+        <p class="mx-auto mt-4 max-w-2xl text-base text-neutral-500 sm:text-lg">
+          Preparation for entrance exams and admissions to universities in the UK, US, Netherlands, Germany, and Cyprus.
+        </p>
+      </div>
+
+      <div class="grid gap-6 lg:grid-cols-3">
+        {examCards.map((exam) => (
+          <ExamCard exam={exam} />
+        ))}
+      </div>
+
+      <div class="mt-8">
+        <MedicalBlock block={medicalBlock} />
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <ContactSection />
+  </main>
+
+  <Footer />
+</BaseLayout>

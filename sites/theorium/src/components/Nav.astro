@@ -1,0 +1,28 @@
+---
+import ElementTile from './ElementTile.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<nav
+  class:list={[
+    'sticky top-0 z-50 flex items-center justify-between border-b border-[var(--th-border)] bg-[var(--th-offwhite)] px-6 py-3 sm:px-10 lg:px-16',
+    className,
+  ]}
+>
+  <a href="/" class="flex items-center gap-3" aria-label="Theorium home">
+    <ElementTile size="nav" />
+    <span class="text-lg font-bold tracking-tight">THEORIUM</span>
+  </a>
+
+  <a
+    href="#contact"
+    class="rounded-md border-2 border-[var(--th-black)] bg-[var(--th-yellow)] px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-[var(--th-black)] shadow-[var(--th-shadow)] transition-all hover:shadow-none"
+  >
+    Get in touch
+  </a>
+</nav>

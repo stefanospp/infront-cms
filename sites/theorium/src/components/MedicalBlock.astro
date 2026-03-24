@@ -1,0 +1,33 @@
+---
+import type { MedicalBlockData } from '../data/exams';
+
+interface Props {
+  block: MedicalBlockData;
+}
+
+const { block } = Astro.props;
+---
+
+<div class="overflow-hidden rounded-lg border border-[var(--th-border)] bg-[var(--th-purple)] shadow-[var(--th-shadow-lg)]">
+  <div class="grid gap-0 lg:grid-cols-[320px_1fr]">
+    <!-- Left: title -->
+    <div class="border-b border-neutral-300 p-8 lg:border-b-0 lg:border-r">
+      <span class="font-mono text-[11px] uppercase tracking-wider text-neutral-600">Specialisation</span>
+      <h3 class="mt-2 text-3xl font-extrabold uppercase leading-tight lg:text-4xl">
+        Medical School<br />Applications
+      </h3>
+    </div>
+
+    <!-- Right: description + subjects -->
+    <div class="bg-white/60 p-8">
+      <p class="text-[15px] font-medium leading-relaxed text-neutral-500 sm:text-base">{block.description}</p>
+      <div class="mt-6 flex flex-wrap gap-2">
+        {block.subjects.map((subject) => (
+          <span class="rounded border border-neutral-300 bg-white px-3 py-1.5 font-mono text-[11px] font-bold">
+            {subject}
+          </span>
+        ))}
+      </div>
+    </div>
+  </div>
+</div>

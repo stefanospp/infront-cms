@@ -1,0 +1,28 @@
+---
+import type { BadgeColor } from '../data/schools';
+
+interface Props {
+  label: string;
+  color: BadgeColor;
+}
+
+const { label, color } = Astro.props;
+
+const colorMap: Record<BadgeColor, string> = {
+  yellow: 'bg-[var(--th-yellow)] text-[var(--th-black)]',
+  green: 'bg-[var(--th-green)] text-[var(--th-black)]',
+  blue: 'bg-[var(--th-blue)] text-[var(--th-black)]',
+  orange: 'bg-[var(--th-orange)] text-[var(--th-black)]',
+  purple: 'bg-[var(--th-purple)] text-[var(--th-black)]',
+  default: 'bg-neutral-200 text-[var(--th-black)]',
+};
+---
+
+<span
+  class:list={[
+    'inline-block rounded border border-neutral-400 px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.1em]',
+    colorMap[color],
+  ]}
+>
+  {label}
+</span>
