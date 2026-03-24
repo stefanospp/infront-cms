@@ -97,39 +97,36 @@ const { heading, description, linkText, linkHref, videos = [], class: className 
   .video-scale-item[data-pos="bl"] { transform-origin: bottom left; }
   .video-scale-item[data-pos="br"] { transform-origin: bottom right; }
 
-  /* On grid hover, dim all items */
-  .video-scale-grid:hover .video-scale-item {
-    opacity: 0.3;
+  /* Desktop only: hover to expand */
+  @media (hover: hover) {
+    .video-scale-grid:hover .video-scale-item {
+      opacity: 0.3;
+    }
+    .video-scale-grid .video-scale-item:hover {
+      opacity: 1;
+      transform: scale(2.05);
+      z-index: 20;
+      border-radius: 0.75rem;
+    }
+    .video-scale-item:hover .video-scale-overlay { opacity: 0.1; }
+    .video-scale-item:hover .video-scale-play { opacity: 0; }
   }
 
-  /* Hovered item: scale up to cover grid, stay opaque */
-  .video-scale-grid .video-scale-item:hover {
-    opacity: 1;
-    transform: scale(2.05);
-    z-index: 20;
-    border-radius: 0.75rem;
-  }
-
-  .video-scale-item:hover .video-scale-overlay {
-    opacity: 0.1;
-  }
-
-  .video-scale-item:hover .video-scale-play {
-    opacity: 0;
-  }
-
-  /* Touch device: tap activates same as hover */
+  /* Touch devices: JS-controlled .touch-active class only */
   .video-scale-item.touch-active {
     opacity: 1 !important;
-    transform: scale(2.05);
+    transform: scale(2.05) !important;
     z-index: 20;
     border-radius: 0.75rem;
   }
   .video-scale-item.touch-active .video-scale-overlay { opacity: 0.1; }
   .video-scale-item.touch-active .video-scale-play { opacity: 0; }
   .video-scale-item.touch-active .video-scale-close { display: flex; }
-  .video-scale-item.touch-active ~ .video-scale-item,
-  .video-scale-item:has(~ .touch-active) { opacity: 0.3; }
+
+  /* Dim siblings when one is active */
+  .video-scale-grid.has-active .video-scale-item:not(.touch-active) {
+    opacity: 0.3 !important;
+  }
 </style>
 
 <script>
@@ -166,14 +163,21 @@ const { heading, description, linkText, linkHref, videos = [], class: className 
       if (video) { video.pause(); video.style.opacity = '0'; }
     }
 
+    const grid = htmlEl.closest('.video-scale-grid');
+
+    function closeActive() {
+      deactivate();
+      htmlEl.classList.remove('touch-active');
+      grid?.classList.remove('has-active');
+      activeScaleItem = null;
+    }
+
     // Close button handler
     const closeBtn = htmlEl.querySelector('.video-scale-close');
     if (closeBtn) {
       closeBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        deactivate();
-        htmlEl.classList.remove('touch-active');
-        activeScaleItem = null;
+        closeActive();
       });
     }
 
@@ -181,9 +185,7 @@ const { heading, description, linkText, linkHref, videos = [], class: className 
       el.addEventListener('click', (e) => {
         e.preventDefault();
         if (activeScaleItem === htmlEl) {
-          deactivate();
-          htmlEl.classList.remove('touch-active');
-          activeScaleItem = null;
+          closeActive();
         } else {
           // Deactivate previous
           if (activeScaleItem) {
@@ -193,6 +195,7 @@ const { heading, description, linkText, linkHref, videos = [], class: className 
           }
           activate();
           htmlEl.classList.add('touch-active');
+          grid?.classList.add('has-active');
           activeScaleItem = htmlEl;
         }
       });
