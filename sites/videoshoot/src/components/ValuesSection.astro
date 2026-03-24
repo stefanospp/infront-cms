@@ -59,6 +59,10 @@ const { heading, description, linkText, linkHref, videos = [], class: className 
                   />
                 )}
                 <div class="absolute inset-0 bg-black/30 video-scale-overlay" style="transition: opacity 0.4s ease;" />
+                {/* Close button — visible only when expanded on touch */}
+                <button type="button" class="video-scale-close absolute top-2 right-2 z-30 hidden h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm" aria-label="Close">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
                 <div class="absolute inset-0 flex items-center justify-center video-scale-play" style="transition: opacity 0.4s ease;">
                   <div class="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 shadow-lg sm:h-12 sm:w-12">
                     <svg class="ml-0.5 h-4 w-4 text-neutral-900 sm:h-5 sm:w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -123,6 +127,7 @@ const { heading, description, linkText, linkHref, videos = [], class: className 
   }
   .video-scale-item.touch-active .video-scale-overlay { opacity: 0.1; }
   .video-scale-item.touch-active .video-scale-play { opacity: 0; }
+  .video-scale-item.touch-active .video-scale-close { display: flex; }
   .video-scale-item.touch-active ~ .video-scale-item,
   .video-scale-item:has(~ .touch-active) { opacity: 0.3; }
 </style>
@@ -159,6 +164,17 @@ const { heading, description, linkText, linkHref, videos = [], class: className 
 
     function deactivate() {
       if (video) { video.pause(); video.style.opacity = '0'; }
+    }
+
+    // Close button handler
+    const closeBtn = htmlEl.querySelector('.video-scale-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deactivate();
+        htmlEl.classList.remove('touch-active');
+        activeScaleItem = null;
+      });
     }
 
     if (isTouch) {

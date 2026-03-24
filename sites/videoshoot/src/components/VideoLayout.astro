@@ -27,4 +27,21 @@ const { config } = props;
   </main>
   <Footer config={config} />
   <VideoOverlay client:idle />
+
+  {/* Scroll-triggered section animations */}
+  <script>
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -50px 0px' }
+    );
+    document.querySelectorAll('main > section, main > div > section').forEach((s) => {
+      observer.observe(s);
+    });
+  </script>
 </BaseLayout>

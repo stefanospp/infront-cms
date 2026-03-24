@@ -124,10 +124,67 @@ video {
   }
 }
 
+/* Scroll-triggered section animations */
+html {
+  scroll-padding-top: 80px;
+}
+
+main > section,
+main > div > section {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+main > section.in-view,
+main > div > section.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hero (first child) should be visible immediately */
+main > div:first-child,
+main > section:first-child {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+/* Stagger children within a section for cascade effect */
+.in-view > div > .grid > * {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s ease forwards;
+}
+.in-view > div > .grid > *:nth-child(1) { animation-delay: 0.1s; }
+.in-view > div > .grid > *:nth-child(2) { animation-delay: 0.2s; }
+.in-view > div > .grid > *:nth-child(3) { animation-delay: 0.3s; }
+.in-view > div > .grid > *:nth-child(4) { animation-delay: 0.4s; }
+.in-view > div > .grid > *:nth-child(5) { animation-delay: 0.5s; }
+.in-view > div > .grid > *:nth-child(6) { animation-delay: 0.6s; }
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Image load transition */
+img {
+  transition: opacity 0.4s ease;
+}
+
+/* Smooth link transitions globally */
+a {
+  transition: color 0.3s ease, background-color 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .animate-pulse-ring { animation: none; }
   .animate-bounce { animation: none; }
-  * { transition-duration: 0.01ms !important; }
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
+  main > section, main > div > section { opacity: 1 !important; transform: none !important; }
+  .in-view > div > .grid > * { opacity: 1 !important; transform: none !important; animation: none !important; }
 }
