@@ -29,8 +29,15 @@ const config: SiteConfig = {
   },
 
   nav: {
-    items: [],
-    cta: { label: 'Get in touch', href: '#contact' },
+    items: [
+      { label: 'Resources', href: '/resources' },
+      { label: 'Courses', href: '/courses' },
+    ],
+    cta: { label: 'Get in touch', href: '/#contact' },
+  },
+
+  cms: {
+    url: 'https://cms.theorium.infront.cy',
   },
 
   footer: {

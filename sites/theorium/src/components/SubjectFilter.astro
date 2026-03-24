@@ -1,0 +1,51 @@
+---
+interface Props {
+  subjects: string[];
+  containerId: string;
+  cardSelector: string;
+  showAll?: boolean;
+}
+
+const { subjects, containerId, cardSelector, showAll = true } = Astro.props;
+---
+
+<div id={containerId} class="flex gap-2 mb-8 overflow-x-auto pb-2 sm:flex-wrap sm:overflow-visible sm:pb-0 hide-scrollbar">
+  {showAll && (
+    <button
+      data-filter="all"
+      data-active="true"
+      class="subject-filter-btn shrink-0 rounded-md border px-5 py-2.5 text-sm font-bold uppercase tracking-wider transition-all cursor-pointer"
+      onclick={`(function(){var c=document.getElementById('${containerId}');var btns=c.querySelectorAll('.subject-filter-btn');var cards=document.querySelectorAll('${cardSelector}');for(var i=0;i<btns.length;i++)btns[i].setAttribute('data-active','false');this.setAttribute('data-active','true');for(var j=0;j<cards.length;j++)cards[j].classList.remove('hidden')}).call(this)`}
+    >
+      All
+    </button>
+  )}
+  {subjects.map((subject) => (
+    <button
+      data-filter={subject}
+      data-active="false"
+      class="subject-filter-btn shrink-0 rounded-md border px-5 py-2.5 text-sm font-bold uppercase tracking-wider transition-all cursor-pointer"
+      onclick={`(function(){var c=document.getElementById('${containerId}');var btns=c.querySelectorAll('.subject-filter-btn');var cards=document.querySelectorAll('${cardSelector}');for(var i=0;i<btns.length;i++)btns[i].setAttribute('data-active','false');this.setAttribute('data-active','true');for(var j=0;j<cards.length;j++){if(cards[j].getAttribute('data-subject')==='${subject}')cards[j].classList.remove('hidden');else cards[j].classList.add('hidden')}}).call(this)`}
+    >
+      {subject}
+    </button>
+  ))}
+</div>
+
+<style>
+  .subject-filter-btn[data-active="true"] {
+    background-color: var(--th-black);
+    color: white;
+    border-color: var(--th-black);
+    box-shadow: none;
+  }
+  .subject-filter-btn[data-active="false"] {
+    background-color: white;
+    color: var(--th-black);
+    border-color: #DBD5D6;
+    box-shadow: var(--th-shadow);
+  }
+  .subject-filter-btn[data-active="false"]:hover {
+    box-shadow: none;
+  }
+</style>

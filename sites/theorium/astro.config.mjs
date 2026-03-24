@@ -12,6 +12,9 @@ export default defineConfig({
     react(),
     sitemap(),
   ],
+  image: {
+    domains: ['cms.theorium.infront.cy'],
+  },
   vite: {
     plugins: [
       tailwindcss(),

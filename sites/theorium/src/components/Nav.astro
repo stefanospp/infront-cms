@@ -1,5 +1,6 @@
 ---
 import ElementTile from './ElementTile.astro';
+import config from '../../site.config';
 
 interface Props {
   class?: string;
@@ -19,10 +20,21 @@ const { class: className } = Astro.props;
     <span class="text-lg font-bold tracking-tight">THEORIUM</span>
   </a>
 
-  <a
-    href="#contact"
-    class="rounded-md border-2 border-[var(--th-black)] bg-[var(--th-yellow)] px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-[var(--th-black)] shadow-[var(--th-shadow)] transition-all hover:shadow-none"
-  >
-    Get in touch
-  </a>
+  <!-- Nav links + CTA -->
+  <div class="flex items-center gap-6">
+    {config.nav.items.map((item) => (
+      <a
+        href={item.href}
+        class="hidden text-sm font-semibold uppercase tracking-wider text-neutral-600 transition-colors hover:text-[var(--th-black)] sm:inline"
+      >
+        {item.label}
+      </a>
+    ))}
+    <a
+      href={config.nav.cta?.href || '/#contact'}
+      class="rounded-md border-2 border-[var(--th-black)] bg-[var(--th-yellow)] px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-[var(--th-black)] shadow-[var(--th-shadow)] transition-all hover:shadow-none"
+    >
+      {config.nav.cta?.label || 'Get in touch'}
+    </a>
+  </div>
 </nav>

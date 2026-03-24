@@ -1,0 +1,112 @@
+---
+import type { Course } from '../lib/directus';
+
+interface Props {
+  course: Course;
+}
+
+const { course } = Astro.props;
+
+const subjectColors: Record<string, string> = {
+  Biology: 'var(--th-green)',
+  Chemistry: 'var(--th-green)',
+  Physics: 'var(--th-blue)',
+  Mathematics: 'var(--th-orange)',
+};
+
+const statusStyles: Record<string, { bg: string; text: string }> = {
+  upcoming: { bg: 'var(--th-green)', text: 'Upcoming' },
+  'in-progress': { bg: 'var(--th-blue)', text: 'In Progress' },
+  full: { bg: 'var(--th-orange)', text: 'Full' },
+  completed: { bg: '#E5E2DE', text: 'Completed' },
+};
+
+const status = statusStyles[course.course_status] || statusStyles.upcoming;
+---
+
+<div class="flex flex-col overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow-lg)]">
+  <!-- Color bar -->
+  <div class="h-[4px]" style={`background-color: ${subjectColors[course.subject] || 'var(--th-green)'}`} />
+
+  <div class="flex flex-1 flex-col p-6">
+    <!-- Status + Subject badges -->
+    <div class="mb-3 flex flex-wrap items-center gap-2">
+      <span
+        class="rounded border border-neutral-300 px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase"
+        style={`background-color: ${status.bg}`}
+      >
+        {status.text}
+      </span>
+      <span class="rounded border border-neutral-300 bg-neutral-100 px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase">
+        {course.subject}
+      </span>
+      <span class="rounded border border-neutral-300 bg-neutral-100 px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase">
+        {course.level}
+      </span>
+    </div>
+
+    <!-- Title -->
+    <h3 class="text-xl font-extrabold uppercase leading-snug">{course.title}</h3>
+
+    <!-- Description -->
+    <p class="mt-2 text-sm text-neutral-500">{course.description}</p>
+
+    <!-- Details grid -->
+    <div class="mt-4 grid grid-cols-2 gap-3">
+      <div>
+        <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Schedule</span>
+        <p class="text-sm font-semibold">{course.schedule}</p>
+      </div>
+      <div>
+        <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Duration</span>
+        <p class="text-sm font-semibold">{course.duration}</p>
+      </div>
+      <div>
+        <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Price</span>
+        <p class="text-lg font-extrabold">{course.price}</p>
+      </div>
+      {course.max_students && (
+        <div>
+          <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Max students</span>
+          <p class="text-sm font-semibold">{course.max_students} places</p>
+        </div>
+      )}
+    </div>
+
+    <!-- Syllabus -->
+    {course.syllabus && course.syllabus.length > 0 && (
+      <div class="mt-4 border-t border-neutral-200 pt-4">
+        <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Topics covered</span>
+        <ul class="mt-2 space-y-1">
+          {course.syllabus.map((topic) => (
+            <li class="flex items-start gap-2 text-sm text-neutral-600">
+              <span class="mt-1 h-1.5 w-1.5 shrink-0 rounded-full" style={`background-color: ${subjectColors[course.subject]}`} />
+              {topic}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    <!-- CTA -->
+    <div class="mt-5 flex flex-wrap gap-3">
+      {course.course_status !== 'full' && course.course_status !== 'completed' ? (
+        <a
+          href={course.zoom_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center gap-2 rounded-md border-2 border-[var(--th-black)] bg-[var(--th-black)] px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-white transition-all hover:bg-[var(--th-yellow)] hover:text-[var(--th-black)]"
+        >
+          Book on Zoom
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </a>
+      ) : (
+        <span class="inline-flex items-center rounded-md border border-neutral-300 bg-neutral-100 px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-neutral-400">
+          {course.course_status === 'full' ? 'Fully Booked' : 'Completed'}
+        </span>
+      )}
+    </div>
+  </div>
+</div>

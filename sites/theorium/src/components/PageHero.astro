@@ -1,0 +1,29 @@
+---
+interface Props {
+  badge: string;
+  badgeColor?: string;
+  title: string;
+  subtitle?: string;
+}
+
+const { badge, badgeColor = 'var(--th-yellow)', title, subtitle } = Astro.props;
+---
+
+<section class="border-b border-[var(--th-border)] px-6 py-16 sm:px-10 sm:py-24 lg:px-16">
+  <div class="mx-auto max-w-4xl text-center">
+    <span
+      class="mb-4 inline-block rounded-md border border-neutral-300 px-4 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em]"
+      style={`background-color: ${badgeColor}`}
+    >
+      {badge}
+    </span>
+    <h1 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[44px] lg:text-[52px]">
+      <Fragment set:html={title} />
+    </h1>
+    {subtitle && (
+      <p class="mx-auto mt-4 max-w-2xl text-base text-neutral-500 sm:text-lg">
+        {subtitle}
+      </p>
+    )}
+  </div>
+</section>
