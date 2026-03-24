@@ -37,12 +37,14 @@ export default function HeroInteractive({
   const carouselRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
 
-  // Set hero height to exact window.innerHeight — definitive mobile fix
+  // Set hero height to exact viewport — measure nav dynamically
   useEffect(() => {
     const setHeight = () => {
-      if (sectionRef.current) {
-        sectionRef.current.style.height = window.innerHeight + 'px';
-      }
+      if (!sectionRef.current) return;
+      const nav = document.getElementById('site-nav');
+      const navHeight = nav ? nav.offsetHeight : 0;
+      sectionRef.current.style.height = (window.innerHeight + navHeight) + 'px';
+      sectionRef.current.style.marginTop = `-${navHeight}px`;
     };
     setHeight();
     window.addEventListener('resize', setHeight);
@@ -78,7 +80,7 @@ export default function HeroInteractive({
     <section
       ref={sectionRef}
       className="relative overflow-hidden bg-neutral-950"
-      style={{ height: '100vh', marginTop: '-72px' }}
+      style={{ height: '100vh' }}
     >
       {/* Background poster — visible while video loads */}
       {backgroundPoster && (
@@ -246,18 +248,22 @@ function ProjectThumbnail({ project, isActive, onClick }: { project: ProjectItem
           if (!videoRef.current.src) { videoRef.current.src = project.video; videoRef.current.load(); }
           videoRef.current.currentTime = 0;
           videoRef.current.play().catch(() => {});
+          videoRef.current.style.opacity = '1';
         }
       }}
       onMouseLeave={() => {
         setIsHovering(false);
-        videoRef.current?.pause();
+        if (videoRef.current) {
+          videoRef.current.pause();
+          videoRef.current.style.opacity = '0';
+        }
       }}
     >
       <div className="aspect-[3/4] relative bg-neutral-800">
         {project.poster && (
           <img src={project.poster} alt={project.title} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
         )}
-        <video ref={videoRef} muted loop playsInline preload="none" className="absolute inset-0 h-full w-full object-cover" />
+        <video ref={videoRef} muted loop playsInline preload="none" className="absolute inset-0 h-full w-full object-cover" style={{ opacity: 0 }} />
         <div className={`absolute inset-0 transition-opacity duration-300 ${isHovering ? 'bg-black/10' : 'bg-black/30'}`} />
         <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`}>
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg">
