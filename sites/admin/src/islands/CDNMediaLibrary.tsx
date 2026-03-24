@@ -43,8 +43,10 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
+const PLATFORM_API = 'https://api-v2.infront.cy';
+
 async function cdnApi<T>(path: string, opts?: RequestInit): Promise<T> {
-  const res = await fetch(`/api/cdn/${path}`, {
+  const res = await fetch(`${PLATFORM_API}/api/cdn-files/${path}`, {
     ...opts,
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...opts?.headers },
