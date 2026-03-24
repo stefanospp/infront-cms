@@ -6,6 +6,7 @@ set -euo pipefail
 
 cd /opt/infront-cms
 ENV_FILE="/opt/infront-cms/infra/admin/.env"
+SCRIPT_PATH="/opt/infront-cms/infra/admin/update-vps.sh"
 
 if [ ! -f "$ENV_FILE" ]; then
   echo "ERROR: $ENV_FILE not found."
@@ -13,8 +14,14 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
-echo "Pulling latest code..."
-git pull
+# Re-exec after git pull so the rest of the script uses the latest version.
+# The __PULLED marker prevents infinite recursion.
+if [ "${__PULLED:-}" != "1" ]; then
+  echo "Pulling latest code..."
+  git pull
+  echo "Re-executing updated script..."
+  __PULLED=1 exec bash "$SCRIPT_PATH"
+fi
 
 echo "Building Docker image..."
 docker build -t infront-admin .
@@ -36,7 +43,7 @@ docker run -d \
   -e APP_ROOT=/app \
   infront-admin
 
-sleep 3
+sleep 5
 if docker ps | grep -q infront-admin; then
   echo "Update complete. Admin is running at https://web.infront.cy"
 else
