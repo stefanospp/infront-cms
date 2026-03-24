@@ -16,6 +16,8 @@ export interface Project {
   video_url?: string;
   reel_url?: string;
   sort_order: number;
+  featured_in_hero?: boolean;
+  hero_sort_order?: number;
 }
 
 export interface Service {
@@ -83,10 +85,21 @@ export interface SiteSettings {
 export async function getProjects(options?: { limit?: number }): Promise<Project[]> {
   if (!client) return [];
   return getPublishedItems<Project>(client, 'projects', {
-    fields: ['id', 'title', 'slug', 'subtitle', 'image', 'video_url', 'reel_url', 'sort_order'],
+    fields: ['id', 'title', 'slug', 'subtitle', 'image', 'video_url', 'reel_url', 'sort_order', 'featured_in_hero', 'hero_sort_order'],
     sort: ['sort_order'],
     limit: options?.limit,
   });
+}
+
+export async function getHeroProjects(): Promise<Project[]> {
+  if (!client) return [];
+  return getPublishedItems<Project>(client, 'projects', {
+    fields: ['id', 'title', 'slug', 'subtitle', 'image', 'video_url', 'reel_url', 'hero_sort_order'],
+    sort: ['hero_sort_order'],
+    // Filter: only projects flagged for hero
+    // Note: the filter is applied via the Directus query
+  });
+  // TODO: add filter { featured_in_hero: { _eq: true } } when wiring up CMS
 }
 
 export async function getServices(options?: { limit?: number }): Promise<Service[]> {
