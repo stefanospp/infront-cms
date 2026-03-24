@@ -43,8 +43,9 @@ docker run -d \
   -e APP_ROOT=/app \
   infront-admin
 
-sleep 5
-if docker ps | grep -q infront-admin; then
+echo "Waiting for container to start..."
+sleep 10
+if docker ps --filter name=infront-admin --format '{{.Status}}' | grep -q 'Up'; then
   echo "Update complete. Admin is running at https://web.infront.cy"
 else
   echo "ERROR: Container failed to start. Check: docker logs infront-admin"
