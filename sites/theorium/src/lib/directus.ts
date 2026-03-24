@@ -1,11 +1,3 @@
-import { createDirectusClient, getPublishedItems } from '@agency/utils';
-
-// Directus connection — env vars set at build/deploy time
-const directusUrl = import.meta.env.DIRECTUS_URL;
-const directusToken = import.meta.env.DIRECTUS_TOKEN;
-
-export const client = directusUrl ? createDirectusClient(directusUrl, directusToken) : null;
-
 // Types matching Directus collections
 export interface Resource {
   id: string;
@@ -35,33 +27,38 @@ export interface Course {
   sort: number;
 }
 
-// Fetch all published resources, sorted by subject then sort order
+// Lazy-load Directus SDK only when URL is configured — avoids node:fs import crash on Workers
+async function fetchFromDirectus<T>(collection: string, options?: { limit?: number }): Promise<T[]> {
+  const directusUrl = import.meta.env.DIRECTUS_URL;
+  const directusToken = import.meta.env.DIRECTUS_TOKEN;
+
+  if (!directusUrl) return [];
+
+  try {
+    const { createDirectusClient, getPublishedItems } = await import('@agency/utils');
+    const client = createDirectusClient(directusUrl, directusToken);
+    return await getPublishedItems<T>(client, collection, {
+      sort: ['sort'],
+      limit: options?.limit,
+    });
+  } catch {
+    return [];
+  }
+}
+
+// Fetch all published resources
 export async function getResources(options?: { limit?: number }): Promise<Resource[]> {
-  if (!client) return getFallbackResources();
-  try {
-    return await getPublishedItems<Resource>(client, 'resources', {
-      sort: ['subject', 'sort'],
-      limit: options?.limit,
-    });
-  } catch {
-    return getFallbackResources();
-  }
+  const items = await fetchFromDirectus<Resource>('resources', options);
+  return items.length > 0 ? items : getFallbackResources();
 }
 
-// Fetch all published courses, upcoming first
+// Fetch all published courses
 export async function getCourses(options?: { limit?: number }): Promise<Course[]> {
-  if (!client) return getFallbackCourses();
-  try {
-    return await getPublishedItems<Course>(client, 'courses', {
-      sort: ['sort', '-start_date'],
-      limit: options?.limit,
-    });
-  } catch {
-    return getFallbackCourses();
-  }
+  const items = await fetchFromDirectus<Course>('courses', options);
+  return items.length > 0 ? items : getFallbackCourses();
 }
 
-// Fallback data when Directus is not configured (dev/build without CMS)
+// Fallback data when Directus is not configured
 function getFallbackResources(): Resource[] {
   return [
     {
