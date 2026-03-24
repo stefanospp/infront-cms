@@ -50,7 +50,7 @@ export async function getWorkersAnalytics(period: '24h' | '7d' | '30d'): Promise
   const accountId = env('CLOUDFLARE_ACCOUNT_ID');
 
   if (!token || !accountId) {
-    throw new Error('Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID');
+    return { period, totalRequests: 0, totalErrors: 0, workers: [] };
   }
 
   const { since, until } = getPeriodDates(period);
@@ -87,21 +87,30 @@ export async function getWorkersAnalytics(period: '24h' | '7d' | '30d'): Promise
     }
   `;
 
-  const response = await fetch('https://api.cloudflare.com/client/v4/graphql', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      query,
-      variables: {
-        accountTag: accountId,
-        since,
-        until,
+  const controller = new AbortController();
+  const fetchTimeout = setTimeout(() => controller.abort(), 10_000);
+
+  let response: Response;
+  try {
+    response = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
-    }),
-  });
+      body: JSON.stringify({
+        query,
+        variables: {
+          accountTag: accountId,
+          since,
+          until,
+        },
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(fetchTimeout);
+  }
 
   if (!response.ok) {
     throw new Error(`Cloudflare API returned ${response.status}: ${response.statusText}`);

@@ -227,74 +227,75 @@ async function getContainers(): Promise<ContainerInfo[]> {
     return [];
   }
 
-  const containers: ContainerInfo[] = [];
+  // Fetch stats for all containers in parallel instead of sequentially
+  const containers = await Promise.all(
+    rawContainers.map(async (c): Promise<ContainerInfo> => {
+      const name = c.Names[0]?.replace(/^\//, '') ?? c.Id.slice(0, 12);
+      const health = c.Status.includes('healthy')
+        ? 'healthy'
+        : c.Status.includes('unhealthy')
+          ? 'unhealthy'
+          : c.Status.includes('health: starting')
+            ? 'starting'
+            : 'none';
 
-  for (const c of rawContainers) {
-    const name = c.Names[0]?.replace(/^\//, '') ?? c.Id.slice(0, 12);
-    const health = c.Status.includes('healthy')
-      ? 'healthy'
-      : c.Status.includes('unhealthy')
-        ? 'unhealthy'
-        : c.Status.includes('health: starting')
-          ? 'starting'
-          : 'none';
+      let cpu = '—';
+      let memory = '—';
+      let memoryLimit = '—';
+      let networkIn = '—';
+      let networkOut = '—';
 
-    let cpu = '—';
-    let memory = '—';
-    let memoryLimit = '—';
-    let networkIn = '—';
-    let networkOut = '—';
+      if (c.State === 'running') {
+        try {
+          const stats = await dockerGet<DockerStats>(`/containers/${c.Id}/stats?stream=false`);
 
-    if (c.State === 'running') {
-      try {
-        const stats = await dockerGet<DockerStats>(`/containers/${c.Id}/stats?stream=false`);
-
-        const cpuDelta = stats.cpu_stats.cpu_usage.total_usage - stats.precpu_stats.cpu_usage.total_usage;
-        const systemDelta = stats.cpu_stats.system_cpu_usage - stats.precpu_stats.system_cpu_usage;
-        const cpus = stats.cpu_stats.online_cpus || 1;
-        if (systemDelta > 0) {
-          cpu = `${((cpuDelta / systemDelta) * cpus * 100).toFixed(1)}%`;
-        }
-
-        memory = formatBytes(stats.memory_stats.usage);
-        memoryLimit = formatBytes(stats.memory_stats.limit);
-
-        if (stats.networks) {
-          let rxTotal = 0;
-          let txTotal = 0;
-          for (const net of Object.values(stats.networks)) {
-            rxTotal += net.rx_bytes;
-            txTotal += net.tx_bytes;
+          const cpuDelta = stats.cpu_stats.cpu_usage.total_usage - stats.precpu_stats.cpu_usage.total_usage;
+          const systemDelta = stats.cpu_stats.system_cpu_usage - stats.precpu_stats.system_cpu_usage;
+          const cpus = stats.cpu_stats.online_cpus || 1;
+          if (systemDelta > 0) {
+            cpu = `${((cpuDelta / systemDelta) * cpus * 100).toFixed(1)}%`;
           }
-          networkIn = formatBytes(rxTotal);
-          networkOut = formatBytes(txTotal);
+
+          memory = formatBytes(stats.memory_stats.usage);
+          memoryLimit = formatBytes(stats.memory_stats.limit);
+
+          if (stats.networks) {
+            let rxTotal = 0;
+            let txTotal = 0;
+            for (const net of Object.values(stats.networks)) {
+              rxTotal += net.rx_bytes;
+              txTotal += net.tx_bytes;
+            }
+            networkIn = formatBytes(rxTotal);
+            networkOut = formatBytes(txTotal);
+          }
+        } catch {
+          // Stats not available
         }
-      } catch {
-        // Stats not available
       }
-    }
 
-    const ports = c.Ports
-      .filter((p) => p.PublicPort)
-      .map((p) => `${p.IP || '0.0.0.0'}:${p.PublicPort}->${p.PrivatePort}/${p.Type}`);
+      const ports = c.Ports
+        .filter((p) => p.PublicPort)
+        .map((p) => `${p.IP || '0.0.0.0'}:${p.PublicPort}->${p.PrivatePort}/${p.Type}`);
 
-    containers.push({
-      id: c.Id.slice(0, 12),
-      name,
-      image: c.Image,
-      status: c.Status,
-      state: c.State as ContainerInfo['state'],
-      health,
-      uptime: c.State === 'running' ? formatUptime(c.Created) : '—',
-      ports,
-      category: categorizeContainer(name, c.Image),
-      cpu,
-      memory,
-      memoryLimit,
-      networkIn,
-      networkOut,
-    });
-  }
+      return {
+        id: c.Id.slice(0, 12),
+        name,
+        image: c.Image,
+        status: c.Status,
+        state: c.State as ContainerInfo['state'],
+        health,
+        uptime: c.State === 'running' ? formatUptime(c.Created) : '—',
+        ports,
+        category: categorizeContainer(name, c.Image),
+        cpu,
+        memory,
+        memoryLimit,
+        networkIn,
+        networkOut,
+      };
+    }),
+  );
 
   const categoryOrder = { directus: 0, database: 1, auth: 2, admin: 3, proxy: 4, other: 5 };
   containers.sort((a, b) => {
