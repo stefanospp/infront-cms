@@ -3096,6 +3096,55 @@ Set up cron jobs for automated backups:
 `,
   },
 
+  {
+    id: 'cdn-media-storage',
+    title: 'CDN Media Storage',
+    description: 'How the CDN works for hosting public/private media files via cdn.infront.cy.',
+    category: 'infrastructure',
+    tags: ['cdn', 'r2', 'media', 'files', 'video', 'storage', 'cloudflare'],
+    relatedArticles: ['infrastructure-overview', 'backup-restore'],
+    body: `
+## Overview
+
+Media files (images, videos, PDFs) are stored in Cloudflare R2 and served globally via **cdn.infront.cy**. R2 provides zero-cost bandwidth and EU jurisdiction for GDPR compliance.
+
+### Architecture
+
+- **Public files:** Stored in the \`infront-cdn\` R2 bucket with a custom domain. Served at \`https://cdn.infront.cy/<clientId>/<folder>/<filename>\`. Cached at Cloudflare's 300+ edge locations.
+- **Private files:** Stored in the \`infront-uploads\` R2 bucket. Accessed only via presigned URLs with 1-hour expiry.
+- **Toggle:** Files can be switched between public and private. The system copies the file between buckets and purges the CDN cache when making files private.
+
+### Management
+
+- **Client portal:** \`portal.infront.cy/files\` — clients upload, organize, and toggle visibility of their own files.
+- **Admin dashboard:** \`web.infront.cy/media\` — admin can manage files for all clients.
+
+### Using CDN files in client sites
+
+\`\`\`astro
+---
+import { getCdnUrl } from '@agency/utils';
+import Video from '@agency/ui/components/Video.astro';
+---
+
+<img src={getCdnUrl(5, 'images/hero.webp')} alt="Hero" loading="lazy" />
+<Video src={getCdnUrl(5, 'videos/showreel.mp4')} />
+\`\`\`
+
+### File limits
+
+| Type | Max size | Extensions |
+|------|----------|------------|
+| Images | 10 MB | jpg, jpeg, png, gif, webp, avif, svg |
+| Videos | 500 MB | mp4, webm |
+| Documents | 50 MB | pdf |
+
+### Cost
+
+~$1.50/month per 100GB stored. Bandwidth is always free.
+`,
+  },
+
   // =========================================================================
   // TESTING
   // =========================================================================

@@ -368,6 +368,32 @@ If you add entirely new functionality that doesn't fit an existing article, crea
 - API routes: rate limiting, input validation (zod), CORS restricted to site origin
 - Directus: public registration disabled, CORS restricted, file upload types limited
 
+## CDN Media Storage
+
+Public media files are served via `cdn.infront.cy` — a Cloudflare R2 bucket with a custom domain (EU jurisdiction, GDPR compliant). Zero egress/bandwidth costs.
+
+- **Public files:** `https://cdn.infront.cy/<clientId>/<folder>/<filename>` — cached globally at Cloudflare edge
+- **Private files:** Stored in the `infront-uploads` R2 bucket, accessed via presigned URLs (1hr expiry)
+- **Management:** Clients manage files at `portal.infront.cy/files`; admin manages all clients at `web.infront.cy/media`
+- **API:** CDN file routes at `api-v2.infront.cy/api/cdn-files/*` (Hono, in `infront-platform` repo)
+
+### Using CDN files in client sites
+
+```astro
+---
+import { getCdnUrl } from '@agency/utils';
+import Video from '@agency/ui/components/Video.astro';
+---
+<img src={getCdnUrl(5, 'images/hero.webp')} alt="Hero" loading="lazy" />
+<Video src={getCdnUrl(5, 'videos/showreel.mp4')} />
+```
+
+### Key files
+- `packages/utils/src/cdn.ts` — `getCdnUrl()` helper
+- `packages/ui/src/components/Video.astro` — shared video component
+- `sites/admin/src/islands/CDNMediaLibrary.tsx` — admin media management island
+- `sites/admin/src/pages/api/cdn/[...path].ts` — proxy to platform API
+
 ## Commands
 
 ```bash

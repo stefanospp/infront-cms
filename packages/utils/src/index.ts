@@ -7,3 +7,4 @@ export { componentOverridePlugin } from './vite-component-override.js';
 export { editorBridgePlugin } from './vite-editor-bridge.js';
 export { compilePageSchema, serializePropValue } from './schema-compiler.js';
 export { parseAstroToSchema } from './schema-parser.js';
+export { getCdnUrl } from './cdn.js';

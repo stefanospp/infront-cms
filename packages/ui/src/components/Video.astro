@@ -1,0 +1,35 @@
+---
+export interface Props {
+  src: string;
+  poster?: string;
+  autoplay?: boolean;
+  loop?: boolean;
+  muted?: boolean;
+  preload?: 'none' | 'metadata' | 'auto';
+  class?: string;
+}
+
+const {
+  src,
+  poster,
+  autoplay = false,
+  loop = false,
+  muted = autoplay,
+  preload = 'metadata',
+  class: className,
+} = Astro.props;
+---
+
+<video
+  src={src}
+  poster={poster}
+  controls
+  playsinline
+  preload={preload}
+  autoplay={autoplay}
+  loop={loop}
+  muted={muted}
+  class={className}
+>
+  Your browser does not support the video tag.
+</video>
