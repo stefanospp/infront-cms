@@ -220,9 +220,17 @@ export default function SiteTable() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
+                      {!site.isTemplate && (
+                        <a
+                          href={`/sites/${site.slug}/editor`}
+                          className="text-primary-600 hover:text-primary-700 font-medium transition-colors text-sm"
+                        >
+                          Edit
+                        </a>
+                      )}
                       <a
                         href={`/sites/${site.slug}`}
-                        className="text-primary-600 hover:text-primary-700 font-medium transition-colors text-sm"
+                        className="text-neutral-500 hover:text-neutral-700 font-medium transition-colors text-sm"
                       >
                         Manage
                       </a>
