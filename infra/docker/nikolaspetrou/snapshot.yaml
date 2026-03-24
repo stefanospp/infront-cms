@@ -1,0 +1,508 @@
+version: 1
+directus: 11.5.1
+vendor: postgres
+collections:
+  - collection: projects
+    meta:
+      collection: projects
+      icon: videocam
+      note: Portfolio projects
+      sort_field: sort_order
+      archive_field: status
+      archive_value: archived
+      unarchive_value: draft
+      singleton: false
+      accountability: all
+    schema:
+      name: projects
+  - collection: services
+    meta:
+      collection: services
+      icon: build
+      note: Service offerings
+      sort_field: sort_order
+      singleton: false
+      accountability: all
+    schema:
+      name: services
+  - collection: testimonials
+    meta:
+      collection: testimonials
+      icon: format_quote
+      note: Client testimonials
+      sort_field: sort_order
+      singleton: false
+      accountability: all
+    schema:
+      name: testimonials
+  - collection: reels
+    meta:
+      collection: reels
+      icon: play_circle
+      note: Instagram reels
+      sort_field: sort_order
+      singleton: false
+      accountability: all
+    schema:
+      name: reels
+  - collection: hero
+    meta:
+      collection: hero
+      icon: panorama
+      note: Hero section content
+      singleton: true
+      accountability: all
+    schema:
+      name: hero
+  - collection: about
+    meta:
+      collection: about
+      icon: person
+      note: About page content
+      singleton: true
+      accountability: all
+    schema:
+      name: about
+  - collection: site_settings
+    meta:
+      collection: site_settings
+      icon: settings
+      note: Global site settings
+      singleton: true
+      accountability: all
+    schema:
+      name: site_settings
+fields:
+  # Projects
+  - collection: projects
+    field: id
+    type: uuid
+    schema:
+      is_primary_key: true
+      has_auto_increment: false
+      is_nullable: false
+    meta:
+      special: [uuid]
+      hidden: true
+  - collection: projects
+    field: status
+    type: string
+    schema:
+      default_value: draft
+      is_nullable: false
+    meta:
+      interface: select-dropdown
+      options:
+        choices:
+          - text: Published
+            value: published
+          - text: Draft
+            value: draft
+          - text: Archived
+            value: archived
+      width: half
+  - collection: projects
+    field: sort_order
+    type: integer
+    schema:
+      default_value: 0
+    meta:
+      interface: input
+      width: half
+  - collection: projects
+    field: title
+    type: string
+    schema: {}
+    meta:
+      interface: input
+      required: true
+  - collection: projects
+    field: slug
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: projects
+    field: subtitle
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: projects
+    field: image
+    type: uuid
+    schema: {}
+    meta:
+      interface: file-image
+      special: [file]
+  - collection: projects
+    field: video_url
+    type: string
+    schema: {}
+    meta:
+      interface: input
+      note: Direct video URL
+  - collection: projects
+    field: reel_url
+    type: string
+    schema: {}
+    meta:
+      interface: input
+      note: Instagram reel URL
+  # Services
+  - collection: services
+    field: id
+    type: uuid
+    schema:
+      is_primary_key: true
+      has_auto_increment: false
+      is_nullable: false
+    meta:
+      special: [uuid]
+      hidden: true
+  - collection: services
+    field: status
+    type: string
+    schema:
+      default_value: draft
+      is_nullable: false
+    meta:
+      interface: select-dropdown
+      options:
+        choices:
+          - text: Published
+            value: published
+          - text: Draft
+            value: draft
+      width: half
+  - collection: services
+    field: sort_order
+    type: integer
+    schema:
+      default_value: 0
+    meta:
+      interface: input
+      width: half
+  - collection: services
+    field: title
+    type: string
+    schema: {}
+    meta:
+      interface: input
+      required: true
+  - collection: services
+    field: description
+    type: text
+    schema: {}
+    meta:
+      interface: input-multiline
+  - collection: services
+    field: tags
+    type: json
+    schema: {}
+    meta:
+      interface: tags
+      special: [cast-json]
+  - collection: services
+    field: video_url
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  # Testimonials
+  - collection: testimonials
+    field: id
+    type: uuid
+    schema:
+      is_primary_key: true
+      has_auto_increment: false
+      is_nullable: false
+    meta:
+      special: [uuid]
+      hidden: true
+  - collection: testimonials
+    field: status
+    type: string
+    schema:
+      default_value: draft
+      is_nullable: false
+    meta:
+      interface: select-dropdown
+      options:
+        choices:
+          - text: Published
+            value: published
+          - text: Draft
+            value: draft
+      width: half
+  - collection: testimonials
+    field: sort_order
+    type: integer
+    schema:
+      default_value: 0
+    meta:
+      interface: input
+      width: half
+  - collection: testimonials
+    field: name
+    type: string
+    schema: {}
+    meta:
+      interface: input
+      required: true
+  - collection: testimonials
+    field: role
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: testimonials
+    field: quote
+    type: text
+    schema: {}
+    meta:
+      interface: input-multiline
+      required: true
+  - collection: testimonials
+    field: video_url
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: testimonials
+    field: image
+    type: uuid
+    schema: {}
+    meta:
+      interface: file-image
+      special: [file]
+  # Reels
+  - collection: reels
+    field: id
+    type: uuid
+    schema:
+      is_primary_key: true
+      has_auto_increment: false
+      is_nullable: false
+    meta:
+      special: [uuid]
+      hidden: true
+  - collection: reels
+    field: status
+    type: string
+    schema:
+      default_value: draft
+      is_nullable: false
+    meta:
+      interface: select-dropdown
+      options:
+        choices:
+          - text: Published
+            value: published
+          - text: Draft
+            value: draft
+      width: half
+  - collection: reels
+    field: sort_order
+    type: integer
+    schema:
+      default_value: 0
+    meta:
+      interface: input
+      width: half
+  - collection: reels
+    field: url
+    type: string
+    schema: {}
+    meta:
+      interface: input
+      required: true
+      note: Instagram reel URL
+  - collection: reels
+    field: image
+    type: uuid
+    schema: {}
+    meta:
+      interface: file-image
+      special: [file]
+  - collection: reels
+    field: date_label
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  # Hero singleton
+  - collection: hero
+    field: id
+    type: uuid
+    schema:
+      is_primary_key: true
+      has_auto_increment: false
+      is_nullable: false
+    meta:
+      special: [uuid]
+      hidden: true
+  - collection: hero
+    field: eyebrow
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: hero
+    field: heading
+    type: string
+    schema: {}
+    meta:
+      interface: input
+      required: true
+  - collection: hero
+    field: subheading
+    type: text
+    schema: {}
+    meta:
+      interface: input-multiline
+  - collection: hero
+    field: cta_text
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: hero
+    field: cta_href
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: hero
+    field: secondary_cta_text
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: hero
+    field: secondary_cta_href
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: hero
+    field: background_video
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: hero
+    field: background_poster
+    type: uuid
+    schema: {}
+    meta:
+      interface: file-image
+      special: [file]
+  # About singleton
+  - collection: about
+    field: id
+    type: uuid
+    schema:
+      is_primary_key: true
+      has_auto_increment: false
+      is_nullable: false
+    meta:
+      special: [uuid]
+      hidden: true
+  - collection: about
+    field: heading
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: about
+    field: subheading
+    type: text
+    schema: {}
+    meta:
+      interface: input-multiline
+  - collection: about
+    field: description
+    type: text
+    schema: {}
+    meta:
+      interface: input-rich-text-html
+  - collection: about
+    field: hero_image
+    type: uuid
+    schema: {}
+    meta:
+      interface: file-image
+      special: [file]
+  - collection: about
+    field: cta_text
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: about
+    field: values_heading
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: about
+    field: values_description
+    type: text
+    schema: {}
+    meta:
+      interface: input-multiline
+  # Site settings singleton
+  - collection: site_settings
+    field: id
+    type: uuid
+    schema:
+      is_primary_key: true
+      has_auto_increment: false
+      is_nullable: false
+    meta:
+      special: [uuid]
+      hidden: true
+  - collection: site_settings
+    field: name
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: site_settings
+    field: tagline
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: site_settings
+    field: email
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: site_settings
+    field: seo_title
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: site_settings
+    field: seo_description
+    type: text
+    schema: {}
+    meta:
+      interface: input-multiline
+  - collection: site_settings
+    field: instagram_url
+    type: string
+    schema: {}
+    meta:
+      interface: input
+  - collection: site_settings
+    field: facebook_url
+    type: string
+    schema: {}
+    meta:
+      interface: input
+relations: []
