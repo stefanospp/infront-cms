@@ -62,7 +62,7 @@ const { nav, name } = config;
     {/* Mobile */}
     <div class="md:hidden">
       <MobileNav
-        client:idle
+        client:visible
         items={nav.items.map((item) => ({ label: item.label, href: item.href }))}
         cta={nav.cta ? { label: nav.cta.label, href: nav.cta.href } : undefined}
       />

@@ -29,13 +29,13 @@ const Tag = isOverlayTrigger ? 'button' : href ? 'a' : 'div';
     className,
   ]}
 >
-  {/* Video thumbnail — first frame shows as poster via preload="metadata" */}
+  {/* Video thumbnail — first frame shows as poster via preload="auto" */}
   {videoSrc ? (
     <video
       muted
       loop
       playsinline
-      preload="metadata"
+      preload="auto"
       class="h-full w-full object-cover video-thumb"
     >
       <source src={videoSrc} type="video/mp4" />
@@ -53,7 +53,7 @@ const Tag = isOverlayTrigger ? 'button' : href ? 'a' : 'div';
   <div class="absolute inset-0 bg-black/30 transition-opacity duration-300 group-hover:bg-black/20 video-overlay-dim" />
 
   {/* Play button — hides on hover when video plays */}
-  <div class="absolute inset-0 flex items-center justify-center video-play-btn transition-opacity duration-300">
+  <div class="absolute inset-0 flex items-center justify-center video-play-btn" style="transition: opacity 0.3s ease;">
     <div class="relative">
       <div class="absolute inset-0 rounded-full bg-white/20 animate-pulse-ring" />
       <div class="relative flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform duration-300 group-hover:scale-110">

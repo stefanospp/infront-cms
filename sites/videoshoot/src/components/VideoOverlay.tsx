@@ -72,7 +72,7 @@ export default function VideoOverlay() {
       <button
         type="button"
         onClick={close}
-        className="absolute top-6 right-6 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+        className="absolute top-4 right-4 z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 sm:top-6 sm:right-6"
         aria-label="Close video"
       >
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -102,7 +102,7 @@ export default function VideoOverlay() {
           controls
           autoPlay
           playsInline
-          className="max-h-[85vh] max-w-[90vw] rounded-lg"
+          className="max-h-[75vh] max-w-[92vw] rounded-lg sm:max-h-[85vh] sm:max-w-[90vw]"
         />
       )}
     </div>

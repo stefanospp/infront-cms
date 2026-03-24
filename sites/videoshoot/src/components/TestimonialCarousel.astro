@@ -48,7 +48,7 @@ const { testimonials, class: className } = Astro.props;
       )}
     </div>
 
-    <div class="flex snap-x snap-mandatory gap-8 overflow-x-auto scrollbar-hide pb-4" data-testimonial-track>
+    <div class="flex snap-x snap-mandatory gap-4 overflow-x-auto scrollbar-hide pb-4 sm:gap-8" data-testimonial-track style="-webkit-overflow-scrolling: touch; scroll-behavior: smooth;">
       {testimonials.map((t, i) => (
         <div class="w-full flex-shrink-0 snap-center sm:w-[calc(100%-2rem)]" role="group" aria-label={`Testimonial ${i + 1} of ${testimonials.length}`}>
           <div class="flex flex-col gap-8 sm:flex-row sm:items-start sm:gap-12">
@@ -59,7 +59,7 @@ const { testimonials, class: className } = Astro.props;
                   <img
                     src={t.image}
                     alt={t.author}
-                    class="h-64 w-48 rounded-lg object-cover sm:h-80 sm:w-60"
+                    class="h-48 w-36 rounded-lg object-cover sm:h-64 sm:w-48 lg:h-80 lg:w-60"
                     loading="lazy"
                   />
                   <div class="absolute bottom-0 left-0 right-0 rounded-b-lg bg-gradient-to-t from-black/70 p-4">

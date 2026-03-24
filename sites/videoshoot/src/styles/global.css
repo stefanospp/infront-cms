@@ -90,3 +90,44 @@ h1, h2, h3, h4, h5, h6 {
 /* Hide scrollbar for horizontal scrollers */
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Video thumbnails — dark bg while loading */
+video {
+  background: #262626;
+}
+
+/* Smooth scroll on carousel containers */
+[data-scroller-track],
+[data-testimonial-track],
+[data-hero-carousel] {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Loading shimmer for video thumbnails */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.video-loading {
+  background: linear-gradient(90deg, #262626 25%, #333 50%, #262626 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Touch feedback for interactive cards */
+@media (hover: none) {
+  .group:active {
+    transform: scale(0.98);
+    transition: transform 0.15s ease;
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .animate-pulse-ring { animation: none; }
+  .animate-bounce { animation: none; }
+  * { transition-duration: 0.01ms !important; }
+}

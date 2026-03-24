@@ -37,7 +37,7 @@ const hasPlay = showPlayButton || isOverlayTrigger;
         muted
         loop
         playsinline
-        preload="metadata"
+        preload="auto"
         class="aspect-[4/3] w-full object-cover project-video-thumb"
       >
         <source src={videoSrc} type="video/mp4" />
@@ -52,7 +52,7 @@ const hasPlay = showPlayButton || isOverlayTrigger;
     ) : null}
 
     {hasPlay && (
-      <div class="absolute inset-0 flex items-center justify-center bg-black/20 transition-opacity duration-300 group-hover:bg-black/10 project-play-btn">
+      <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 project-play-btn" style="transition: opacity 0.3s ease, background-color 0.3s ease;">
         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform duration-300 group-hover:scale-110">
           <svg class="ml-1 h-5 w-5 text-neutral-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M8 5v14l11-7z" />

@@ -36,7 +36,6 @@ export default function HeroInteractive({
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
 
-  // Set src directly on mount and when activeVideo changes
   useEffect(() => {
     const v = mainVideoRef.current;
     if (v) {
@@ -59,8 +58,11 @@ export default function HeroInteractive({
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-neutral-950" style={{ minHeight: '100dvh' }}>
-      {/* Background poster — shows while video buffers */}
+    <section
+      className="relative overflow-hidden bg-neutral-950"
+      style={{ height: '100dvh', maxHeight: '100dvh' }}
+    >
+      {/* Background poster — visible while video loads */}
       {backgroundPoster && (
         <img
           src={backgroundPoster}
@@ -69,7 +71,7 @@ export default function HeroInteractive({
         />
       )}
 
-      {/* Background video — src set via useEffect, covers poster when playing */}
+      {/* Background video */}
       <video
         ref={mainVideoRef}
         autoPlay
@@ -79,31 +81,32 @@ export default function HeroInteractive({
         className="absolute inset-0 h-full w-full object-cover"
       />
 
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/30" />
+      {/* Gradient — bottom-up on mobile, left-right on desktop */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent lg:bg-gradient-to-r lg:from-black/80 lg:via-black/40 lg:to-black/20" />
 
-      {/* Content */}
-      <div className="relative z-10 mx-auto flex max-w-7xl flex-col justify-end px-4 pb-16 pt-32 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8 lg:pb-20" style={{ minHeight: '100dvh' }}>
-        {/* Left — text */}
-        <div className="max-w-xl lg:max-w-lg">
+      {/* Content container — fills entire hero */}
+      <div className="relative z-10 flex h-full flex-col justify-end px-4 pb-6 sm:px-6 sm:pb-12 lg:mx-auto lg:max-w-7xl lg:flex-row lg:items-end lg:justify-between lg:px-8 lg:pb-20 lg:pt-32">
+
+        {/* Text — centered on mobile */}
+        <div className="text-center lg:max-w-lg lg:text-left">
           {eyebrow && (
-            <p className="text-sm font-medium uppercase tracking-widest text-neutral-300">
+            <p className="text-xs font-medium uppercase tracking-widest text-neutral-400 sm:text-sm">
               {eyebrow}
             </p>
           )}
-          <h1 className="mt-4 text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-6xl">
+          <h1 className="mt-2 text-2xl font-bold leading-tight text-white sm:mt-4 sm:text-4xl lg:text-6xl">
             {heading}
           </h1>
           {subheading && (
-            <p className="mt-6 text-base leading-relaxed text-neutral-300 sm:text-lg">
+            <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-neutral-300 sm:mt-5 sm:max-w-md sm:text-base lg:mx-0 lg:text-lg">
               {subheading}
             </p>
           )}
-          <div className="mt-8 flex flex-wrap items-center gap-4">
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-3 sm:mt-7 lg:justify-start">
             {ctaText && ctaHref && (
               <a
                 href={ctaHref}
-                className="inline-flex items-center rounded-full border-2 border-white bg-transparent px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white hover:text-neutral-900"
+                className="inline-flex items-center rounded-full border-2 border-white px-5 py-2 text-xs font-semibold text-white transition-all duration-300 hover:bg-white hover:text-neutral-900 sm:px-6 sm:py-3 sm:text-sm"
               >
                 {ctaText}
               </a>
@@ -111,10 +114,10 @@ export default function HeroInteractive({
             {secondaryCtaText && secondaryCtaHref && (
               <a
                 href={secondaryCtaHref}
-                className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white transition-colors hover:text-neutral-300"
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white/80 transition-colors hover:text-white sm:px-6 sm:py-3 sm:text-sm"
               >
                 {secondaryCtaText}
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <svg className="h-3.5 w-3.5 sm:h-4 sm:w-4" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               </a>
@@ -122,16 +125,51 @@ export default function HeroInteractive({
           </div>
         </div>
 
-        {/* Right — project video carousel */}
+        {/* Project carousel — compact strip on mobile, full cards on desktop */}
         {projects.length > 0 && (
-          <div className="mt-10 lg:mt-0 lg:ml-12 lg:max-w-lg">
+          <div className="mt-5 sm:mt-8 lg:mt-0 lg:ml-12 lg:max-w-lg">
+            {/* Mobile: compact horizontal strip */}
             <div
-              ref={carouselRef}
-              className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              className="flex gap-2.5 overflow-x-auto pb-2 snap-x snap-mandatory sm:gap-3 lg:hidden"
+              style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
             >
               {projects.map((project, index) => (
-                <div key={index} className="w-48 flex-shrink-0 snap-start sm:w-56">
+                <button
+                  key={index}
+                  type="button"
+                  className="relative w-20 flex-shrink-0 snap-start overflow-hidden rounded-lg outline-none sm:w-28"
+                  onClick={() => handleProjectClick(project, index)}
+                >
+                  <div className="aspect-square relative bg-neutral-800">
+                    {project.poster ? (
+                      <img src={project.poster} alt={project.title} className="absolute inset-0 h-full w-full object-cover" />
+                    ) : (
+                      <div className="absolute inset-0 bg-neutral-700" />
+                    )}
+                    <div className="absolute inset-0 bg-black/20 transition-opacity" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/80 sm:h-8 sm:w-8">
+                        <svg className="ml-0.5 h-3 w-3 text-neutral-900 sm:h-3.5 sm:w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M8 5v14l11-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 px-1.5 py-1">
+                      <p className="truncate text-[10px] font-medium text-white sm:text-xs">{project.title}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Desktop: full-size card carousel */}
+            <div
+              ref={carouselRef}
+              className="hidden gap-4 overflow-x-auto pb-4 snap-x snap-mandatory lg:flex"
+              style={{ scrollbarWidth: 'none', scrollBehavior: 'smooth' }}
+            >
+              {projects.map((project, index) => (
+                <div key={index} className="w-56 flex-shrink-0 snap-start">
                   <ProjectThumbnail
                     project={project}
                     isActive={activeIndex === index}
@@ -141,8 +179,9 @@ export default function HeroInteractive({
               ))}
             </div>
 
+            {/* Desktop nav arrows */}
             {projects.length > 2 && (
-              <div className="mt-4 flex items-center gap-3">
+              <div className="mt-4 hidden items-center gap-3 lg:flex">
                 <button
                   type="button"
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-neutral-500 text-white transition-colors hover:border-white"
@@ -173,80 +212,39 @@ export default function HeroInteractive({
   );
 }
 
-/** Thumbnail — video element IS the thumbnail. Plays on hover, click swaps hero. */
-function ProjectThumbnail({
-  project,
-  isActive,
-  onClick,
-}: {
-  project: ProjectItem;
-  isActive: boolean;
-  onClick: () => void;
-}) {
+function ProjectThumbnail({ project, isActive, onClick }: { project: ProjectItem; isActive: boolean; onClick: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovering, setIsHovering] = useState(false);
-
-  const handleMouseEnter = () => {
-    setIsHovering(true);
-    if (videoRef.current) {
-      // Load on first hover, then play
-      if (!videoRef.current.src) {
-        videoRef.current.src = project.video;
-        videoRef.current.load();
-      }
-      videoRef.current.currentTime = 0;
-      videoRef.current.play().catch(() => {});
-    }
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovering(false);
-    if (videoRef.current) {
-      videoRef.current.pause();
-    }
-  };
 
   return (
     <button
       type="button"
       className="group relative block w-full overflow-hidden rounded-lg cursor-pointer outline-none"
       onClick={onClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={() => {
+        setIsHovering(true);
+        if (videoRef.current) {
+          if (!videoRef.current.src) { videoRef.current.src = project.video; videoRef.current.load(); }
+          videoRef.current.currentTime = 0;
+          videoRef.current.play().catch(() => {});
+        }
+      }}
+      onMouseLeave={() => {
+        setIsHovering(false);
+        videoRef.current?.pause();
+      }}
     >
       <div className="aspect-[3/4] relative bg-neutral-800">
-        {/* Poster image — shows until video loads */}
         {project.poster && (
-          <img
-            src={project.poster}
-            alt={project.title}
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${isHovering ? 'opacity-0' : 'opacity-100'}`}
-          />
+          <img src={project.poster} alt={project.title} className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`} />
         )}
-
-        {/* Video — loads on hover, plays as preview */}
-        <video
-          ref={videoRef}
-          muted
-          loop
-          playsInline
-          preload="none"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-
-        {/* Overlay — lighter on hover */}
+        <video ref={videoRef} muted loop playsInline preload="none" className="absolute inset-0 h-full w-full object-cover" />
         <div className={`absolute inset-0 transition-opacity duration-300 ${isHovering ? 'bg-black/10' : 'bg-black/30'}`} />
-
-        {/* Play button — hidden on hover */}
-        <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${isHovering ? 'opacity-0' : 'opacity-100'}`}>
+        <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${isHovering ? 'opacity-0' : 'opacity-100'}`}>
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg">
-            <svg className="ml-1 h-5 w-5 text-neutral-900" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 5v14l11-7z" />
-            </svg>
+            <svg className="ml-1 h-5 w-5 text-neutral-900" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
           </div>
         </div>
-
-        {/* Title */}
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 p-4">
           <h3 className="text-sm font-semibold text-white">{project.title}</h3>
         </div>
