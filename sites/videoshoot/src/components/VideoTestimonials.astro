@@ -1,0 +1,131 @@
+---
+export interface VideoTestimonial {
+  name: string;
+  role: string;
+  quote: string;
+  videoSrc: string;
+  image?: string;
+}
+
+export interface Props {
+  testimonials: VideoTestimonial[];
+  class?: string;
+}
+
+const { testimonials, class: className } = Astro.props;
+---
+
+<section class:list={['bg-white py-20 sm:py-28', className]}>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="mb-12">
+      <p class="text-sm font-medium uppercase tracking-widest text-neutral-500">Testimonials</p>
+      <h2 class="mt-2 text-3xl font-bold text-neutral-900 sm:text-4xl">What clients say.</h2>
+    </div>
+
+    {/* Video testimonial cards — expand on hover */}
+    <div class="testimonial-flex flex gap-3 sm:gap-4" style="height: 400px; sm:height: 500px;">
+      {testimonials.map((t, i) => (
+        <div
+          class="testimonial-card group relative flex-1 overflow-hidden rounded-xl cursor-pointer"
+          data-testimonial-video={t.videoSrc}
+          style="transition: flex 0.6s cubic-bezier(0.4, 0, 0.2, 1); min-width: 0;"
+        >
+          {/* Poster image */}
+          {t.image && (
+            <img
+              src={t.image}
+              alt={t.name}
+              class="absolute inset-0 h-full w-full object-cover testimonial-poster"
+              loading="lazy"
+            />
+          )}
+
+          {/* Video — plays on hover */}
+          <video
+            muted
+            loop
+            playsinline
+            preload="none"
+            class="absolute inset-0 h-full w-full object-cover testimonial-video"
+            style="transition: opacity 0.4s ease; opacity: 0;"
+          />
+
+          {/* Dark overlay */}
+          <div class="absolute inset-0 bg-black/40 transition-opacity duration-300 group-hover:bg-black/20" />
+
+          {/* Content — visible when expanded */}
+          <div class="absolute inset-x-0 bottom-0 p-5 z-10 sm:p-6">
+            {/* Quote — only visible on hover/expanded */}
+            <p class="testimonial-quote text-sm leading-relaxed text-white/0 transition-all duration-500 sm:text-base" style="max-height: 0; overflow: hidden;">
+              &ldquo;{t.quote}&rdquo;
+            </p>
+            <div class="mt-3 flex items-center gap-3">
+              <div>
+                <p class="text-sm font-semibold text-white">{t.name}</p>
+                <p class="text-xs text-neutral-300">{t.role}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Play indicator — center */}
+          <div class="absolute inset-0 flex items-center justify-center testimonial-play" style="transition: opacity 0.3s ease;">
+            <div class="flex h-14 w-14 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
+              <svg class="ml-1 h-6 w-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .testimonial-flex {
+    height: 400px;
+  }
+  @media (min-width: 640px) {
+    .testimonial-flex {
+      height: 500px;
+    }
+  }
+
+  /* Hover: expand the hovered card */
+  .testimonial-flex:hover .testimonial-card {
+    flex: 0.5;
+  }
+  .testimonial-flex .testimonial-card:hover {
+    flex: 3;
+  }
+  .testimonial-card:hover .testimonial-quote {
+    color: rgba(255, 255, 255, 0.9);
+    max-height: 200px;
+  }
+  .testimonial-card:hover .testimonial-play {
+    opacity: 0;
+  }
+</style>
+
+<script>
+  document.querySelectorAll('.testimonial-card').forEach((el) => {
+    const htmlEl = el as HTMLElement;
+    const src = htmlEl.dataset.testimonialVideo;
+    if (!src) return;
+
+    const video = htmlEl.querySelector('.testimonial-video') as HTMLVideoElement;
+    const play = htmlEl.querySelector('.testimonial-play') as HTMLElement;
+
+    el.addEventListener('mouseenter', () => {
+      if (!video.src) { video.src = src; video.load(); }
+      video.currentTime = 0;
+      video.play().catch(() => {});
+      video.style.opacity = '1';
+    });
+
+    el.addEventListener('mouseleave', () => {
+      video.pause();
+      video.style.opacity = '0';
+    });
+  });
+</script>

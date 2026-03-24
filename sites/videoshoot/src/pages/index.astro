@@ -4,7 +4,7 @@ import VideoLayout from '../components/VideoLayout.astro';
 import Hero from '../components/Hero.astro';
 import HeroInteractive from '../components/HeroInteractive';
 import ReelsShowcase from '../components/ReelsShowcase.astro';
-import TestimonialCarousel from '../components/TestimonialCarousel.astro';
+import VideoTestimonials from '../components/VideoTestimonials.astro';
 import ValuesSection from '../components/ValuesSection.astro';
 import ServiceCard from '../components/ServiceCard.astro';
 import HorizontalScroller from '../components/HorizontalScroller.astro';
@@ -18,32 +18,28 @@ const projects = [
   { title: 'Mountain Adventures', video: '/images/pv4.mp4', poster: '/images/project-4.jpg' },
 ];
 
-const testimonials = [
+const videoTestimonials = [
   {
-    quote: 'Nikolas has an incredible eye for storytelling. He understood our vision instantly and delivered content that exceeded every expectation. Highly recommend.',
-    author: 'Satisfied Client',
+    name: 'Satisfied Client',
     role: 'Brand Partnership',
+    quote: 'Nikolas has an incredible eye for storytelling. He understood our vision instantly and delivered content that exceeded every expectation.',
+    videoSrc: 'https://videos.pexels.com/video-files/8336666/8336666-sd_960_506_25fps.mp4',
     image: '/images/testimonial-1.jpg',
   },
   {
-    quote: 'Professional, creative, and incredibly easy to work with. The final videos were stunning — exactly what we needed to elevate our brand presence online.',
-    author: 'Happy Client',
+    name: 'Happy Client',
     role: 'Content Campaign',
+    quote: 'Professional, creative, and incredibly easy to work with. The final videos were stunning — exactly what we needed to elevate our brand.',
+    videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4',
     image: '/images/testimonial-2.jpg',
   },
   {
-    quote: 'The quality of Nikolas\'s work speaks for itself. His reels consistently perform well and his attention to detail in every frame is unmatched.',
-    author: 'Returning Client',
+    name: 'Returning Client',
     role: 'Ongoing Collaboration',
+    quote: 'The quality of his work speaks for itself. His reels consistently perform well and his attention to detail in every frame is unmatched.',
+    videoSrc: 'https://videos.pexels.com/video-files/32860581/14006554_640_360_60fps.mp4',
     image: '/images/testimonial-3.jpg',
   },
-];
-
-const values = [
-  { number: '01.', title: 'Creativity Without Limits' },
-  { number: '02.', title: 'Authentic Storytelling' },
-  { number: '03.', title: 'Excellence in Every Frame' },
-  { number: '04.', title: 'Passion-Driven Work' },
 ];
 
 const valueVideos = [
@@ -59,18 +55,21 @@ const services = [
     description: 'From concept to final cut, I handle the entire production process. Scripting, filming, editing — delivering polished content that tells your story.',
     tags: ['Commercials', 'Brand Films', 'Short Films', 'Reels'],
     href: '/services',
+    videoSrc: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4',
   },
   {
     title: 'Creative Direction',
     description: 'I work closely with you to develop unique concepts and visual narratives that resonate with your audience and elevate your brand.',
     tags: ['Concept Development', 'Storyboarding', 'Art Direction', 'Brand Identity'],
     href: '/services',
+    videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4',
   },
   {
     title: 'Content Creation',
     description: 'Professional content for social media, websites, and campaigns. Optimized for engagement and crafted to stand out in crowded feeds.',
     tags: ['Social Media', 'Instagram Reels', 'YouTube', 'Campaign Content'],
     href: '/services',
+    videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4',
   },
 ];
 
@@ -111,7 +110,6 @@ const works = [
     description="Every project is an opportunity to push creative boundaries. I turn ideas into powerful visual stories that leave a lasting impact and deliver real results."
     linkText="About me"
     linkHref="/about"
-    values={values}
     videos={valueVideos}
   />
 
@@ -142,6 +140,7 @@ const works = [
             tags={service.tags}
             href={service.href}
             number={String(i + 1).padStart(2, '0')}
+            videoSrc={service.videoSrc}
           />
         ))}
       </div>
@@ -157,7 +156,7 @@ const works = [
 
       <HorizontalScroller>
         {works.map((work) => (
-          <div class="w-64 flex-shrink-0 snap-start sm:w-72 md:w-80">
+          <div class="w-72 flex-shrink-0 snap-start sm:w-80 md:w-96">
             <ProjectCard
               title={work.title}
               subtitle={work.subtitle}
@@ -174,9 +173,15 @@ const works = [
   <ReelsShowcase
     eyebrow="@nikolaspetrouu"
     heading="Follow the journey."
-    reelIds={['C14N94RKhK_', 'DFM7L9Uugq9', 'CjA5aKVguYE', 'DDBQo9sTKR0', 'DB_ZIJTh3Fe']}
+    reels={[
+      { title: 'Stay True', videoSrc: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4', image: '/images/project-1.jpg', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/C14N94RKhK_/' },
+      { title: 'Coastal', videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4', image: '/images/project-2.jpg', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/DFM7L9Uugq9/' },
+      { title: 'Aerial', videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4', image: '/images/project-3.jpg', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/CjA5aKVguYE/' },
+      { title: 'Adventure', videoSrc: 'https://videos.pexels.com/video-files/34085713/14457217_640_360_60fps.mp4', image: '/images/project-4.jpg', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/DDBQo9sTKR0/' },
+      { title: 'Underwater', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4', image: '/images/project-5.jpg', reelUrl: 'https://www.instagram.com/nikolaspetrouu/reel/DB_ZIJTh3Fe/' },
+    ]}
   />
 
-  {/* Testimonials */}
-  <TestimonialCarousel testimonials={testimonials} />
+  {/* Video Testimonials */}
+  <VideoTestimonials testimonials={videoTestimonials} />
 </VideoLayout>

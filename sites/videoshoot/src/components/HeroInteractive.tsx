@@ -35,6 +35,23 @@ export default function HeroInteractive({
   const [activeIndex, setActiveIndex] = useState(-1);
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Set hero height to exact window.innerHeight — definitive mobile fix
+  useEffect(() => {
+    const setHeight = () => {
+      if (sectionRef.current) {
+        sectionRef.current.style.height = window.innerHeight + 'px';
+      }
+    };
+    setHeight();
+    window.addEventListener('resize', setHeight);
+    window.addEventListener('orientationchange', setHeight);
+    return () => {
+      window.removeEventListener('resize', setHeight);
+      window.removeEventListener('orientationchange', setHeight);
+    };
+  }, []);
 
   useEffect(() => {
     const v = mainVideoRef.current;
@@ -59,8 +76,9 @@ export default function HeroInteractive({
 
   return (
     <section
+      ref={sectionRef}
       className="relative overflow-hidden bg-neutral-950"
-      style={{ height: '100dvh', marginTop: '-72px', paddingTop: '0' }}
+      style={{ height: '100vh', marginTop: '-72px' }}
     >
       {/* Background poster — visible while video loads */}
       {backgroundPoster && (
