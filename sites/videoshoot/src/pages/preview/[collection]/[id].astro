@@ -49,8 +49,51 @@ Astro.response.headers.set('Content-Security-Policy', "frame-ancestors https://c
 <VideoLayout title={`Preview: ${pageTitle}`} description={item.subtitle || ''} config={config}>
   {/* Preview banner */}
   <div class="fixed top-0 left-0 right-0 z-[9999] bg-amber-400 px-4 py-1.5 text-center shadow-md">
-    <p class="text-xs font-semibold text-amber-900">Draft Preview — Not live yet</p>
+    <p class="text-xs font-semibold text-amber-900" id="preview-status">Draft Preview — Not live yet</p>
   </div>
+
+  {/* Live preview listener — the Directus extension sends unsaved form values
+      via postMessage. We update matching DOM elements in real-time (300ms debounce).
+      Elements are matched by data-field attribute to CMS field names. */}
+  <script is:inline>
+    (function() {
+      var debounceTimer;
+      window.addEventListener('message', function(event) {
+        if (!event.data || event.data.type !== 'directus-preview') return;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function() {
+          var values = event.data.values;
+          if (!values) return;
+
+          // Update status
+          var status = document.getElementById('preview-status');
+          if (status) {
+            status.textContent = 'Live Preview — Updating...';
+            setTimeout(function() { status.textContent = 'Draft Preview — Not live yet'; }, 800);
+          }
+
+          // Update text elements
+          document.querySelectorAll('[data-field]').forEach(function(el) {
+            var field = el.getAttribute('data-field');
+            if (!(field in values)) return;
+            var value = values[field];
+            if (value === null || value === undefined) value = '';
+            el.textContent = String(value);
+          });
+
+          // Update video sources
+          document.querySelectorAll('[data-video-field]').forEach(function(el) {
+            var field = el.getAttribute('data-video-field');
+            if (!(field in values)) return;
+            var src = values[field] || '';
+            var source = el.querySelector('source');
+            if (source) { source.src = src; el.load(); }
+            else if (el.tagName === 'VIDEO') { el.src = src; }
+          });
+        }, 300);
+      });
+    })();
+  </script>
 
   {/* ============================================================ */}
   {/* PROJECTS — mirrors works/[slug].astro exactly                */}
@@ -73,6 +116,7 @@ Astro.response.headers.set('Content-Security-Policy', "frame-ancestors https://c
               preload="metadata"
               class="absolute inset-0 h-full w-full object-cover"
               poster={item.image || ''}
+              data-video-field="video_url"
             >
               <source src={item.video_url || ''} type="video/mp4" />
             </video>
@@ -85,24 +129,18 @@ Astro.response.headers.set('Content-Security-Policy', "frame-ancestors https://c
           <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
             <div class="lg:col-span-1">
               <div class="sticky top-24 space-y-6">
-                {item.client && (
-                  <div>
-                    <p class="text-xs font-medium uppercase tracking-widest text-neutral-500">Client</p>
-                    <p class="mt-1 text-base font-semibold text-neutral-900">{item.client}</p>
-                  </div>
-                )}
-                {item.year && (
-                  <div>
-                    <p class="text-xs font-medium uppercase tracking-widest text-neutral-500">Year</p>
-                    <p class="mt-1 text-base font-semibold text-neutral-900">{item.year}</p>
-                  </div>
-                )}
-                {item.category && (
-                  <div>
-                    <p class="text-xs font-medium uppercase tracking-widest text-neutral-500">Category</p>
-                    <p class="mt-1 text-base font-semibold text-neutral-900">{item.category}</p>
-                  </div>
-                )}
+                <div>
+                  <p class="text-xs font-medium uppercase tracking-widest text-neutral-500">Client</p>
+                  <p class="mt-1 text-base font-semibold text-neutral-900" data-field="client">{item.client || ''}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-medium uppercase tracking-widest text-neutral-500">Year</p>
+                  <p class="mt-1 text-base font-semibold text-neutral-900" data-field="year">{item.year || ''}</p>
+                </div>
+                <div>
+                  <p class="text-xs font-medium uppercase tracking-widest text-neutral-500">Category</p>
+                  <p class="mt-1 text-base font-semibold text-neutral-900" data-field="category">{item.category || ''}</p>
+                </div>
                 <div class="pt-4">
                   <a
                     href="/contact"
@@ -245,12 +283,12 @@ Astro.response.headers.set('Content-Security-Policy', "frame-ancestors https://c
             <svg class="mx-auto mb-6 h-10 w-10 text-white/30" fill="currentColor" viewBox="0 0 24 24">
               <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
             </svg>
-            <blockquote class="text-xl font-light leading-relaxed text-white sm:text-2xl">
+            <blockquote class="text-xl font-light leading-relaxed text-white sm:text-2xl" data-field="quote">
               {item.quote}
             </blockquote>
             <div class="mt-8">
-              <p class="text-sm font-semibold text-white">{item.name}</p>
-              {item.role && <p class="mt-1 text-sm text-white/60">{item.role}</p>}
+              <p class="text-sm font-semibold text-white" data-field="name">{item.name}</p>
+              <p class="mt-1 text-sm text-white/60" data-field="role">{item.role || ''}</p>
             </div>
           </div>
           {item.video_url && (

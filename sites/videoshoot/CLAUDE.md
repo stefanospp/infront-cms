@@ -93,6 +93,23 @@ The Directus admin shows a **live draft preview** panel when editing any item. T
 3. The route renders using the **same Astro components** as the live pages (Hero, ServiceCard, ValuesSection, etc.)
 4. Nikolas sees changes reflected immediately in the preview panel without needing a rebuild
 
+### Real-time updates (postMessage)
+
+The `directus-extension-post-message-preview` extension is installed in the Directus container. It sends unsaved form values to the preview iframe via `postMessage` as the user types:
+
+```json
+{ "type": "directus-preview", "values": { "title": "...", "video_url": "...", ... } }
+```
+
+The preview page listens for these messages and updates DOM elements matched by `data-field` attributes (300ms debounce). This means:
+- **Text fields** (title, subtitle, client, year, etc.) update as you type
+- **Video URLs** update when pasted (via `data-video-field` on `<video>` elements)
+- No save required — changes appear in ~300ms
+
+**Extension location:** `/var/lib/docker/volumes/nikolaspetrou_directus_extensions/_data/directus-extension-live-preview-sync/`
+
+Each collection has a hidden `live_preview_sync` alias field (type: `alias`, interface: `directus-extension-post-message-preview`) that enables the postMessage sync.
+
 ### Preview URLs (configured in Directus collection settings)
 
 | Collection | Directus Preview URL Template |
