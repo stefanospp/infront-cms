@@ -18,10 +18,15 @@ services:
       CORS_ENABLED: "true"
       CORS_ORIGIN: "false"
       RATE_LIMITER_ENABLED: "true"
-      STORAGE_LOCATIONS: "local"
-      STORAGE_LOCAL_ROOT: "/directus/uploads"
+      STORAGE_LOCATIONS: "s3"
+      STORAGE_S3_DRIVER: "s3"
+      STORAGE_S3_KEY: "${STORAGE_S3_KEY}"
+      STORAGE_S3_SECRET: "${STORAGE_S3_SECRET}"
+      STORAGE_S3_BUCKET: "${STORAGE_S3_BUCKET:-infront-uploads}"
+      STORAGE_S3_REGION: "auto"
+      STORAGE_S3_ENDPOINT: "${STORAGE_S3_ENDPOINT}"
+      STORAGE_S3_ROOT: "${SLUG}/"
     volumes:
-      - directus_uploads:/directus/uploads
       - directus_extensions:/directus/extensions
     depends_on:
       database:
@@ -61,6 +66,5 @@ services:
           cpus: '0.25'
 
 volumes:
-  directus_uploads:
   directus_extensions:
   db_data:

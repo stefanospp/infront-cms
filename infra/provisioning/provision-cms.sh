@@ -134,6 +134,31 @@ print(int(line) + 1 if line else 8055)
   ADMIN_EMAIL="admin@${DOMAIN}"
   ADMIN_PASSWORD="$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | head -c 16)!1"
 
+  # Read Resend API key from environment or prompt
+  RESEND_API_KEY="${RESEND_API_KEY:-}"
+  if [ -z "${RESEND_API_KEY}" ]; then
+    # Try to copy from an existing instance
+    RESEND_API_KEY=$(grep -h '^EMAIL_SMTP_PASSWORD=' "${DOCKER_BASE}"/*/".env" 2>/dev/null | head -1 | cut -d= -f2 || true)
+  fi
+  if [ -z "${RESEND_API_KEY}" ]; then
+    warn "No RESEND_API_KEY found. Email (password resets, invites) will not work."
+    warn "Set EMAIL_SMTP_PASSWORD in ${DOCKER_DIR}/.env later."
+  fi
+
+  # Read R2 storage credentials from environment or existing instance
+  STORAGE_S3_KEY="${STORAGE_S3_KEY:-}"
+  STORAGE_S3_SECRET="${STORAGE_S3_SECRET:-}"
+  STORAGE_S3_ENDPOINT="${STORAGE_S3_ENDPOINT:-}"
+  if [ -z "${STORAGE_S3_KEY}" ]; then
+    STORAGE_S3_KEY=$(grep -h '^STORAGE_S3_KEY=' "${DOCKER_BASE}"/*/".env" 2>/dev/null | head -1 | cut -d= -f2 || true)
+    STORAGE_S3_SECRET=$(grep -h '^STORAGE_S3_SECRET=' "${DOCKER_BASE}"/*/".env" 2>/dev/null | head -1 | cut -d= -f2 || true)
+    STORAGE_S3_ENDPOINT=$(grep -h '^STORAGE_S3_ENDPOINT=' "${DOCKER_BASE}"/*/".env" 2>/dev/null | head -1 | cut -d= -f2 || true)
+  fi
+  if [ -z "${STORAGE_S3_KEY}" ]; then
+    warn "No R2 storage credentials found. File uploads will not work."
+    warn "Set STORAGE_S3_KEY, STORAGE_S3_SECRET, STORAGE_S3_ENDPOINT in ${DOCKER_DIR}/.env"
+  fi
+
   cat > "${DOCKER_DIR}/.env" <<EOF
 PORT=${PORT}
 KEY=${KEY}
@@ -143,6 +168,21 @@ DB_PASSWORD=${DB_PASSWORD}
 ADMIN_EMAIL=${ADMIN_EMAIL}
 ADMIN_PASSWORD=${ADMIN_PASSWORD}
 PUBLIC_URL=https://cms.${DOMAIN}
+
+# R2 Storage — shared infront-uploads bucket, path-separated per client
+SLUG=${SLUG}
+STORAGE_S3_KEY=${STORAGE_S3_KEY}
+STORAGE_S3_SECRET=${STORAGE_S3_SECRET}
+STORAGE_S3_BUCKET=infront-uploads
+STORAGE_S3_ENDPOINT=${STORAGE_S3_ENDPOINT}
+
+EMAIL_FROM=noreply@infront.cy
+EMAIL_TRANSPORT=smtp
+EMAIL_SMTP_HOST=smtp.resend.com
+EMAIL_SMTP_PORT=465
+EMAIL_SMTP_SECURE=true
+EMAIL_SMTP_USER=resend
+EMAIL_SMTP_PASSWORD=${RESEND_API_KEY}
 EOF
 
   log "Credentials written to ${DOCKER_DIR}/.env (port: ${PORT})"
