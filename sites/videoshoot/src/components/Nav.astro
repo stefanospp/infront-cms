@@ -103,9 +103,12 @@ const { nav, name } = config;
 <script>
   const nav = document.getElementById('site-nav');
   if (nav) {
-    // Toggle solid bg after scrolling 100px
+    // Check if the page has a fullscreen dark hero (homepage)
+    // If not, start with scrolled (solid) nav immediately
+    const hasFullscreenHero = !!document.querySelector('[data-hero-interactive]');
+
     function onScroll() {
-      nav!.classList.toggle('scrolled', window.scrollY > 100);
+      nav!.classList.toggle('scrolled', !hasFullscreenHero || window.scrollY > 100);
     }
     onScroll(); // Set initial state
     window.addEventListener('scroll', onScroll, { passive: true });

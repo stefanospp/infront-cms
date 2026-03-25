@@ -105,7 +105,7 @@ export default function HeroInteractive({
   const RING_C = 2 * Math.PI * 20;
 
   return (
-    <section ref={sectionRef} className="relative overflow-hidden bg-neutral-950" style={{ height: '100vh' }}>
+    <section ref={sectionRef} className="relative overflow-hidden bg-neutral-950" style={{ height: '100vh' }} data-hero-interactive>
       {backgroundPoster && (
         <img src={backgroundPoster} alt="" className="absolute inset-0 h-full w-full object-cover" />
       )}
