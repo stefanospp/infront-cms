@@ -68,35 +68,77 @@ All pages fetch from Directus at **build time** (static site generation). The si
 
 ## Publishing Workflow
 
-Content changes require a rebuild to go live:
+The site is static — CMS changes only go live after a rebuild. The workflow:
 
-1. Nikolas edits content in `cms.nikolaspetrou.com/admin`
-2. Uses the preview panel to see the current live page
-3. When ready, triggers the **"Publish to live"** Directus Flow (manual trigger with confirmation)
-4. The Flow POSTs to `https://web.infront.cy/api/sites/videoshoot/redeploy`
-5. The admin server rebuilds and deploys via `wrangler deploy` (~30 seconds)
+1. **Edit:** Nikolas edits content in `cms.nikolaspetrou.com/admin`
+2. **Preview:** The preview panel shows a live SSR render of the draft content (updates immediately on save, no rebuild needed)
+3. **Publish:** When satisfied, Nikolas triggers the **"Publish to live"** Directus Flow (manual trigger in the admin sidebar, with confirmation dialog)
+4. **Rebuild:** The Flow POSTs to `https://web.infront.cy/api/sites/videoshoot/redeploy`
+5. **Live:** The admin server rebuilds the static site and deploys via `wrangler deploy` (~30 seconds)
 
-**Important:** The auto-rebuild on every save was intentionally removed. Only the manual "Publish to live" flow triggers a rebuild.
+**Design decisions:**
+- Auto-rebuild on every save was intentionally removed to prevent excessive rebuilds during editing sessions
+- The manual "Publish to live" flow gives Nikolas control over when changes go live
+- Preview is real-time (SSR) so Nikolas can review changes before triggering a rebuild
+- The Directus Flow has `requireConfirmation: true` so it can't be triggered accidentally
 
 ## Live Preview (CMS)
 
-The Directus admin shows a preview panel when editing items. Preview URLs point to the **actual live pages** on nikolaspetrou.com (pixel-perfect):
+The Directus admin shows a **live draft preview** panel when editing any item. The preview is server-side rendered (SSR) — it fetches the current CMS data on every request, including unsaved draft changes.
 
-| Collection | Preview URL |
-|------------|-------------|
-| projects | `https://nikolaspetrou.com/works/{{slug}}` |
-| hero | `https://nikolaspetrou.com/` |
-| about | `https://nikolaspetrou.com/about` |
-| services | `https://nikolaspetrou.com/services` |
-| testimonials | `https://nikolaspetrou.com/` |
-| reels | `https://nikolaspetrou.com/` |
-| site_settings | `https://nikolaspetrou.com/` |
+### How it works
 
-The site's CSP allows `frame-ancestors 'self' https://cms.nikolaspetrou.com` so Directus can embed pages in its preview iframe.
+1. Directus embeds `https://nikolaspetrou.com/preview/[collection]/[id]?token=PREVIEW_TOKEN` in an iframe
+2. The SSR route fetches the item directly from the Directus API (no status filter — shows drafts)
+3. The route renders using the **same Astro components** as the live pages (Hero, ServiceCard, ValuesSection, etc.)
+4. Nikolas sees changes reflected immediately in the preview panel without needing a rebuild
 
-Directus also has `CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "'self' https://nikolaspetrou.com"` set to allow loading the site in its admin iframe.
+### Preview URLs (configured in Directus collection settings)
 
-There is also an SSR preview route at `/preview/[collection]/[id]?token=PREVIEW_TOKEN` for draft content preview. This route is protected by a token and renders collection-specific layouts.
+| Collection | Directus Preview URL Template |
+|------------|-------------------------------|
+| projects | `https://nikolaspetrou.com/preview/projects/{{id}}?token=...` |
+| services | `https://nikolaspetrou.com/preview/services/{{id}}?token=...` |
+| testimonials | `https://nikolaspetrou.com/preview/testimonials/{{id}}?token=...` |
+| reels | `https://nikolaspetrou.com/preview/reels/{{id}}?token=...` |
+| hero | `https://nikolaspetrou.com/preview/hero/{{id}}?token=...` |
+| about | `https://nikolaspetrou.com/preview/about/{{id}}?token=...` |
+| site_settings | `https://nikolaspetrou.com/preview/site_settings/{{id}}?token=...` |
+
+### What each collection preview renders
+
+| Collection | Renders as |
+|------------|------------|
+| projects | Full project detail page — Hero with category/year, 16:9 video player, sidebar (client, year, category), HTML description. Mirrors `works/[slug].astro` exactly. |
+| hero | Interactive hero section (`HeroInteractive` React island) with eyebrow, heading, subheading, CTAs, background video. |
+| about | About page — Hero, featured image, ValuesSection with heading/description. Mirrors `about.astro`. |
+| services | Services page — Hero, service card with title, description, tags. Mirrors `services.astro`. |
+| testimonials | Dark-background testimonial card with quote, name, role, and video player. |
+| reels | Reel link card with Instagram URL and date label. |
+| site_settings | Settings overview showing name, tagline, email, SEO fields, and social URLs. |
+
+### Security (CSP configuration)
+
+Two CSP configurations work together to enable the preview iframe:
+
+**On the website** (`public/_headers`):
+- `frame-ancestors 'self' https://cms.nikolaspetrou.com` — allows the CMS to embed site pages in iframes
+- `X-Frame-Options: DENY` was removed (conflicts with `frame-ancestors` CSP)
+
+**On the SSR preview route** (response headers set in Astro):
+- `Content-Security-Policy: frame-ancestors https://cms.nikolaspetrou.com`
+- `X-Frame-Options: ALLOWALL`
+
+**On Directus** (docker-compose.yml env var):
+- `CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC: "'self' https://nikolaspetrou.com"` — allows Directus admin to load nikolaspetrou.com in its preview iframe
+
+### Preview token
+
+The preview route is protected by `PREVIEW_TOKEN` (set in `.env`). Without the correct `?token=` query parameter, the route returns 401 Unauthorized.
+
+### Key file
+
+`src/pages/preview/[collection]/[id].astro` — SSR route (`export const prerender = false`) that handles all collection previews in a single file with collection-specific rendering logic.
 
 ## Deployment
 
