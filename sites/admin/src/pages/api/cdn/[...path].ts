@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { env } from '../../../lib/env';
 
 export const prerender = false;
 
@@ -9,8 +10,9 @@ export const prerender = false;
  * Requires env: PLATFORM_API_URL (e.g. https://api-v2.infront.cy)
  */
 
-const PLATFORM_API_URL = process.env.PLATFORM_API_URL || 'http://localhost:3002';
-const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY || '';
+// Read at request time via env() helper — process.env is replaced by Vite at build time
+function getPlatformApiUrl() { return env('PLATFORM_API_URL') ?? 'http://localhost:3002'; }
+function getInternalApiKey() { return env('INTERNAL_API_KEY') ?? ''; }
 
 const json = (body: Record<string, unknown>, status: number) =>
   new Response(JSON.stringify(body), {
@@ -20,13 +22,15 @@ const json = (body: Record<string, unknown>, status: number) =>
 
 async function proxyRequest(request: Request, path: string): Promise<Response> {
   const suffix = path ? `/${path}` : '';
-  const url = `${PLATFORM_API_URL}/api/cdn-files${suffix}${new URL(request.url).search}`;
+  const platformUrl = getPlatformApiUrl();
+  const apiKey = getInternalApiKey();
+  const url = `${platformUrl}/api/cdn-files${suffix}${new URL(request.url).search}`;
 
   try {
     const headers = new Headers();
     // Authenticate via internal API key (admin middleware already verified the user)
-    if (INTERNAL_API_KEY) {
-      headers.set('x-internal-key', INTERNAL_API_KEY);
+    if (apiKey) {
+      headers.set('x-internal-key', apiKey);
     }
 
     // Forward content-type for POST/PATCH

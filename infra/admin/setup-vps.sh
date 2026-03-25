@@ -88,6 +88,16 @@ if [ -z "${CLOUDFLARE_ZONE_ID:-}" ]; then
   read -r CLOUDFLARE_ZONE_ID
 fi
 
+if [ -z "${PLATFORM_API_URL:-}" ]; then
+  echo "  Enter Platform API URL (e.g. http://172.17.0.1:3002):"
+  read -r PLATFORM_API_URL
+fi
+
+if [ -z "${INTERNAL_API_KEY:-}" ]; then
+  echo "  Enter Internal API Key:"
+  read -r INTERNAL_API_KEY
+fi
+
 docker run -d \
   --name infront-admin \
   --restart unless-stopped \
@@ -99,6 +109,8 @@ docker run -d \
   -e "CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}" \
   -e "CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}" \
   -e "CLOUDFLARE_ZONE_ID=${CLOUDFLARE_ZONE_ID}" \
+  -e "PLATFORM_API_URL=${PLATFORM_API_URL}" \
+  -e "INTERNAL_API_KEY=${INTERNAL_API_KEY}" \
   infront-admin
 
 echo "  Container started. Checking health..."
