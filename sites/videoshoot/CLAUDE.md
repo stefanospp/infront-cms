@@ -129,15 +129,52 @@ The site uses a **draft-first workflow**. All saves default to draft status. The
 5. `publish_hero` → PATCH hero to published
 6. `publish_about` → PATCH about to published
 7. `publish_site_settings` → PATCH site_settings to published
-8. `trigger_rebuild` → POST to `https://web.infront.cy/api/sites/videoshoot/redeploy`
+8. `trigger_rebuild` → dispatches a **GitHub Actions workflow** (`deploy-cms-site.yml`) via the GitHub API
 
-Each publish operation calls `PATCH /items/{collection}?filter[status][_eq]=draft` with `{"status": "published"}` using a static API token.
+Each publish operation calls `PATCH /items/{collection}?filter[status][_eq]=draft` with `{"status": "published"}` using a static Directus API token.
+
+The rebuild operation calls:
+```
+POST https://api.github.com/repos/stefanospp/infront-cms/actions/workflows/deploy-cms-site.yml/dispatches
+Authorization: Bearer <GITHUB_PAT>
+Body: { "ref": "main", "inputs": { "slug": "videoshoot" } }
+```
+
+### GitHub Actions deployment pipeline
+
+The `deploy-cms-site.yml` workflow runs in GitHub Actions when triggered:
+
+1. Checks out the repo
+2. Installs pnpm + Node.js 22
+3. Runs `pnpm install`
+4. Builds the site: `pnpm --filter @agency/videoshoot run build` (with DIRECTUS_URL, DIRECTUS_TOKEN, PREVIEW_TOKEN from GitHub secrets)
+5. Deploys to Cloudflare Workers via `wrangler deploy` (with CLOUDFLARE_API_TOKEN from GitHub secrets)
+
+**Build time:** ~60 seconds total (install + build + deploy)
+
+**Why GitHub Actions instead of VPS Docker build:**
+The admin Docker container on the VPS couldn't reliably build sites due to permission issues (container runs as uid 999, host files owned by root), missing monorepo dependencies (only `sites/` and `infra/` mounted, not `packages/` or `node_modules/`), and corepack/pnpm version conflicts. GitHub Actions provides a clean CI environment with full dependency resolution on every run.
+
+### GitHub secrets required
+
+| Secret | Purpose |
+|--------|---------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API token with Workers Scripts Edit permission |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account ID |
+| `DIRECTUS_URL` | CMS API URL (https://cms.nikolaspetrou.com) |
+| `DIRECTUS_TOKEN` | Static Directus API token for build-time content fetch |
+| `PREVIEW_TOKEN` | Token for staging/preview route authentication |
+
+### Directus Flow credentials
+
+The Flow's `trigger_rebuild` operation uses a **GitHub Personal Access Token** (PAT) with `repo` scope to dispatch workflows. This token is stored in the Directus Flow operation's headers, not in GitHub secrets.
 
 ### Important notes
 - The live site only shows published items — draft items are invisible on the live site
 - Staging shows everything (draft + published) — this is the "preview before going live" environment
 - The "Publish to live" Flow is the only way to push changes live — there is no auto-rebuild on save
-- Rebuilds take ~30 seconds (Astro build + wrangler deploy)
+- Rebuilds take ~60 seconds via GitHub Actions (clean CI build + Cloudflare deploy)
+- The workflow is reusable — any CMS site can trigger it with its own slug
 
 ## Preview System
 
@@ -229,26 +266,22 @@ This lets AI assistants read/write CMS content, manage schema, and create flows 
 ### Deploy commands
 
 ```bash
-# Local build + deploy
+# Local build + deploy (development)
 cd sites/videoshoot && npm run build && npx wrangler deploy
 
-# Via admin API (what the "Publish to live" Flow triggers)
-POST https://web.infront.cy/api/sites/videoshoot/redeploy
+# Via GitHub Actions (what the "Publish to live" Flow triggers)
+gh workflow run deploy-cms-site.yml -R stefanospp/infront-cms -f slug=videoshoot
+
+# Via GitHub API (what the Directus Flow calls)
+curl -X POST \
+  https://api.github.com/repos/stefanospp/infront-cms/actions/workflows/deploy-cms-site.yml/dispatches \
+  -H "Authorization: Bearer <GITHUB_PAT>" \
+  -d '{"ref":"main","inputs":{"slug":"videoshoot"}}'
 ```
 
-### VPS deploy metadata
+### Workflow file
 
-The redeploy endpoint requires `.deploy.json` in `sites/videoshoot/` on the VPS. This was created manually with:
-```json
-{
-  "projectName": "nikolaspetrou",
-  "stagingUrl": "https://nikolaspetrou.stepet.workers.dev",
-  "productionUrl": "https://nikolaspetrou.com",
-  "status": "live"
-}
-```
-
-The VPS also has `.env` at `/opt/infront-cms/sites/videoshoot/.env` with `DIRECTUS_URL`, `DIRECTUS_TOKEN`, and `PREVIEW_TOKEN` for build-time access.
+`.github/workflows/deploy-cms-site.yml` — shared workflow for all CMS sites. Triggered via `workflow_dispatch` with a `slug` input. Only builds and deploys the specified site.
 
 ## Directus Infrastructure
 
@@ -281,9 +314,14 @@ CMS exposed via Cloudflare Tunnel (`infront-admin` tunnel):
 
 | Flow | Trigger | What it does |
 |------|---------|-------------|
-| Publish to live | Manual (with confirmation) | Bulk-publishes all draft items across all 7 collections, then triggers site rebuild via admin API |
+| Publish to live | Manual (with confirmation) | Chains 8 operations: bulk-publishes all draft items across 7 collections → dispatches GitHub Actions `deploy-cms-site.yml` workflow |
 
-The "Auto-draft on edit" flow was created and later removed — it used the wrong operation type (`transform` instead of `exec`) and didn't actually modify data.
+**Flow operation chain:** publish_projects → publish_services → publish_testimonials → publish_reels → publish_hero → publish_about → publish_site_settings → trigger_rebuild (GitHub Actions dispatch)
+
+**Previous approaches that were tried and removed:**
+- Auto-rebuild webhook (fired on every save — too aggressive)
+- Auto-draft on edit flow (used `transform` operation — didn't write to DB)
+- Admin API redeploy (Docker container permission/dependency issues)
 
 ## Design
 
@@ -312,3 +350,6 @@ This site was fully deployed and configured in a single session:
 13. **MCP server** — enabled for AI-assisted content management
 14. **Draft-first workflow** — default status changed to draft, staging preview routes created
 15. **Staging site** — 5 SSR routes mirroring all live pages with draft content
+16. **GitHub Actions deploy** — replaced fragile Docker container builds with clean CI pipeline
+17. **Admin middleware** — added `x-internal-key` bypass for server-to-server API calls
+18. **End-to-end verified** — CMS edit → GitHub Actions build → Cloudflare deploy → live site updated (~60s)
