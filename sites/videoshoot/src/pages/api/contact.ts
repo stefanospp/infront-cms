@@ -25,6 +25,11 @@ function validate(data: Record<string, string>): { valid: boolean; errors: Recor
 }
 
 export const POST: APIRoute = async ({ request }) => {
+  // Runtime env: process.env for Cloudflare Workers (nodejs_compat), import.meta.env for dev
+  const getEnv = (key: string) =>
+    (typeof process !== 'undefined' ? process.env[key] : undefined) ||
+    (import.meta.env as Record<string, string>)[key] || '';
+
   // Parse form data
   let formData: FormData;
   try {
@@ -48,10 +53,10 @@ export const POST: APIRoute = async ({ request }) => {
   // Honeypot — if filled, it's spam. Store but don't notify.
   const isSpam = website.length > 0;
 
-  // Get env vars
-  const directusUrl = import.meta.env.DIRECTUS_URL;
-  const directusToken = import.meta.env.DIRECTUS_TOKEN;
-  const resendApiKey = import.meta.env.RESEND_API_KEY;
+  // Get env vars (runtime secrets on Cloudflare Workers)
+  const directusUrl = getEnv('DIRECTUS_URL');
+  const directusToken = getEnv('DIRECTUS_TOKEN');
+  const resendApiKey = getEnv('RESEND_API_KEY');
 
   // Extract metadata
   const ipAddress = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '';

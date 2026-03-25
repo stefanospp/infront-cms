@@ -33,6 +33,8 @@ jobs:
           DIRECTUS_URL: ${{ secrets.DIRECTUS_URL }}
           DIRECTUS_TOKEN: ${{ secrets.DIRECTUS_TOKEN }}
           PREVIEW_TOKEN: ${{ secrets.PREVIEW_TOKEN }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          GH_DEPLOY_PAT: ${{ secrets.GH_DEPLOY_PAT }}
 
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
