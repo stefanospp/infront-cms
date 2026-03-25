@@ -21,7 +21,7 @@ Videographer & content creator portfolio site. Custom design with CMS-powered co
 
 ## Tier: CMS
 
-CMS powered by Directus 11.5 on Hetzner VPS (Docker).
+CMS powered by Directus 11.17 on Hetzner VPS (Docker).
 
 - **Docker config:** `infra/docker/nikolaspetrou/`
 - **VPS port:** 8057
@@ -108,7 +108,27 @@ The preview page listens for these messages and updates DOM elements matched by 
 
 **Extension location:** `/var/lib/docker/volumes/nikolaspetrou_directus_extensions/_data/directus-extension-live-preview-sync/`
 
-Each collection has a hidden `live_preview_sync` alias field (type: `alias`, interface: `directus-extension-post-message-preview`) that enables the postMessage sync.
+### Visual editing (in-place)
+
+The preview page includes the `@directus/visual-editing` library (v2, loaded via CDN). Elements marked with `data-directus` attributes become clickable for in-place editing:
+
+```html
+<div data-directus="collection:projects;item:{id};fields:client;mode:popover">
+  <p>Personal Project</p>
+</div>
+```
+
+When clicked, a Directus popover editor opens. On save, the preview reloads via `onSaved` callback. This requires Directus 11.16+ (we run 11.17).
+
+### MCP server
+
+Directus MCP is enabled (`mcp_enabled: true`). Connect Claude Code or other AI tools:
+
+```
+URL: https://cms.nikolaspetrou.com/mcp?access_token=<DIRECTUS_TOKEN>
+```
+
+This lets AI assistants read/write CMS content, manage schema, and create flows — all respecting the connected user's permissions.
 
 ### Preview URLs (configured in Directus collection settings)
 
