@@ -52,6 +52,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return response;
   }
 
+  // Internal API key bypass — allows server-to-server calls (e.g. Directus webhook triggers)
+  const internalKey = env('INTERNAL_API_KEY');
+  const requestKey = context.request.headers.get('x-internal-key');
+  if (internalKey && requestKey === internalKey && pathname.startsWith('/api/')) {
+    const response = await next();
+    response.headers.set('X-Content-Type-Options', 'nosniff');
+    return response;
+  }
+
   // CSRF protection: verify Origin header on mutation requests to API routes
   if (MUTATION_METHODS.has(context.request.method) && pathname.startsWith('/api/')) {
     if (!isValidOrigin(context.request)) {
