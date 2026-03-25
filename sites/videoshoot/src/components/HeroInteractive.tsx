@@ -156,7 +156,7 @@ export default function HeroInteractive({
 
                   // Desktop: smaller + faded by default, expand on hover
                   const tx = offset * 110;
-                  const sc = isActive ? 0.9 : isHovered ? 0.95 : 0.6;
+                  const sc = isActive ? (isHovered ? 1.05 : 0.9) : isHovered ? 0.95 : 0.6;
                   const op = isActive ? 1 : isHovered ? 0.9 : 0.35;
                   const zIdx = isActive ? 10 : isHovered ? 8 : 5 - Math.abs(offset);
 
