@@ -4,45 +4,15 @@ import VideoLayout from '../components/VideoLayout.astro';
 import Hero from '../components/Hero.astro';
 import ServiceCard from '../components/ServiceCard.astro';
 import config from '../../site.config';
+import { getServices } from '../lib/directus';
 
-const services = [
-  {
-    title: 'Video Production',
-    description: 'From concept to final cut, I handle the entire production process. Scripting, filming, editing — delivering polished content that tells your story.',
-    tags: ['Commercials', 'Brand Films', 'Short Films', 'Reels'],
-    href: '/contact',
-  },
-  {
-    title: 'Creative Direction',
-    description: 'I work closely with you to develop unique concepts and visual narratives that resonate with your audience and elevate your brand.',
-    tags: ['Concept Development', 'Storyboarding', 'Art Direction', 'Brand Identity'],
-    href: '/contact',
-  },
-  {
-    title: 'Content Creation',
-    description: 'Professional content for social media, websites, and campaigns. Optimized for engagement and crafted to stand out in crowded feeds.',
-    tags: ['Social Media', 'Instagram Reels', 'YouTube', 'Campaign Content'],
-    href: '/contact',
-  },
-  {
-    title: 'Aerial & Drone Filming',
-    description: 'Cinematic drone footage that adds depth, scale, and a unique perspective to any project. Breathtaking aerial shots for any occasion.',
-    tags: ['Drone Cinematography', 'Aerial Shots', 'FPV Filming', 'Landscape'],
-    href: '/contact',
-  },
-  {
-    title: 'Post-Production & Editing',
-    description: 'Expert editing, color grading, motion graphics, and sound design. Every frame polished to perfection for maximum impact.',
-    tags: ['Video Editing', 'Color Grading', 'Motion Graphics', 'Sound Design'],
-    href: '/contact',
-  },
-  {
-    title: 'Brand Partnerships',
-    description: 'Authentic content creation for brands and businesses. Reaching engaged audiences through compelling visual storytelling across platforms.',
-    tags: ['Sponsored Content', 'Brand Stories', 'UGC', 'Campaign Content'],
-    href: '/contact',
-  },
-];
+const cmsServices = await getServices();
+const services = cmsServices.map(s => ({
+  title: s.title,
+  description: s.description,
+  tags: s.tags || [],
+  href: '/contact',
+}));
 ---
 
 <VideoLayout

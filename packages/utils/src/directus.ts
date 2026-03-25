@@ -40,7 +40,11 @@ export async function getPublishedItems<T>(
   try {
     return await client.request<T[]>(readItems(collection, query));
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error
+      ? error.message
+      : typeof error === 'object' && error !== null
+        ? JSON.stringify(error)
+        : String(error);
     throw new Error(`Failed to fetch published items from "${collection}": ${message}`);
   }
 }

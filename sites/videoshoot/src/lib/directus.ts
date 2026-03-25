@@ -90,7 +90,7 @@ export interface SiteSettings {
 export async function getProjects(options?: { limit?: number }): Promise<Project[]> {
   if (!client) return [];
   return getPublishedItems<Project>(client, 'projects', {
-    fields: ['id', 'title', 'slug', 'subtitle', 'image', 'video_url', 'reel_url', 'sort_order', 'featured_in_hero', 'hero_sort_order'],
+    fields: ['id', 'title', 'slug', 'subtitle', 'image', 'video_url', 'reel_url', 'sort_order', 'featured_in_hero', 'hero_sort_order', 'description', 'client', 'year', 'category'],
     sort: ['sort_order'],
     limit: options?.limit,
   });
@@ -155,7 +155,7 @@ export async function getAbout(): Promise<AboutContent | null> {
 export async function getSettings(): Promise<SiteSettings | null> {
   if (!client) return null;
   try {
-    const items = await getPublishedItems<SiteSettings>(client, 'settings', { limit: 1 });
+    const items = await getPublishedItems<SiteSettings>(client, 'site_settings', { limit: 1 });
     return items[0] ?? null;
   } catch {
     return null;

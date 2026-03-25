@@ -3,7 +3,7 @@ import type { SiteConfig } from '@agency/config';
 const config: SiteConfig = {
   name: 'Nikolas Petrou',
   tagline: 'Videographer & Content Creator',
-  url: 'https://videoshoot.infront.cy',
+  url: 'https://nikolaspetrou.com',
   locale: 'en-GB',
 
   contact: {

@@ -5,6 +5,10 @@ import Hero from '../components/Hero.astro';
 import ValuesSection from '../components/ValuesSection.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import config from '../../site.config';
+import { getAbout, getProjects } from '../lib/directus';
+
+const about = await getAbout();
+const cmsProjects = await getProjects();
 
 const values = [
   { number: '01.', title: 'Creativity Without Limits' },
@@ -20,14 +24,12 @@ const valueVideos = [
   { image: '/images/project-4.jpg', title: 'Brand Content' },
 ];
 
-const works = [
-  { title: 'Stay True to Yourself', subtitle: 'Cinematic Self-Expression', image: '/images/project-1.jpg', videoSrc: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4' },
-  { title: 'Coastal Stories', subtitle: 'Where Land Meets Sea', image: '/images/project-2.jpg', videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4' },
-  { title: 'Aerial Perspectives', subtitle: 'A View From Above', image: '/images/project-3.jpg', videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4' },
-  { title: 'Mountain Adventures', subtitle: 'Exploring New Heights', image: '/images/project-4.jpg', videoSrc: 'https://videos.pexels.com/video-files/34085713/14457217_640_360_60fps.mp4' },
-  { title: 'Underwater World', subtitle: 'Beneath the Surface', image: '/images/project-5.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4' },
-  { title: 'Golden Hour', subtitle: 'Chasing the Light', image: '/images/project-6.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4' },
-];
+const works = cmsProjects.map((p, i) => ({
+  title: p.title,
+  subtitle: p.subtitle || '',
+  image: `/images/project-${i + 1}.jpg`,
+  videoSrc: p.video_url || '',
+}));
 ---
 
 <VideoLayout
@@ -38,9 +40,9 @@ const works = [
   {/* Hero */}
   <Hero
     variant="minimal"
-    eyebrow="The story behind the lens."
-    heading="I tell stories through film."
-    subheading="I'm Nikolas Petrou — a videographer and content creator focused on crafting cinematic visuals that capture real moments and deliver results for brands."
+    eyebrow={about?.subheading ? "The story behind the lens." : "The story behind the lens."}
+    heading={about?.heading || "I tell stories through film."}
+    subheading={about?.subheading || "I'm Nikolas Petrou — a videographer and content creator focused on crafting cinematic visuals that capture real moments and deliver results for brands."}
     ctaText="Get in touch"
     ctaHref="/contact"
   />
@@ -67,8 +69,8 @@ const works = [
 
   {/* Values */}
   <ValuesSection
-    heading="I believe every project deserves the same passion, creativity, and attention to detail — no matter the size."
-    description="My approach is simple: understand the story, capture it authentically, and edit it to perfection. Every frame matters."
+    heading={about?.values_heading || "I believe every project deserves the same passion, creativity, and attention to detail — no matter the size."}
+    description={about?.values_description || "My approach is simple: understand the story, capture it authentically, and edit it to perfection. Every frame matters."}
     linkText="Work with me"
     linkHref="/contact"
     values={values}

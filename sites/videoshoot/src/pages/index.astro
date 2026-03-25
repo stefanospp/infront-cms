@@ -10,80 +10,54 @@ import ServiceCard from '../components/ServiceCard.astro';
 import HorizontalScroller from '../components/HorizontalScroller.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import config from '../../site.config';
-// CMS integration ready — uncomment when Directus is deployed:
-// import { getProjects, getServices, getTestimonials, getReels, getHero } from '../lib/directus';
-// import { getDirectusImageUrl } from '@agency/utils';
+import { getProjects, getServices, getTestimonials, getReels, getHero } from '../lib/directus';
 
-const projects = [
-  { title: 'Stay True to Yourself', video: '/images/pv1.mp4', poster: '/images/project-1.jpg' },
-  { title: 'Madeira', video: '/images/pv2.mp4', poster: '/images/project-2.jpg' },
-  { title: 'Love Cyprus', video: '/images/pv3.mp4', poster: '/images/project-3.jpg' },
-  { title: 'Mountain Adventures', video: '/images/pv4.mp4', poster: '/images/project-4.jpg' },
-];
+const hero = await getHero();
+const cmsProjects = await getProjects();
+const cmsServices = await getServices({ limit: 3 });
+const cmsTestimonials = await getTestimonials();
+const cmsReels = await getReels();
 
-const videoTestimonials = [
-  {
-    name: 'Satisfied Client',
-    role: 'Brand Partnership',
-    quote: 'Nikolas has an incredible eye for storytelling. He understood our vision instantly and delivered content that exceeded every expectation.',
-    videoSrc: 'https://videos.pexels.com/video-files/8336666/8336666-sd_960_506_25fps.mp4',
-    image: '/images/testimonial-1.jpg',
-  },
-  {
-    name: 'Happy Client',
-    role: 'Content Campaign',
-    quote: 'Professional, creative, and incredibly easy to work with. The final videos were stunning — exactly what we needed to elevate our brand.',
-    videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4',
-    image: '/images/testimonial-2.jpg',
-  },
-  {
-    name: 'Returning Client',
-    role: 'Ongoing Collaboration',
-    quote: 'The quality of his work speaks for itself. His reels consistently perform well and his attention to detail in every frame is unmatched.',
-    videoSrc: 'https://videos.pexels.com/video-files/32860581/14006554_640_360_60fps.mp4',
-    image: '/images/testimonial-3.jpg',
-  },
-];
+const projects = cmsProjects.slice(0, 4).map(p => ({
+  title: p.title,
+  video: p.video_url || '',
+  poster: `/images/project-${cmsProjects.indexOf(p) + 1}.jpg`,
+}));
 
-const valueVideos = [
-  { image: '/images/project-1.jpg', title: 'Turquoise Waters', videoSrc: 'https://videos.pexels.com/video-files/32860581/14006554_640_360_60fps.mp4' },
-  { image: '/images/project-2.jpg', title: 'Underwater World', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4' },
-  { image: '/images/project-3.jpg', title: 'Bali Temples', videoSrc: 'https://videos.pexels.com/video-files/36473011/15466001_640_360_30fps.mp4' },
-  { image: '/images/project-4.jpg', title: 'Island Life', videoSrc: 'https://videos.pexels.com/video-files/36473811/15466323_640_360_30fps.mp4' },
-];
+const videoTestimonials = cmsTestimonials.map(t => ({
+  name: t.name,
+  role: t.role || '',
+  quote: t.quote,
+  videoSrc: t.video_url || '',
+  image: `/images/testimonial-${cmsTestimonials.indexOf(t) + 1}.jpg`,
+}));
 
-const services = [
-  {
-    title: 'Video Production',
-    description: 'From concept to final cut, I handle the entire production process. Scripting, filming, editing — delivering polished content that tells your story.',
-    tags: ['Commercials', 'Brand Films', 'Short Films', 'Reels'],
-    href: '/services',
-    videoSrc: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4',
-  },
-  {
-    title: 'Creative Direction',
-    description: 'I work closely with you to develop unique concepts and visual narratives that resonate with your audience and elevate your brand.',
-    tags: ['Concept Development', 'Storyboarding', 'Art Direction', 'Brand Identity'],
-    href: '/services',
-    videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4',
-  },
-  {
-    title: 'Content Creation',
-    description: 'Professional content for social media, websites, and campaigns. Optimized for engagement and crafted to stand out in crowded feeds.',
-    tags: ['Social Media', 'Instagram Reels', 'YouTube', 'Campaign Content'],
-    href: '/services',
-    videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4',
-  },
-];
+const valueVideos = cmsProjects.slice(0, 4).map(p => ({
+  image: `/images/project-${cmsProjects.indexOf(p) + 1}.jpg`,
+  title: p.title,
+  videoSrc: p.video_url || '',
+}));
 
-const works = [
-  { title: 'Stay True to Yourself', subtitle: 'Cinematic Self-Expression', image: '/images/project-1.jpg', videoSrc: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4' },
-  { title: 'Coastal Stories', subtitle: 'Where Land Meets Sea', image: '/images/project-2.jpg', videoSrc: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4' },
-  { title: 'Aerial Perspectives', subtitle: 'A View From Above', image: '/images/project-3.jpg', videoSrc: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4' },
-  { title: 'Mountain Adventures', subtitle: 'Exploring New Heights', image: '/images/project-4.jpg', videoSrc: 'https://videos.pexels.com/video-files/34085713/14457217_640_360_60fps.mp4' },
-  { title: 'Underwater World', subtitle: 'Beneath the Surface', image: '/images/project-5.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4' },
-  { title: 'Golden Hour', subtitle: 'Chasing the Light', image: '/images/project-6.jpg', videoSrc: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4' },
-];
+const services = cmsServices.map(s => ({
+  title: s.title,
+  description: s.description,
+  tags: s.tags || [],
+  href: '/services',
+  videoSrc: s.video_url || '',
+}));
+
+const works = cmsProjects.map(p => ({
+  title: p.title,
+  subtitle: p.subtitle || '',
+  image: `/images/project-${cmsProjects.indexOf(p) + 1}.jpg`,
+  videoSrc: p.video_url || '',
+}));
+
+const reels = cmsReels.map(r => ({
+  url: r.url,
+  image: `/images/project-${cmsReels.indexOf(r) + 1}.jpg`,
+  date: r.date_label || '',
+}));
 
 ---
 
@@ -95,14 +69,14 @@ const works = [
   {/* Interactive Hero */}
   <HeroInteractive
       client:load
-      eyebrow="Videographer · Content Creator"
-      heading="Stay true to yourself."
-      subheading="High-quality video content that engages, inspires, and tells stories worth sharing."
-      ctaText="Get in touch"
-      ctaHref="/contact"
-      secondaryCtaText="Watch showreel"
-      secondaryCtaHref="/works"
-      backgroundVideo="https://videos.pexels.com/video-files/5933986/5933986-sd_960_506_24fps.mp4"
+      eyebrow={hero?.eyebrow || "Videographer · Content Creator"}
+      heading={hero?.heading || "Stay true to yourself."}
+      subheading={hero?.subheading || "High-quality video content that engages, inspires, and tells stories worth sharing."}
+      ctaText={hero?.cta_text || "Get in touch"}
+      ctaHref={hero?.cta_href || "/contact"}
+      secondaryCtaText={hero?.secondary_cta_text || "Watch showreel"}
+      secondaryCtaHref={hero?.secondary_cta_href || "/works"}
+      backgroundVideo={hero?.background_video || "https://videos.pexels.com/video-files/5933986/5933986-sd_960_506_24fps.mp4"}
       backgroundPoster="/images/hero-bg.jpg"
       projects={projects}
   />
@@ -245,14 +219,7 @@ const works = [
     heading="Latest Instagram Posts"
     username="nikolaspetrouu"
     postCount={221}
-    reels={[
-      { url: 'https://www.instagram.com/reel/C14N94RKhK_/', image: '/images/project-1.jpg', date: '2 months ago' },
-      { url: 'https://www.instagram.com/reel/DFM7L9Uugq9/', image: '/images/project-2.jpg', date: '3 months ago' },
-      { url: 'https://www.instagram.com/reel/CjA5aKVguYE/', image: '/images/project-3.jpg', date: '4 months ago' },
-      { url: 'https://www.instagram.com/reel/DDBQo9sTKR0/', image: '/images/project-4.jpg', date: '5 months ago' },
-      { url: 'https://www.instagram.com/reel/DB_ZIJTh3Fe/', image: '/images/project-5.jpg', date: '6 months ago' },
-      { url: 'https://www.instagram.com/reel/C8Ccm9_Bg-4/', image: '/images/project-6.jpg', date: '7 months ago' },
-    ]}
+    reels={reels}
   />
 
   {/* Video Testimonials */}

@@ -1,0 +1,239 @@
+---
+import "../../../styles/global.css";
+import VideoLayout from '../../../components/VideoLayout.astro';
+import Hero from '../../../components/Hero.astro';
+import ServiceCard from '../../../components/ServiceCard.astro';
+import config from '../../../../site.config';
+
+export const prerender = false;
+
+const PREVIEW_TOKEN = import.meta.env.PREVIEW_TOKEN || 'preview-secret';
+const DIRECTUS_URL = import.meta.env.DIRECTUS_URL;
+const DIRECTUS_TOKEN = import.meta.env.DIRECTUS_TOKEN;
+
+const { collection, id } = Astro.params;
+const token = Astro.url.searchParams.get('token');
+
+if (token !== PREVIEW_TOKEN) {
+  return new Response('Unauthorized', { status: 401 });
+}
+
+if (!DIRECTUS_URL) {
+  return new Response('CMS not configured', { status: 500 });
+}
+
+// Fetch item directly by ID via REST (no status filter — shows drafts)
+let item: Record<string, unknown> | null = null;
+try {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (DIRECTUS_TOKEN) headers['Authorization'] = `Bearer ${DIRECTUS_TOKEN}`;
+  const res = await fetch(`${DIRECTUS_URL}/items/${collection}/${id}`, { headers });
+  if (!res.ok) throw new Error(`${res.status}`);
+  const json = await res.json();
+  item = json.data;
+} catch {
+  return new Response('Item not found', { status: 404 });
+}
+
+const title = (item?.title as string) || (item?.heading as string) || (item?.name as string) || 'Preview';
+
+// Allow Directus to embed this page in an iframe
+Astro.response.headers.set('X-Frame-Options', 'ALLOWALL');
+Astro.response.headers.set('Content-Security-Policy', "frame-ancestors https://cms.nikolaspetrou.com");
+---
+
+<VideoLayout title={`Preview: ${title}`} description="" config={config}>
+  {/* Preview banner */}
+  <div class="fixed top-0 left-0 right-0 z-50 bg-amber-400 px-4 py-2 text-center">
+    <p class="text-sm font-semibold text-amber-900">
+      Preview Mode — Draft content, not live yet
+    </p>
+  </div>
+  <div class="h-10"></div>
+
+  {/* === PROJECTS === */}
+  {collection === 'projects' && (
+    <>
+      <Hero
+        variant="minimal"
+        eyebrow={`${item?.category || ''} · ${item?.year || ''}`}
+        heading={item?.title as string}
+        subheading={item?.subtitle as string}
+      />
+      <section class="bg-white pb-12">
+        <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          {item?.video_url && (
+            <div class="relative overflow-hidden rounded-xl bg-neutral-900" style="aspect-ratio: 16/9;">
+              <video controls playsinline preload="metadata" class="absolute inset-0 h-full w-full object-cover">
+                <source src={item.video_url as string} type="video/mp4" />
+              </video>
+            </div>
+          )}
+        </div>
+      </section>
+      <section class="bg-white py-12 sm:py-16">
+        <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div class="grid grid-cols-1 gap-12 lg:grid-cols-3">
+            <div class="lg:col-span-1">
+              <div class="space-y-6">
+                {item?.client && (
+                  <div>
+                    <p class="text-xs font-medium uppercase tracking-widest text-neutral-500">Client</p>
+                    <p class="mt-1 text-base font-semibold text-neutral-900">{item.client as string}</p>
+                  </div>
+                )}
+                {item?.year && (
+                  <div>
+                    <p class="text-xs font-medium uppercase tracking-widest text-neutral-500">Year</p>
+                    <p class="mt-1 text-base font-semibold text-neutral-900">{item.year as string}</p>
+                  </div>
+                )}
+                {item?.category && (
+                  <div>
+                    <p class="text-xs font-medium uppercase tracking-widest text-neutral-500">Category</p>
+                    <p class="mt-1 text-base font-semibold text-neutral-900">{item.category as string}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div class="lg:col-span-2">
+              {item?.description && (
+                <div class="prose prose-lg max-w-none text-neutral-700" set:html={item.description as string} />
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* === HERO === */}
+  {collection === 'hero' && (
+    <>
+      <Hero
+        variant="fullscreen"
+        eyebrow={item?.eyebrow as string}
+        heading={item?.heading as string}
+        subheading={item?.subheading as string}
+        ctaText={item?.cta_text as string}
+        ctaHref={item?.cta_href as string}
+      />
+      {item?.background_video && (
+        <section class="bg-white py-12">
+          <div class="mx-auto max-w-5xl px-4">
+            <p class="mb-4 text-sm font-medium text-neutral-500">Background video:</p>
+            <video controls class="w-full rounded-xl" src={item.background_video as string} />
+          </div>
+        </section>
+      )}
+    </>
+  )}
+
+  {/* === ABOUT === */}
+  {collection === 'about' && (
+    <>
+      <Hero
+        variant="minimal"
+        eyebrow="The story behind the lens."
+        heading={item?.heading as string || 'About'}
+        subheading={item?.subheading as string}
+        ctaText={item?.cta_text as string}
+        ctaHref="/contact"
+      />
+      {item?.description && (
+        <section class="bg-white py-16">
+          <div class="mx-auto max-w-3xl px-4">
+            <div class="prose prose-lg max-w-none" set:html={item.description as string} />
+          </div>
+        </section>
+      )}
+      {(item?.values_heading || item?.values_description) && (
+        <section class="bg-neutral-50 py-16">
+          <div class="mx-auto max-w-3xl px-4 text-center">
+            {item.values_heading && <h2 class="text-2xl font-bold text-neutral-900 sm:text-3xl">{item.values_heading as string}</h2>}
+            {item.values_description && <p class="mt-4 text-lg text-neutral-600">{item.values_description as string}</p>}
+          </div>
+        </section>
+      )}
+    </>
+  )}
+
+  {/* === SERVICES === */}
+  {collection === 'services' && (
+    <>
+      <Hero
+        variant="minimal"
+        eyebrow="Service preview"
+        heading={item?.title as string}
+      />
+      <section class="bg-white py-16">
+        <div class="mx-auto max-w-3xl px-4">
+          <ServiceCard
+            title={item?.title as string}
+            description={item?.description as string}
+            tags={(item?.tags as string[]) || []}
+            href="/contact"
+            number="01"
+            videoSrc={item?.video_url as string}
+          />
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* === TESTIMONIALS === */}
+  {collection === 'testimonials' && (
+    <>
+      <Hero variant="minimal" eyebrow="Testimonial preview" heading={item?.name as string} />
+      <section class="bg-white py-16">
+        <div class="mx-auto max-w-2xl px-4">
+          <div class="rounded-2xl bg-neutral-50 p-8">
+            <blockquote class="text-lg italic leading-relaxed text-neutral-700">
+              &ldquo;{item?.quote as string}&rdquo;
+            </blockquote>
+            <div class="mt-6 flex items-center gap-3">
+              <div>
+                <p class="font-semibold text-neutral-900">{item?.name as string}</p>
+                {item?.role && <p class="text-sm text-neutral-500">{item.role as string}</p>}
+              </div>
+            </div>
+            {item?.video_url && (
+              <video controls class="mt-6 w-full rounded-xl" src={item.video_url as string} />
+            )}
+          </div>
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* === REELS === */}
+  {collection === 'reels' && (
+    <>
+      <Hero variant="minimal" eyebrow="Reel preview" heading="Instagram Reel" />
+      <section class="bg-white py-16">
+        <div class="mx-auto max-w-md px-4 text-center">
+          <a href={item?.url as string} target="_blank" rel="noopener" class="text-lg font-semibold text-blue-600 underline">
+            {item?.url as string}
+          </a>
+          {item?.date_label && <p class="mt-2 text-sm text-neutral-500">{item.date_label as string}</p>}
+        </div>
+      </section>
+    </>
+  )}
+
+  {/* === SITE SETTINGS === */}
+  {collection === 'site_settings' && (
+    <>
+      <Hero variant="minimal" eyebrow="Site settings preview" heading={item?.name as string || 'Site Settings'} subheading={item?.tagline as string} />
+      <section class="bg-white py-16">
+        <div class="mx-auto max-w-2xl px-4 space-y-4">
+          {item?.email && <p><span class="font-semibold text-neutral-500">Email:</span> {item.email as string}</p>}
+          {item?.seo_title && <p><span class="font-semibold text-neutral-500">SEO Title:</span> {item.seo_title as string}</p>}
+          {item?.seo_description && <p><span class="font-semibold text-neutral-500">SEO Description:</span> {item.seo_description as string}</p>}
+          {item?.instagram_url && <p><span class="font-semibold text-neutral-500">Instagram:</span> {item.instagram_url as string}</p>}
+          {item?.facebook_url && <p><span class="font-semibold text-neutral-500">Facebook:</span> {item.facebook_url as string}</p>}
+        </div>
+      </section>
+    </>
+  )}
+</VideoLayout>

@@ -4,44 +4,10 @@ import VideoLayout from '../../components/VideoLayout.astro';
 import Hero from '../../components/Hero.astro';
 import config from '../../../site.config';
 
-// When CMS is wired up, replace getStaticPaths data with:
-// import { getProjects } from '../../lib/directus';
+import { getProjects } from '../../lib/directus';
 
-export function getStaticPaths() {
-  // Data defined here so it's available in both getStaticPaths and the page
-  const projects = [
-    {
-      title: 'Stay True to Yourself', slug: 'stay-true', subtitle: 'Cinematic Self-Expression',
-      description: '<p>A personal project exploring themes of authenticity and self-expression through cinematic visuals. Shot across multiple locations over two weeks, this piece combines drone footage, handheld cinematography, and time-lapse sequences.</p><p>The project was entirely self-directed, from concept development through to final color grade and sound design.</p>',
-      image: '/images/project-1.jpg', video_url: '/images/pv1.mp4', client: 'Personal Project', year: '2025', category: 'Personal',
-    },
-    {
-      title: 'Coastal Stories', slug: 'coastal', subtitle: 'Where Land Meets Sea',
-      description: '<p>A cinematic exploration of coastlines and the stories they hold. Dramatic cliffs, hidden coves, and the ever-changing light that makes coastal filming so rewarding.</p><p>Featuring aerial drone footage and underwater sequences for a tourism campaign.</p>',
-      image: '/images/project-2.jpg', video_url: '/images/pv2.mp4', client: 'Tourism Campaign', year: '2024', category: 'Brand Film',
-    },
-    {
-      title: 'Aerial Perspectives', slug: 'aerial', subtitle: 'A View From Above',
-      description: '<p>Showcasing the world from a bird\'s eye view. Aerial footage that reveals patterns, textures, and stories invisible from the ground.</p><p>Shot using FPV and stabilized drone technology in 4K resolution.</p>',
-      image: '/images/project-3.jpg', video_url: '/images/pv3.mp4', client: 'Various Clients', year: '2024', category: 'Commercial',
-    },
-    {
-      title: 'Mountain Adventures', slug: 'mountains', subtitle: 'Exploring New Heights',
-      description: '<p>An adventure film documenting mountain expeditions. From pre-dawn starts to summit celebrations, capturing the full emotional arc.</p><p>Created as a brand film for an outdoor equipment company.</p>',
-      image: '/images/project-4.jpg', video_url: '/images/pv4.mp4', client: 'Outdoor Brand', year: '2024', category: 'Brand Film',
-    },
-    {
-      title: 'Underwater World', slug: 'underwater', subtitle: 'Beneath the Surface',
-      description: '<p>Diving beneath the surface to capture the hidden world below with specialized underwater housing and lighting.</p><p>Used across social media campaigns and a mini-documentary about ocean conservation.</p>',
-      image: '/images/project-5.jpg', video_url: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4', client: 'Conservation Foundation', year: '2025', category: 'Documentary',
-    },
-    {
-      title: 'Golden Hour', slug: 'golden-hour', subtitle: 'Chasing the Light',
-      description: '<p>A visual love letter to the golden hour — warm light just after sunrise and before sunset. Compiled from shoots across multiple countries.</p><p>Originally a showreel piece, it became a viral social media hit.</p>',
-      image: '/images/project-6.jpg', video_url: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4', client: 'Personal Project', year: '2025', category: 'Social Media',
-    },
-  ];
-
+export async function getStaticPaths() {
+  const projects = await getProjects();
   return projects.map((p) => ({
     params: { slug: p.slug },
     props: { project: p },
