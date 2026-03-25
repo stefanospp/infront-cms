@@ -368,14 +368,43 @@ If you add entirely new functionality that doesn't fit an existing article, crea
 - API routes: rate limiting, input validation (zod), CORS restricted to site origin
 - Directus: public registration disabled, CORS restricted, file upload types limited
 
-## CDN Media Storage
+## File Storage (R2)
 
-Public media files are served via `cdn.infront.cy` — a Cloudflare R2 bucket with a custom domain (EU jurisdiction, GDPR compliant). Zero egress/bandwidth costs.
+All file storage is on **Cloudflare R2** — no files are stored on the VPS disk. Full documentation: `infra/STORAGE.md`.
 
-- **Public files:** `https://cdn.infront.cy/<clientId>/<folder>/<filename>` — cached globally at Cloudflare edge
-- **Private files:** Stored in the `infront-uploads` R2 bucket, accessed via presigned URLs (1hr expiry)
-- **Management:** Clients manage files at `portal.infront.cy/files`; admin manages all clients at `web.infront.cy/media`
-- **API:** CDN file routes at `api-v2.infront.cy/api/cdn-files/*` (Hono, in `infront-platform` repo)
+### Two systems, one R2 bucket
+
+| System | Purpose | R2 Bucket | Path Prefix | Management |
+|--------|---------|-----------|-------------|------------|
+| **Directus CMS** | CMS-managed content (blog images, team photos) | `infront-uploads` | `<slug>/` | Directus admin panel |
+| **CDN Media** | Generic media, videos, downloadable resources | `infront-cdn` (public) / `infront-uploads` (private) | `<clientId>/` | `web.infront.cy/media` or `portal.infront.cy/files` |
+
+These are **completely separate systems** — no sync between them. They share the same R2 bucket (`infront-uploads`) but use different path prefixes.
+
+### R2 Buckets
+
+| Bucket | Jurisdiction | Endpoint | Custom Domain |
+|--------|-------------|----------|---------------|
+| `infront-cdn` | EU | `*.eu.r2.cloudflarestorage.com` | `cdn.infront.cy` |
+| `infront-uploads` | Default | `*.r2.cloudflarestorage.com` | None |
+
+**The two buckets use different endpoints.** Using the wrong endpoint returns 403.
+
+### Directus storage config
+
+Each Directus instance stores files in R2 with a slug-based prefix for isolation:
+
+```yaml
+# docker-compose.yml
+STORAGE_LOCATIONS: "s3"
+STORAGE_S3_DRIVER: "s3"
+STORAGE_S3_KEY: "${STORAGE_S3_KEY}"
+STORAGE_S3_SECRET: "${STORAGE_S3_SECRET}"
+STORAGE_S3_BUCKET: "infront-uploads"
+STORAGE_S3_REGION: "auto"
+STORAGE_S3_ENDPOINT: "${STORAGE_S3_ENDPOINT}"
+STORAGE_S3_ROOT: "${SLUG}/"
+```
 
 ### Using CDN files in client sites
 
@@ -389,10 +418,12 @@ import Video from '@agency/ui/components/Video.astro';
 ```
 
 ### Key files
+- `infra/STORAGE.md` — comprehensive storage documentation
+- `infra/PLATFORM-API-OPS.md` — platform API operations guide
 - `packages/utils/src/cdn.ts` — `getCdnUrl()` helper
 - `packages/ui/src/components/Video.astro` — shared video component
 - `sites/admin/src/islands/CDNMediaLibrary.tsx` — admin media management island
-- `sites/admin/src/pages/api/cdn/[...path].ts` — proxy to platform API
+- `sites/admin/src/pages/api/cdn/[...path].ts` — proxy to platform API (uses `env()` helper, not `process.env`)
 
 ## Commands
 
