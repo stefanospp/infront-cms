@@ -11,11 +11,20 @@ import ResourceCard from '../components/ResourceCard.astro';
 import CourseCard from '../components/CourseCard.astro';
 import ContactSection from '../components/ContactSection.astro';
 import Footer from '../components/Footer.astro';
-import { schools } from '../data/schools';
-import { examCards, medicalBlock } from '../data/exams';
-import { getResources, getCourses } from '../lib/directus';
+import {
+  getSiteContent,
+  getSchools,
+  getExamDestinations,
+  getMedicalBlock,
+  getResources,
+  getCourses,
+} from '../lib/cms';
 import config from '../../site.config';
 
+const siteContent = await getSiteContent();
+const schoolsData = await getSchools();
+const examDestinations = await getExamDestinations();
+const medBlock = await getMedicalBlock();
 const featuredResources = await getResources({ limit: 3 });
 const upcomingCourses = (await getCourses({ limit: 3 })).filter(c => c.course_status === 'upcoming');
 
@@ -60,30 +69,37 @@ const structuredData = {
   <Nav />
 
   <main id="main-content">
-    <Hero />
-    <Ticker />
+    <Hero
+      badge={siteContent.hero_badge}
+      heading={siteContent.hero_heading}
+      headingHighlight={siteContent.hero_heading_highlight}
+      subheading={siteContent.hero_subheading}
+      ctaPrimaryText={siteContent.hero_cta_primary_text}
+      ctaPrimaryHref={siteContent.hero_cta_primary_href}
+      whatsappUrl={siteContent.hero_whatsapp_url}
+      viberUrl={siteContent.hero_viber_url}
+    />
+    <Ticker items={siteContent.ticker_items} />
 
     <!-- Curriculum by School -->
     <section id="subjects" class="px-6 py-20 sm:px-10 sm:py-28 lg:px-16">
       <div class="mb-12 text-center">
         <span class="mb-4 inline-block rounded-md border border-neutral-300 bg-[var(--th-yellow)] px-4 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em]">
-          Curriculum Coverage
+          {siteContent.schools_badge}
         </span>
-        <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]">
-          Your school. <mark>Your subjects.</mark>
-        </h2>
+        <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]" set:html={siteContent.schools_heading} />
         <p class="mx-auto mt-4 max-w-2xl text-base text-neutral-500 sm:text-lg">
-          Lessons tailored to the specific curriculum, exam board, and syllabus at each school.
+          {siteContent.schools_subtitle}
         </p>
       </div>
 
-      <SchoolTabs />
+      <SchoolTabs schools={schoolsData} />
     </section>
 
     <!-- University Entrance Exam Preparation band -->
     <div class="flex items-center justify-center border-y border-[var(--th-border)] bg-[var(--th-black)] py-4 rounded-none">
       <span class="font-mono text-[10px] font-bold uppercase tracking-[0.25em] text-white sm:text-xs">
-        ■&nbsp; University Entrance Exam Preparation
+        ■&nbsp; {siteContent.exams_band_text}
       </span>
     </div>
 
@@ -91,24 +107,22 @@ const structuredData = {
     <section id="exams" class="px-6 py-20 sm:px-10 sm:py-28 lg:px-16">
       <div class="mb-12 text-center">
         <span class="mb-4 inline-block rounded-md border border-neutral-300 bg-[var(--th-orange)] px-4 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em]">
-          Higher Education
+          {siteContent.exams_badge}
         </span>
-        <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]">
-          University exams &<br /><mark>medical school.</mark>
-        </h2>
+        <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]" set:html={siteContent.exams_heading} />
         <p class="mx-auto mt-4 max-w-2xl text-base text-neutral-500 sm:text-lg">
-          Preparation for entrance exams and admissions to universities in the UK, US, Netherlands, Germany, and Cyprus.
+          {siteContent.exams_subtitle}
         </p>
       </div>
 
       <div class="grid gap-6 lg:grid-cols-3">
-        {examCards.map((exam) => (
+        {examDestinations.map((exam) => (
           <ExamCard exam={exam} />
         ))}
       </div>
 
       <div class="mt-8">
-        <MedicalBlock block={medicalBlock} />
+        <MedicalBlock block={medBlock} />
       </div>
     </section>
 
@@ -117,13 +131,11 @@ const structuredData = {
       <section class="px-6 py-20 sm:px-10 sm:py-28 lg:px-16">
         <div class="mb-12 text-center">
           <span class="mb-4 inline-block rounded-md border border-neutral-300 bg-[var(--th-green)] px-4 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em]">
-            Free Resources
+            {siteContent.resources_badge}
           </span>
-          <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]">
-            STUDY <mark>MATERIALS.</mark>
-          </h2>
+          <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]" set:html={siteContent.resources_heading} />
           <p class="mx-auto mt-4 max-w-2xl text-base text-neutral-500 sm:text-lg">
-            Free revision notes, past papers, and topic summaries. Download and study at your own pace.
+            {siteContent.resources_subtitle}
           </p>
         </div>
 
@@ -149,13 +161,11 @@ const structuredData = {
       <section class="border-t border-[var(--th-border)] px-6 py-20 sm:px-10 sm:py-28 lg:px-16">
         <div class="mb-12 text-center">
           <span class="mb-4 inline-block rounded-md border border-neutral-300 bg-[var(--th-blue)] px-4 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em]">
-            Online Courses
+            {siteContent.courses_badge}
           </span>
-          <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]">
-            REVISION <mark>COURSES.</mark>
-          </h2>
+          <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]" set:html={siteContent.courses_heading} />
           <p class="mx-auto mt-4 max-w-2xl text-base text-neutral-500 sm:text-lg">
-            Live group revision sessions on Zoom. Small classes, exam-focused, with expert guidance.
+            {siteContent.courses_subtitle}
           </p>
         </div>
 
@@ -177,7 +187,17 @@ const structuredData = {
     )}
 
     <!-- Contact -->
-    <ContactSection />
+    <ContactSection
+      badge={siteContent.contact_badge}
+      heading={siteContent.contact_heading}
+      directHeading={siteContent.contact_direct_heading}
+      directDescription={siteContent.contact_direct_description}
+      whatsappUrl={siteContent.hero_whatsapp_url}
+      viberUrl={siteContent.hero_viber_url}
+      email={config.contact.email}
+      locationLabel={`${config.contact.address?.city}, ${config.contact.address?.country}`}
+      locationNote={siteContent.contact_location_note}
+    />
   </main>
 
   <Footer />

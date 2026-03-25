@@ -1,7 +1,6 @@
 {
   "name": "@agency/utils",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -12,6 +11,12 @@
     "zod": "^3.23.0"
   },
   "peerDependencies": {
-    "@agency/config": "workspace:*"
-  }
+    "@agency/config": "^1.0.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "src"
+  ]
 }

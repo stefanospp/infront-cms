@@ -1,0 +1,175 @@
+{
+  "commonFields": [
+    {
+      "field": "status",
+      "type": "string",
+      "schema": { "default_value": "draft", "is_nullable": false },
+      "meta": {
+        "interface": "select-dropdown",
+        "options": {
+          "choices": [
+            { "text": "Published", "value": "published" },
+            { "text": "Draft", "value": "draft" },
+            { "text": "Archived", "value": "archived" }
+          ]
+        },
+        "display": "labels",
+        "display_options": {
+          "choices": [
+            { "text": "Published", "value": "published", "foreground": "#FFFFFF", "background": "#2ecda7" },
+            { "text": "Draft", "value": "draft", "foreground": "#FFFFFF", "background": "#d3dae4" },
+            { "text": "Archived", "value": "archived", "foreground": "#FFFFFF", "background": "#a2b5cd" }
+          ]
+        },
+        "width": "full"
+      }
+    },
+    {
+      "field": "sort",
+      "type": "integer",
+      "schema": { "is_nullable": true },
+      "meta": { "interface": "input", "hidden": true }
+    }
+  ],
+  "singletons": [
+    {
+      "collection": "site_content",
+      "meta": { "icon": "tune", "note": "Site-wide text content — hero, section headings, page text", "singleton": true },
+      "fields": [
+        { "field": "hero_badge", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "hero" } },
+        { "field": "hero_heading", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "hero" } },
+        { "field": "hero_heading_highlight", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "hero" } },
+        { "field": "hero_subheading", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-rich-text-html", "width": "full", "group": "hero", "note": "HTML allowed — use <strong> for bold school names" } },
+        { "field": "hero_cta_primary_text", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "hero" } },
+        { "field": "hero_cta_primary_href", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "hero" } },
+        { "field": "hero_whatsapp_url", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "hero" } },
+        { "field": "hero_viber_url", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "hero" } },
+        { "field": "ticker_items", "type": "json", "schema": { "is_nullable": true }, "meta": { "interface": "list", "width": "full", "group": "hero", "note": "Array of strings shown in the scrolling ticker" } },
+        { "field": "schools_badge", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "sections" } },
+        { "field": "schools_heading", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "sections", "note": "Use <mark> for highlighted text" } },
+        { "field": "schools_subtitle", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full", "group": "sections" } },
+        { "field": "exams_badge", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "sections" } },
+        { "field": "exams_heading", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "sections", "note": "Use <mark> for highlighted text, <br /> for line breaks" } },
+        { "field": "exams_subtitle", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full", "group": "sections" } },
+        { "field": "exams_band_text", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "full", "group": "sections" } },
+        { "field": "resources_badge", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "sections" } },
+        { "field": "resources_heading", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "sections" } },
+        { "field": "resources_subtitle", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full", "group": "sections" } },
+        { "field": "courses_badge", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "sections" } },
+        { "field": "courses_heading", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "sections" } },
+        { "field": "courses_subtitle", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full", "group": "sections" } },
+        { "field": "contact_badge", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "contact" } },
+        { "field": "contact_heading", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "contact" } },
+        { "field": "contact_direct_heading", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "contact" } },
+        { "field": "contact_direct_description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full", "group": "contact" } },
+        { "field": "contact_location_note", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "full", "group": "contact" } },
+        { "field": "resources_page_title", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "pages" } },
+        { "field": "resources_page_subtitle", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full", "group": "pages" } },
+        { "field": "courses_page_title", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "pages" } },
+        { "field": "courses_page_subtitle", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full", "group": "pages" } },
+        { "field": "tutoring_page_title", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "group": "pages" } },
+        { "field": "tutoring_page_subtitle", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full", "group": "pages" } }
+      ]
+    },
+    {
+      "collection": "medical_block",
+      "meta": { "icon": "local_hospital", "note": "Medical school applications specialisation block", "singleton": true },
+      "fields": [
+        { "field": "title", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "full", "required": true } },
+        { "field": "description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "subjects", "type": "json", "schema": { "is_nullable": true }, "meta": { "interface": "list", "width": "full", "note": "Array of subject strings" } }
+      ]
+    }
+  ],
+  "collections": [
+    {
+      "collection": "resources",
+      "meta": { "icon": "menu_book", "note": "Free study resources — revision notes, past papers, formula sheets", "sort_field": "sort" },
+      "fields": [
+        { "field": "title", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "full", "required": true } },
+        { "field": "subject", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "select-dropdown", "options": { "choices": [{ "text": "Biology", "value": "Biology" }, { "text": "Chemistry", "value": "Chemistry" }, { "text": "Physics", "value": "Physics" }, { "text": "Mathematics", "value": "Mathematics" }] }, "width": "half", "required": true } },
+        { "field": "exam_board", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "select-dropdown", "options": { "choices": [{ "text": "IGCSE", "value": "IGCSE" }, { "text": "A-Level", "value": "A-Level" }, { "text": "IB", "value": "IB" }, { "text": "Pancyprian", "value": "Pancyprian" }, { "text": "SAT", "value": "SAT" }] }, "width": "half", "required": true } },
+        { "field": "resource_type", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "select-dropdown", "options": { "choices": [{ "text": "Revision Notes", "value": "Revision Notes" }, { "text": "Past Papers", "value": "Past Papers" }, { "text": "Topic Summary", "value": "Topic Summary" }, { "text": "Formula Sheet", "value": "Formula Sheet" }, { "text": "Checklist", "value": "Checklist" }] }, "width": "half", "required": true } },
+        { "field": "description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "drive_url", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "full", "required": true, "note": "Google Drive or download link" } }
+      ]
+    },
+    {
+      "collection": "courses",
+      "meta": { "icon": "school", "note": "Online revision courses via Zoom", "sort_field": "sort" },
+      "fields": [
+        { "field": "title", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "full", "required": true } },
+        { "field": "subject", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "select-dropdown", "options": { "choices": [{ "text": "Biology", "value": "Biology" }, { "text": "Chemistry", "value": "Chemistry" }, { "text": "Physics", "value": "Physics" }, { "text": "Mathematics", "value": "Mathematics" }] }, "width": "half", "required": true } },
+        { "field": "level", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "syllabus", "type": "json", "schema": { "is_nullable": true }, "meta": { "interface": "list", "width": "full", "note": "Array of topic strings" } },
+        { "field": "schedule", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "start_date", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "duration", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "price", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "zoom_url", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "full" } },
+        { "field": "course_status", "type": "string", "schema": { "is_nullable": false, "default_value": "upcoming" }, "meta": { "interface": "select-dropdown", "options": { "choices": [{ "text": "Upcoming", "value": "upcoming" }, { "text": "In Progress", "value": "in-progress" }, { "text": "Full", "value": "full" }, { "text": "Completed", "value": "completed" }] }, "width": "half", "required": true } },
+        { "field": "max_students", "type": "integer", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } }
+      ]
+    },
+    {
+      "collection": "schools",
+      "meta": { "icon": "account_balance", "note": "Schools served — curriculum and subject data", "sort_field": "sort" },
+      "fields": [
+        { "field": "name", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "full", "required": true } },
+        { "field": "type", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "full", "note": "e.g. Private English School, IB World School" } },
+        { "field": "qualifications", "type": "json", "schema": { "is_nullable": true }, "meta": { "interface": "input-code", "options": { "language": "json" }, "width": "full", "note": "JSON array: [{ \"label\": \"IGCSE\", \"color\": \"yellow\" }]" } },
+        { "field": "subjects", "type": "json", "schema": { "is_nullable": true }, "meta": { "interface": "input-code", "options": { "language": "json" }, "width": "full", "note": "JSON array: [{ \"name\": \"Biology\", \"accentColor\": \"green\", \"topics\": \"...\" }]" } }
+      ]
+    },
+    {
+      "collection": "exam_destinations",
+      "meta": { "icon": "flight_takeoff", "note": "University entrance exam destinations", "sort_field": "sort" },
+      "fields": [
+        { "field": "destination", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "half", "required": true } },
+        { "field": "flag", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "note": "Emoji flag" } },
+        { "field": "exam_name", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "half", "required": true } },
+        { "field": "tag_label", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "tag_color", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "select-dropdown", "options": { "choices": [{ "text": "Green", "value": "green" }, { "text": "Yellow", "value": "yellow" }, { "text": "Blue", "value": "blue" }, { "text": "Orange", "value": "orange" }, { "text": "Purple", "value": "purple" }] }, "width": "half" } },
+        { "field": "description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "subjects", "type": "json", "schema": { "is_nullable": true }, "meta": { "interface": "list", "width": "full", "note": "Array of subject strings" } }
+      ]
+    },
+    {
+      "collection": "tutoring_tiers",
+      "meta": { "icon": "payments", "note": "Tutoring pricing tiers", "sort_field": "sort" },
+      "fields": [
+        { "field": "name", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "half", "required": true } },
+        { "field": "emoji", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "size_label", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "note": "e.g. (2–4 students)" } },
+        { "field": "description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "benefits", "type": "json", "schema": { "is_nullable": true }, "meta": { "interface": "list", "width": "full", "note": "Array of benefit strings" } },
+        { "field": "best_for", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "price", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "note": "e.g. €30" } },
+        { "field": "price_unit", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "note": "e.g. /hour or /student/hour" } },
+        { "field": "accent_color", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "note": "CSS variable e.g. var(--th-yellow)" } },
+        { "field": "cta_text", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half" } },
+        { "field": "cta_url", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "full", "note": "WhatsApp deep link or other URL" } }
+      ]
+    },
+    {
+      "collection": "tutoring_steps",
+      "meta": { "icon": "format_list_numbered", "note": "How-it-works steps (shared by tutoring and courses pages)", "sort_field": "sort" },
+      "fields": [
+        { "field": "emoji", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "note": "Emoji or number" } },
+        { "field": "title", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "half", "required": true } },
+        { "field": "description", "type": "text", "schema": { "is_nullable": true }, "meta": { "interface": "input-multiline", "width": "full" } },
+        { "field": "page", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "select-dropdown", "options": { "choices": [{ "text": "Tutoring", "value": "tutoring" }, { "text": "Courses", "value": "courses" }] }, "width": "half", "required": true } }
+      ]
+    },
+    {
+      "collection": "tutoring_subjects",
+      "meta": { "icon": "science", "note": "Subjects available for tutoring", "sort_field": "sort" },
+      "fields": [
+        { "field": "name", "type": "string", "schema": { "is_nullable": false }, "meta": { "interface": "input", "width": "half", "required": true } },
+        { "field": "accent_color", "type": "string", "schema": { "is_nullable": true }, "meta": { "interface": "input", "width": "half", "note": "CSS variable e.g. var(--th-green)" } },
+        { "field": "levels", "type": "json", "schema": { "is_nullable": true }, "meta": { "interface": "list", "width": "full", "note": "Array of level strings e.g. IGCSE, A-Level" } }
+      ]
+    }
+  ]
+}

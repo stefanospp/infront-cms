@@ -2,10 +2,30 @@
 import ContactForm from '../islands/ContactForm.tsx';
 
 interface Props {
+  badge?: string;
+  heading?: string;
+  directHeading?: string;
+  directDescription?: string;
+  whatsappUrl?: string;
+  viberUrl?: string;
+  email?: string;
+  locationLabel?: string;
+  locationNote?: string;
   class?: string;
 }
 
-const { class: className } = Astro.props;
+const {
+  badge = 'Contact',
+  heading = 'Get in touch<mark>.</mark>',
+  directHeading = 'Send a message directly',
+  directDescription = 'The quickest way to reach Theodora. Tell her your school, subject, and level and she will get back to you directly.',
+  whatsappUrl = 'https://wa.me/35799000000',
+  viberUrl = 'viber://chat?number=%2B35799000000',
+  email = 'theodora@theorium.cy',
+  locationLabel = 'Larnaca, Cyprus',
+  locationNote = 'In-person lessons · address shared on contact',
+  class: className,
+} = Astro.props;
 ---
 
 <section id="contact" class:list={['px-6 py-20 sm:px-10 sm:py-28 lg:px-16', className]}>
@@ -13,11 +33,9 @@ const { class: className } = Astro.props;
     <!-- Section header -->
     <div class="mb-12">
       <span class="mb-4 inline-block rounded-md border border-neutral-300 bg-[var(--th-green)] px-4 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.2em]">
-        Contact
+        {badge}
       </span>
-      <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]">
-        Get in touch<mark>.</mark>
-      </h2>
+      <h2 class="text-[32px] font-bold uppercase tracking-[-1px] sm:text-[40px] lg:text-[48px]" set:html={heading} />
     </div>
 
     <div class="grid gap-8 lg:grid-cols-2">
@@ -25,12 +43,12 @@ const { class: className } = Astro.props;
       <div class="flex flex-col gap-6">
         <!-- WhatsApp CTA -->
         <div class="rounded-lg border border-[var(--th-border)] bg-white p-8">
-          <h3 class="text-xl font-bold">Send a message directly</h3>
+          <h3 class="text-xl font-bold">{directHeading}</h3>
           <p class="mt-3 text-base leading-relaxed text-neutral-500">
-            The quickest way to reach Theodora. Tell her your school, subject, and level and she will get back to you directly.
+            {directDescription}
           </p>
           <a
-            href="https://wa.me/35799000000"
+            href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
             class="mt-5 inline-flex items-center gap-2 rounded-md border-2 border-[var(--th-green-vivid)] bg-[var(--th-green-vivid)] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-[var(--th-shadow)] transition-all hover:shadow-none"
@@ -41,7 +59,7 @@ const { class: className } = Astro.props;
             Message on WhatsApp
           </a>
           <a
-            href="viber://chat?number=%2B35799000000"
+            href={viberUrl}
             target="_blank"
             rel="noopener noreferrer"
             class="mt-3 inline-flex items-center gap-2 rounded-md border-2 border-[#7360F2] bg-[#7360F2] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white shadow-[var(--th-shadow)] transition-all hover:shadow-none"
@@ -56,15 +74,15 @@ const { class: className } = Astro.props;
         <!-- Location -->
         <div class="rounded-lg border border-[var(--th-border)] bg-white p-6">
           <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Location</span>
-          <p class="mt-1 text-base font-semibold">Larnaca, Cyprus</p>
-          <p class="text-sm text-neutral-500">In-person lessons · address shared on contact</p>
+          <p class="mt-1 text-base font-semibold">{locationLabel}</p>
+          <p class="text-sm text-neutral-500">{locationNote}</p>
         </div>
 
         <!-- Email -->
         <div class="rounded-lg border border-[var(--th-border)] bg-white p-6">
           <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Email</span>
-          <a href="mailto:theodora@theorium.cy" class="mt-1 block text-base font-semibold underline decoration-2 underline-offset-2 hover:text-[var(--th-green-vivid)]">
-            theodora@theorium.cy
+          <a href={`mailto:${email}`} class="mt-1 block text-base font-semibold underline decoration-2 underline-offset-2 hover:text-[var(--th-green-vivid)]">
+            {email}
           </a>
         </div>
       </div>

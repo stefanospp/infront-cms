@@ -1,11 +1,18 @@
 {
   "name": "@agency/config",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
     "./eslint": "./eslint.config.mjs",
     "./prettier": "./prettier.config.mjs"
-  }
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "files": [
+    "src",
+    "eslint.config.mjs",
+    "prettier.config.mjs"
+  ]
 }

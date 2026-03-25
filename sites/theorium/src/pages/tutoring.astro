@@ -5,13 +5,17 @@ import Nav from '../components/Nav.astro';
 import PageHero from '../components/PageHero.astro';
 import Footer from '../components/Footer.astro';
 import config from '../../site.config';
+import {
+  getSiteContent,
+  getTutoringTiers,
+  getTutoringSteps,
+  getTutoringSubjects,
+} from '../lib/cms';
 
-const subjects = [
-  { name: 'Biology', color: 'var(--th-green)', levels: ['IGCSE', 'A-Level', 'IB SL/HL', 'Pancyprian'] },
-  { name: 'Chemistry', color: 'var(--th-green)', levels: ['IGCSE', 'A-Level', 'IB SL/HL', 'Pancyprian'] },
-  { name: 'Physics', color: 'var(--th-blue)', levels: ['IGCSE', 'A-Level', 'IB SL/HL', 'Pancyprian'] },
-  { name: 'Mathematics', color: 'var(--th-orange)', levels: ['IGCSE', 'A-Level', 'IB AA/AI', 'SAT', 'Pancyprian'] },
-];
+const siteContent = await getSiteContent();
+const tiers = await getTutoringTiers();
+const steps = await getTutoringSteps('tutoring');
+const subjects = await getTutoringSubjects();
 ---
 
 <BaseLayout
@@ -25,97 +29,63 @@ const subjects = [
     <PageHero
       badge="Online Tutoring"
       badgeColor="var(--th-purple)"
-      title="ONLINE <mark>TUTORING.</mark>"
-      subtitle="Private and small group science & maths lessons via Zoom. Same expert tuition, from anywhere in Cyprus or abroad."
+      title={siteContent.tutoring_page_title}
+      subtitle={siteContent.tutoring_page_subtitle}
     />
 
-    <!-- Two tiers -->
+    <!-- Tutoring tiers -->
     <section class="px-6 py-20 sm:px-10 sm:py-28 lg:px-16">
       <div class="grid gap-8 lg:grid-cols-2">
+        {tiers.map((tier, idx) => (
+          <div class="flex h-full flex-col overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow-lg)]">
+            <div class="h-[4px]" style={`background-color: ${tier.accent_color}`} />
+            <div class="flex flex-1 flex-col p-8">
+              <span class="text-4xl">{tier.emoji}</span>
+              <h2 class="mt-4 text-2xl font-extrabold uppercase">
+                {tier.name}
+                {tier.size_label && <span class="text-lg font-bold text-neutral-400"> {tier.size_label}</span>}
+              </h2>
+              <p class="mt-3 text-[15px] font-medium leading-relaxed text-neutral-500">
+                {tier.description}
+              </p>
 
-        <!-- Private 1-on-1 -->
-        <div class="flex h-full flex-col overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow-lg)]">
-          <div class="h-[4px] bg-[var(--th-yellow)]" />
-          <div class="flex flex-1 flex-col p-8">
-            <span class="text-4xl">👤</span>
-            <h2 class="mt-4 text-2xl font-extrabold uppercase">Private 1-on-1</h2>
-            <p class="mt-3 text-[15px] font-medium leading-relaxed text-neutral-500">
-              Fully personalised sessions tailored to the student's syllabus, pace, and goals. One-on-one attention means faster progress and targeted exam preparation.
-            </p>
+              <ul class="mt-6 space-y-3">
+                {tier.benefits.map((item) => (
+                  <li class="flex items-start gap-3 text-sm">
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full" style={`background-color: ${tier.accent_color}`}>
+                      <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    </span>
+                    <span class="font-medium">{item}</span>
+                  </li>
+                ))}
+              </ul>
 
-            <ul class="mt-6 space-y-3">
-              {['Personalised lesson plans', 'Flexible scheduling', 'Exam-focused revision', 'Progress tracking & feedback'].map((item) => (
-                <li class="flex items-start gap-3 text-sm">
-                  <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--th-green)]">
-                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  </span>
-                  <span class="font-medium">{item}</span>
-                </li>
-              ))}
-            </ul>
+              <div class="mt-6 rounded-lg border border-neutral-200 bg-neutral-100 p-4">
+                <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Best for</span>
+                <p class="mt-1 text-sm text-neutral-600">{tier.best_for}</p>
+              </div>
 
-            <div class="mt-6 rounded-lg border border-neutral-200 bg-neutral-100 p-4">
-              <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Best for</span>
-              <p class="mt-1 text-sm text-neutral-600">Students needing targeted help on specific topics, intensive exam preparation, or catching up on missed content.</p>
-            </div>
+              <div class="mt-auto pt-8">
+                <p class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Starting from</p>
+                <p class="text-3xl font-extrabold">{tier.price}<span class="text-base font-medium text-neutral-400">{tier.price_unit}</span></p>
 
-            <div class="mt-auto pt-8">
-              <p class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Starting from</p>
-              <p class="text-3xl font-extrabold">€30<span class="text-base font-medium text-neutral-400">/hour</span></p>
-
-              <a
-                href="https://wa.me/35799000000?text=Hi%20Theodora%2C%20I%27d%20like%20to%20book%20a%20private%20tutoring%20session."
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border-2 border-[var(--th-black)] bg-[var(--th-black)] px-6 py-3 text-sm font-bold uppercase tracking-wider text-white transition-all hover:bg-[var(--th-yellow)] hover:text-[var(--th-black)]"
-              >
-                Book a Private Session
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- Small Group -->
-        <div class="flex h-full flex-col overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow-lg)]">
-          <div class="h-[4px] bg-[var(--th-blue)]" />
-          <div class="flex flex-1 flex-col p-8">
-            <span class="text-4xl">👥</span>
-            <h2 class="mt-4 text-2xl font-extrabold uppercase">Small Group <span class="text-lg font-bold text-neutral-400">(2–4 students)</span></h2>
-            <p class="mt-3 text-[15px] font-medium leading-relaxed text-neutral-500">
-              Collaborative sessions with 2–4 students at the same level. Interactive problem-solving with the benefit of peer learning at a shared cost.
-            </p>
-
-            <ul class="mt-6 space-y-3">
-              {['Same subject & level grouping', 'Interactive problem-solving', 'Shared cost — more affordable', 'Peer learning & discussion'].map((item) => (
-                <li class="flex items-start gap-3 text-sm">
-                  <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[var(--th-blue)]">
-                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                  </span>
-                  <span class="font-medium">{item}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div class="mt-6 rounded-lg border border-neutral-200 bg-neutral-100 p-4">
-              <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Best for</span>
-              <p class="mt-1 text-sm text-neutral-600">Friends studying together, students who learn well in groups, or those looking for a more affordable tutoring option.</p>
-            </div>
-
-            <div class="mt-auto pt-8">
-              <p class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Starting from</p>
-              <p class="text-3xl font-extrabold">€15<span class="text-base font-medium text-neutral-400">/student/hour</span></p>
-
-              <a
-                href="https://wa.me/35799000000?text=Hi%20Theodora%2C%20I%27d%20like%20to%20book%20a%20small%20group%20tutoring%20session."
-                target="_blank"
-                rel="noopener noreferrer"
-                class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border-2 border-[var(--th-black)] bg-white px-6 py-3 text-sm font-bold uppercase tracking-wider text-[var(--th-black)] shadow-[var(--th-shadow)] transition-all hover:shadow-none"
-              >
-                Book a Group Session
-              </a>
+                <a
+                  href={tier.cta_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class:list={[
+                    'mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md border-2 px-6 py-3 text-sm font-bold uppercase tracking-wider transition-all',
+                    idx === 0
+                      ? 'border-[var(--th-black)] bg-[var(--th-black)] text-white hover:bg-[var(--th-yellow)] hover:text-[var(--th-black)]'
+                      : 'border-[var(--th-black)] bg-white text-[var(--th-black)] shadow-[var(--th-shadow)] hover:shadow-none',
+                  ]}
+                >
+                  {tier.cta_text}
+                </a>
+              </div>
             </div>
           </div>
-        </div>
+        ))}
       </div>
     </section>
 
@@ -131,21 +101,15 @@ const subjects = [
       </div>
 
       <div class="grid gap-8 sm:grid-cols-3">
-        <div class="text-center">
-          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[var(--th-border)] bg-white text-2xl font-extrabold shadow-[var(--th-shadow)]">1</div>
-          <h3 class="mt-5 text-lg font-extrabold uppercase">Get in Touch</h3>
-          <p class="mt-2 text-sm text-neutral-500">Message via WhatsApp or Viber with your school, subject, and level. We'll find the right session for you.</p>
-        </div>
-        <div class="text-center">
-          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[var(--th-border)] bg-white text-2xl font-extrabold shadow-[var(--th-shadow)]">2</div>
-          <h3 class="mt-5 text-lg font-extrabold uppercase">Connect on Zoom</h3>
-          <p class="mt-2 text-sm text-neutral-500">Join your session via Zoom Business from anywhere. Screen sharing, whiteboard, and interactive tools included.</p>
-        </div>
-        <div class="text-center">
-          <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[var(--th-border)] bg-white text-2xl font-extrabold shadow-[var(--th-shadow)]">3</div>
-          <h3 class="mt-5 text-lg font-extrabold uppercase">Learn & Improve</h3>
-          <p class="mt-2 text-sm text-neutral-500">Work through topics at your pace with expert guidance. Track progress and build confidence for exams.</p>
-        </div>
+        {steps.map((step) => (
+          <div class="text-center">
+            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[var(--th-border)] bg-white text-2xl font-extrabold shadow-[var(--th-shadow)]">
+              {step.emoji}
+            </div>
+            <h3 class="mt-5 text-lg font-extrabold uppercase">{step.title}</h3>
+            <p class="mt-2 text-sm text-neutral-500">{step.description}</p>
+          </div>
+        ))}
       </div>
     </section>
 
@@ -161,7 +125,7 @@ const subjects = [
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {subjects.map((subject) => (
           <div class="overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow)]">
-            <div class="h-[4px]" style={`background-color: ${subject.color}`} />
+            <div class="h-[4px]" style={`background-color: ${subject.accent_color}`} />
             <div class="p-6">
               <h3 class="text-lg font-extrabold">{subject.name}</h3>
               <div class="mt-3 flex flex-wrap gap-1.5">
@@ -188,7 +152,7 @@ const subjects = [
         </p>
         <div class="mt-8 flex flex-wrap justify-center gap-4">
           <a
-            href="https://wa.me/35799000000"
+            href={siteContent.hero_whatsapp_url}
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 rounded-md border-2 border-[var(--th-green-vivid)] bg-[var(--th-green-vivid)] px-7 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-[var(--th-shadow)] transition-all hover:shadow-none"
@@ -197,7 +161,7 @@ const subjects = [
             WhatsApp
           </a>
           <a
-            href="viber://chat?number=%2B35799000000"
+            href={siteContent.hero_viber_url}
             target="_blank"
             rel="noopener noreferrer"
             class="inline-flex items-center gap-2 rounded-md border-2 border-[#7360F2] bg-[#7360F2] px-7 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-[var(--th-shadow)] transition-all hover:shadow-none"

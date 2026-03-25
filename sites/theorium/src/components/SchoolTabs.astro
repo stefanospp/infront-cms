@@ -1,6 +1,11 @@
 ---
-import type { School, BadgeColor, SubjectColor } from '../data/schools';
-import { schools } from '../data/schools';
+import type { School, BadgeColor, SubjectColor } from '../lib/directus';
+
+interface Props {
+  schools: School[];
+}
+
+const { schools } = Astro.props;
 
 const accentColors: Record<SubjectColor, string> = {
   green: 'var(--th-green)',
@@ -111,4 +116,3 @@ const tabLabels = schools.map(s =>
     box-shadow: none;
   }
 </style>
-

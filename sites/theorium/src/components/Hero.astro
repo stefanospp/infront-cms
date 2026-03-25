@@ -1,5 +1,18 @@
 ---
 import ElementTile from './ElementTile.astro';
+
+interface Props {
+  badge: string;
+  heading: string;
+  headingHighlight: string;
+  subheading: string;
+  ctaPrimaryText: string;
+  ctaPrimaryHref: string;
+  whatsappUrl: string;
+  viberUrl: string;
+}
+
+const { badge, heading, headingHighlight, subheading, ctaPrimaryText, ctaPrimaryHref, whatsappUrl, viberUrl } = Astro.props;
 ---
 
 <section class="relative overflow-hidden border-b border-[var(--th-border)]">
@@ -8,32 +21,28 @@ import ElementTile from './ElementTile.astro';
     <div class="flex flex-col justify-center px-6 py-16 sm:px-10 sm:py-20 lg:px-16">
       <!-- Badge -->
       <span class="mb-8 inline-flex w-fit rounded-md bg-[var(--th-green)] px-3.5 py-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.15em]">
-        Private tutoring · Larnaca, Cyprus
+        {badge}
       </span>
 
       <!-- H1 -->
       <h1 class="text-[32px] uppercase leading-[0.95] tracking-[-1px] sm:text-[52px] md:text-[60px] lg:text-[72px]">
-        Science & Maths.<br />
-        <mark>Every level.</mark>
+        {heading}<br />
+        <mark>{headingHighlight}</mark>
       </h1>
 
       <!-- Subheadline -->
-      <p class="mt-8 max-w-xl text-lg leading-relaxed text-neutral-500 sm:text-xl">
-        One-on-one after-school lessons for students at <strong class="text-[var(--th-black)]">American Academy</strong>, <strong class="text-[var(--th-black)]">Pascal</strong>,
-        <strong class="text-[var(--th-black)]">MedHigh</strong>, and Cypriot public schools. From IGCSE to university entrance — including
-        <strong class="text-[var(--th-black)]">medical school admissions</strong>.
-      </p>
+      <p class="mt-8 max-w-xl text-lg leading-relaxed text-neutral-500 sm:text-xl" set:html={subheading} />
 
       <!-- CTAs -->
       <div class="mt-10 flex flex-wrap gap-4">
         <a
-          href="#contact"
+          href={ctaPrimaryHref}
           class="rounded-md border-2 border-[var(--th-black)] bg-[var(--th-black)] px-7 py-3.5 text-sm font-bold uppercase tracking-wider text-white transition-all hover:bg-[var(--th-yellow)] hover:text-[var(--th-black)]"
         >
-          Send a message
+          {ctaPrimaryText}
         </a>
         <a
-          href="https://wa.me/35799000000"
+          href={whatsappUrl}
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex items-center gap-2 rounded-md border-2 border-[var(--th-green-vivid)] bg-[var(--th-green-vivid)] px-7 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-[var(--th-shadow)] transition-all hover:shadow-none"
@@ -44,7 +53,7 @@ import ElementTile from './ElementTile.astro';
           WhatsApp
         </a>
         <a
-          href="viber://chat?number=%2B35799000000"
+          href={viberUrl}
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex items-center gap-2 rounded-md border-2 border-[#7360F2] bg-[#7360F2] px-7 py-3.5 text-sm font-bold uppercase tracking-wider text-white shadow-[var(--th-shadow)] transition-all hover:shadow-none"

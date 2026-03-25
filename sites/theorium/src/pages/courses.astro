@@ -5,10 +5,12 @@ import Nav from '../components/Nav.astro';
 import PageHero from '../components/PageHero.astro';
 import CourseCard from '../components/CourseCard.astro';
 import Footer from '../components/Footer.astro';
-import { getCourses } from '../lib/directus';
+import { getCourses, getSiteContent, getTutoringSteps } from '../lib/cms';
 import config from '../../site.config';
 
+const siteContent = await getSiteContent();
 const courses = await getCourses();
+const howItWorks = await getTutoringSteps('courses');
 const upcoming = courses.filter(c => c.course_status === 'upcoming');
 const inProgress = courses.filter(c => c.course_status === 'in-progress');
 const past = courses.filter(c => c.course_status === 'completed' || c.course_status === 'full');
@@ -25,28 +27,20 @@ const past = courses.filter(c => c.course_status === 'completed' || c.course_sta
     <PageHero
       badge="Online Courses"
       badgeColor="var(--th-blue)"
-      title="ONLINE REVISION <mark>COURSES.</mark>"
-      subtitle="Live group revision sessions via Zoom. Small classes, exam-focused, with personalised feedback. Book your place through Zoom Events."
+      title={siteContent.courses_page_title}
+      subtitle={siteContent.courses_page_subtitle}
     />
 
     <section class="px-6 py-16 sm:px-10 sm:py-20 lg:px-16">
       <!-- How it works -->
       <div class="mb-12 grid gap-6 sm:grid-cols-3">
-        <div class="rounded-lg border border-[var(--th-border)] bg-white p-6 text-center">
-          <span class="text-3xl">📹</span>
-          <h3 class="mt-3 text-base font-bold uppercase">Live on Zoom</h3>
-          <p class="mt-1 text-sm text-neutral-500">Interactive sessions with screen sharing, Q&A, and real-time problem solving.</p>
-        </div>
-        <div class="rounded-lg border border-[var(--th-border)] bg-white p-6 text-center">
-          <span class="text-3xl">👥</span>
-          <h3 class="mt-3 text-base font-bold uppercase">Small Groups</h3>
-          <p class="mt-1 text-sm text-neutral-500">8–12 students per session for personalised attention and questions.</p>
-        </div>
-        <div class="rounded-lg border border-[var(--th-border)] bg-white p-6 text-center">
-          <span class="text-3xl">💳</span>
-          <h3 class="mt-3 text-base font-bold uppercase">Easy Booking</h3>
-          <p class="mt-1 text-sm text-neutral-500">Register and pay securely through Zoom Events. Instant confirmation.</p>
-        </div>
+        {howItWorks.map((step) => (
+          <div class="rounded-lg border border-[var(--th-border)] bg-white p-6 text-center">
+            <span class="text-3xl">{step.emoji}</span>
+            <h3 class="mt-3 text-base font-bold uppercase">{step.title}</h3>
+            <p class="mt-1 text-sm text-neutral-500">{step.description}</p>
+          </div>
+        ))}
       </div>
 
       <!-- Upcoming courses -->

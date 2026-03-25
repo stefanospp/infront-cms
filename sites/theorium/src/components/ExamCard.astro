@@ -1,8 +1,8 @@
 ---
-import type { ExamCard as ExamCardType } from '../data/exams';
+import type { ExamDestination } from '../lib/directus';
 
 interface Props {
-  exam: ExamCardType;
+  exam: ExamDestination;
 }
 
 const { exam } = Astro.props;
@@ -22,14 +22,14 @@ const tagColorMap: Record<string, string> = {
     <span class="font-mono text-[11px] uppercase tracking-wider text-neutral-400">
       {exam.flag} {exam.destination}
     </span>
-    <h3 class="mt-1 text-2xl font-extrabold uppercase sm:text-3xl">{exam.examName}</h3>
+    <h3 class="mt-1 text-2xl font-extrabold uppercase sm:text-3xl">{exam.exam_name}</h3>
     <span
       class:list={[
         'mt-3 inline-block rounded border border-neutral-300 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider',
-        tagColorMap[exam.tag.color],
+        tagColorMap[exam.tag_color],
       ]}
     >
-      {exam.tag.label}
+      {exam.tag_label}
     </span>
   </div>
 

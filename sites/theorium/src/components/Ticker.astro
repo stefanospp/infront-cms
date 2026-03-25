@@ -1,17 +1,16 @@
 ---
-const items = [
-  'BIOLOGY', 'CHEMISTRY', 'PHYSICS', 'MATHEMATICS',
-  'IGCSE', 'A-LEVEL', 'IB DIPLOMA', 'ΠΑΓΚΥΠΡΙΕΣ',
-  'UCAT', 'SAT', 'MEDICAL SCHOOL', 'LARNACA, CYPRUS',
-];
+interface Props {
+  items: string[];
+  separator?: string;
+}
 
-const separator = '✦';
+const { items, separator = '✦' } = Astro.props;
 ---
 
 <div class="overflow-hidden border-b border-[var(--th-border)] bg-[var(--th-black)] py-3" aria-hidden="true">
   <div class="animate-ticker flex w-max items-center gap-0 whitespace-nowrap">
     {/* Duplicate for seamless loop */}
-    {[...items, ...items].map((item, i) => (
+    {[...items, ...items].map((item) => (
       <span class="flex items-center">
         <span class="px-5 font-mono text-sm font-bold uppercase tracking-wider text-white">
           {item}
