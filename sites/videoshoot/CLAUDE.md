@@ -68,19 +68,34 @@ All pages fetch from Directus at **build time** (static site generation). The si
 
 ## Publishing Workflow
 
-The site is static — CMS changes only go live after a rebuild. The workflow:
+The site uses a **draft-first workflow** — all saves default to draft status. The live site is unaffected until Nikolas explicitly publishes.
+
+### Flow
 
 1. **Edit:** Nikolas edits content in `cms.nikolaspetrou.com/admin`
-2. **Preview:** The preview panel shows a live SSR render of the draft content (updates immediately on save, no rebuild needed)
-3. **Publish:** When satisfied, Nikolas triggers the **"Publish to live"** Directus Flow (manual trigger in the admin sidebar, with confirmation dialog)
-4. **Rebuild:** The Flow POSTs to `https://web.infront.cy/api/sites/videoshoot/redeploy`
-5. **Live:** The admin server rebuilds the static site and deploys via `wrangler deploy` (~30 seconds)
+2. **Save:** Content saves as **draft** by default. Editing a published item automatically changes it to draft (via Directus Flow). The live site keeps showing the old published version.
+3. **Per-item preview:** The preview panel shows the individual item's draft content (SSR, updates on save)
+4. **Staging preview:** Open `https://nikolaspetrou.com/staging/?token=PREVIEW_TOKEN` in a new tab to see the full site with ALL draft content — navigate freely across all pages
+5. **Publish:** Click "Publish to live" Flow → all drafts are bulk-updated to published → site rebuilds (~30s)
 
-**Design decisions:**
-- Auto-rebuild on every save was intentionally removed to prevent excessive rebuilds during editing sessions
-- The manual "Publish to live" flow gives Nikolas control over when changes go live
-- Preview is real-time (SSR) so Nikolas can review changes before triggering a rebuild
-- The Directus Flow has `requireConfirmation: true` so it can't be triggered accidentally
+### Key behaviors
+- **New items** start with `status: draft` (default changed from `published`)
+- **Editing a published item** auto-sets status to `draft` (Directus Flow: "Auto-draft on edit")
+- **"Publish to live" Flow** chains: publish all drafts across all 7 collections → trigger site rebuild
+- The live site only shows `status: published` items (build-time `getPublishedItems` filter)
+
+### Staging routes (SSR)
+Full-site staging preview at `/staging/*`, protected by `?token=PREVIEW_TOKEN`:
+
+| Staging Route | Mirrors |
+|---------------|---------|
+| `/staging/` | Homepage |
+| `/staging/about` | About page |
+| `/staging/services` | Services page |
+| `/staging/works` | Works listing |
+| `/staging/works/[slug]` | Project detail |
+
+These use `stagingGet*()` functions from `directus.ts` which call `getAllItems()` (no status filter — shows drafts + published).
 
 ## Live Preview (CMS)
 

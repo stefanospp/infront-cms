@@ -1,4 +1,4 @@
-import { createDirectusClient, getPublishedItems } from '@agency/utils';
+import { createDirectusClient, getPublishedItems, getAllItems } from '@agency/utils';
 
 const directusUrl = import.meta.env.DIRECTUS_URL;
 const directusToken = import.meta.env.DIRECTUS_TOKEN;
@@ -156,6 +156,62 @@ export async function getSettings(): Promise<SiteSettings | null> {
   if (!client) return null;
   try {
     const items = await getPublishedItems<SiteSettings>(client, 'site_settings', { limit: 1 });
+    return items[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// --- Staging queries (include draft + published items) ---
+
+export async function stagingGetProjects(options?: { limit?: number }): Promise<Project[]> {
+  if (!client) return [];
+  return getAllItems<Project>(client, 'projects', {
+    fields: ['id', 'title', 'slug', 'subtitle', 'image', 'video_url', 'reel_url', 'sort_order', 'featured_in_hero', 'hero_sort_order', 'description', 'client', 'year', 'category'],
+    sort: ['sort_order'],
+    limit: options?.limit,
+  });
+}
+
+export async function stagingGetServices(options?: { limit?: number }): Promise<Service[]> {
+  if (!client) return [];
+  return getAllItems<Service>(client, 'services', {
+    fields: ['id', 'title', 'description', 'tags', 'icon', 'video_url', 'sort_order'],
+    sort: ['sort_order'],
+    limit: options?.limit,
+  });
+}
+
+export async function stagingGetTestimonials(): Promise<Testimonial[]> {
+  if (!client) return [];
+  return getAllItems<Testimonial>(client, 'testimonials', {
+    fields: ['id', 'name', 'role', 'quote', 'video_url', 'image', 'sort_order'],
+    sort: ['sort_order'],
+  });
+}
+
+export async function stagingGetReels(): Promise<Reel[]> {
+  if (!client) return [];
+  return getAllItems<Reel>(client, 'reels', {
+    fields: ['id', 'url', 'image', 'date_label', 'sort_order'],
+    sort: ['sort_order'],
+  });
+}
+
+export async function stagingGetHero(): Promise<HeroContent | null> {
+  if (!client) return null;
+  try {
+    const items = await getAllItems<HeroContent>(client, 'hero', { limit: 1 });
+    return items[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function stagingGetAbout(): Promise<AboutContent | null> {
+  if (!client) return null;
+  try {
+    const items = await getAllItems<AboutContent>(client, 'about', { limit: 1 });
     return items[0] ?? null;
   } catch {
     return null;

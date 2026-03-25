@@ -1,0 +1,95 @@
+---
+export const prerender = false;
+
+import "../../styles/global.css";
+import VideoLayout from '../../components/VideoLayout.astro';
+import Hero from '../../components/Hero.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import config from '../../../site.config';
+import { stagingGetServices } from '../../lib/directus';
+
+const token = Astro.url.searchParams.get('token');
+const PREVIEW_TOKEN = import.meta.env.PREVIEW_TOKEN || 'preview-secret';
+if (token !== PREVIEW_TOKEN) return new Response('Unauthorized', { status: 401 });
+
+Astro.response.headers.set('X-Frame-Options', 'ALLOWALL');
+Astro.response.headers.set('Content-Security-Policy', "frame-ancestors https://cms.nikolaspetrou.com");
+
+const cmsServices = await stagingGetServices();
+const services = cmsServices.map(s => ({
+  title: s.title,
+  description: s.description,
+  tags: s.tags || [],
+  href: '/contact',
+}));
+---
+
+<div class="fixed top-0 left-0 right-0 z-[9999] bg-blue-500 px-4 py-1.5 text-center shadow-md">
+  <p class="text-xs font-semibold text-white">Staging Preview — Draft content, not live</p>
+</div>
+<div class="h-8"></div>
+
+<VideoLayout
+  title="Services"
+  description="Bringing stories to life with cinematic precision."
+  config={config}
+>
+  {/* Hero */}
+  <Hero
+    variant="minimal"
+    eyebrow="What I offer"
+    heading="From concept to final cut, I bring your vision to life."
+    subheading="Whether it's a brand film, social media content, or a creative campaign — I produce high-quality video that captures attention and delivers results."
+    ctaText="Get in touch"
+    ctaHref="/contact"
+  />
+
+  {/* Featured image with testimonial */}
+  <section class="bg-white pb-20">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="relative">
+        <img
+          src="/images/services-hero.jpg"
+          alt="Professional video production setup"
+          class="h-[400px] w-full rounded-xl object-cover sm:h-[500px]"
+          loading="lazy"
+        />
+        <div class="absolute bottom-3 right-3 max-w-[calc(100%-1.5rem)] rounded-xl bg-white/95 p-4 shadow-lg backdrop-blur-sm sm:bottom-6 sm:right-6 sm:max-w-sm sm:p-6">
+          <div class="mb-3 flex items-center gap-3">
+            <img
+              src="/images/testimonial-2.jpg"
+              alt="Rebeca Ma"
+              class="h-10 w-10 rounded-full object-cover"
+              loading="lazy"
+            />
+            <div>
+              <p class="text-sm font-semibold text-neutral-900">Rebeca Ma</p>
+              <p class="text-xs text-neutral-500">Content Creator</p>
+            </div>
+          </div>
+          <p class="text-sm leading-relaxed text-neutral-700">
+            &ldquo;Their creative vision, attention to detail, and ability to tell a compelling story exceeded our expectations.&rdquo;
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* Services Grid */}
+  <section class="bg-white py-20 sm:py-28">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <h2 class="mb-12 text-4xl font-bold text-neutral-900 sm:text-5xl">My services.</h2>
+
+      <div class="grid grid-cols-1 gap-0 md:grid-cols-2 md:gap-x-12">
+        {services.map((service) => (
+          <ServiceCard
+            title={service.title}
+            description={service.description}
+            tags={service.tags}
+            href={service.href}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+</VideoLayout>

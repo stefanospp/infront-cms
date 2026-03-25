@@ -49,6 +49,39 @@ export async function getPublishedItems<T>(
   }
 }
 
+export async function getAllItems<T>(
+  client: ReturnType<typeof createDirectusClient>,
+  collection: string,
+  options?: {
+    fields?: string[];
+    sort?: string[];
+    limit?: number;
+  },
+) {
+  const query: Record<string, unknown> = {};
+
+  if (options?.fields) {
+    query.fields = options.fields;
+  }
+  if (options?.sort) {
+    query.sort = options.sort;
+  }
+  if (options?.limit != null) {
+    query.limit = options.limit;
+  }
+
+  try {
+    return await client.request<T[]>(readItems(collection, query));
+  } catch (error) {
+    const message = error instanceof Error
+      ? error.message
+      : typeof error === 'object' && error !== null
+        ? JSON.stringify(error)
+        : String(error);
+    throw new Error(`Failed to fetch items from "${collection}": ${message}`);
+  }
+}
+
 export async function getItemBySlug<T>(
   client: ReturnType<typeof createDirectusClient>,
   collection: string,
