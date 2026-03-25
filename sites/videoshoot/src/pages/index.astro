@@ -76,7 +76,7 @@ const reels = cmsReels.map(r => ({
       ctaHref={hero?.cta_href || "/contact"}
       secondaryCtaText={hero?.secondary_cta_text || "Watch showreel"}
       secondaryCtaHref={hero?.secondary_cta_href || "/works"}
-      backgroundVideo={hero?.background_video || "https://videos.pexels.com/video-files/5933986/5933986-sd_960_506_24fps.mp4"}
+      backgroundVideo={cmsProjects[0]?.video_url || "/images/hero-bg.jpg"}
       backgroundPoster="/images/hero-bg.jpg"
       projects={projects}
   />

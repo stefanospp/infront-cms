@@ -33,10 +33,21 @@ export default function HeroInteractive({
 }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const mainVideoRef = useRef<HTMLVideoElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
   const rafRef = useRef<number>(0);
   const count = projects.length || 1;
+
+  // Detect mobile
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1023px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   // Set hero height to exact viewport
   useEffect(() => {
@@ -86,7 +97,6 @@ export default function HeroInteractive({
   // Compute visual order: positions relative to active (-2, -1, 0, +1, +2)
   const getOffset = (i: number) => {
     let diff = i - activeIndex;
-    // Wrap around for circular feel
     if (diff > count / 2) diff -= count;
     if (diff < -count / 2) diff += count;
     return diff;
@@ -123,93 +133,106 @@ export default function HeroInteractive({
           </div>
         </div>
 
-        {/* Right: Centered Carousel */}
+        {/* Right: Carousel (desktop) / Project name + dots (mobile) */}
         {projects.length > 0 && (
           <div className="mt-5 sm:mt-8 lg:mt-0 lg:ml-8">
-            {/* Carousel container */}
-            <div className="relative flex items-center justify-center" style={{ height: '280px', width: '100%', minWidth: '300px' }}>
-              {projects.map((project, i) => {
-                const offset = getOffset(i);
-                const isActive = offset === 0;
-                const isVisible = Math.abs(offset) <= 1;
-                // Positions: active center, ±1 to the sides
-                const tx = offset * 120; // px shift
-                const sc = isActive ? 1 : 0.7;
-                const op = isActive ? 1 : 0.5;
-                const zIdx = isActive ? 10 : 5 - Math.abs(offset);
 
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    className="absolute outline-none"
-                    style={{
-                      transform: `translateX(${tx}px) scale(${sc})`,
-                      opacity: isVisible ? op : 0,
-                      zIndex: zIdx,
-                      transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                      pointerEvents: isVisible ? 'auto' : 'none',
-                    }}
-                    onClick={() => goTo(i)}
-                  >
-                    <div className="relative overflow-hidden rounded-xl" style={{ width: '160px', height: '240px' }}>
-                      {/* Poster */}
-                      {project.poster && (
-                        <img src={project.poster} alt={project.title} className="absolute inset-0 h-full w-full object-cover" />
-                      )}
-                      <div className={`absolute inset-0 transition-all duration-500 ${isActive ? 'bg-black/10' : 'bg-black/40'}`} />
+            {/* Mobile: project name overlay */}
+            {isMobile && (
+              <div className="mb-3 text-left">
+                <p className="text-xs font-medium uppercase tracking-widest text-neutral-500">Now playing</p>
+                <p className="mt-1 text-sm font-semibold text-white">{projects[activeIndex]?.title}</p>
+              </div>
+            )}
 
-                      {/* Progress ring — active only */}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="relative h-12 w-12">
-                          <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 48 48">
-                            <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
-                            {isActive && (
-                              <circle
-                                cx="24" cy="24" r="20" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"
-                                strokeDasharray={RING_C}
-                                strokeDashoffset={RING_C * (1 - progress / 100)}
-                                style={{ transition: 'stroke-dashoffset 0.15s linear' }}
-                              />
-                            )}
-                          </svg>
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            {isActive ? (
-                              <div className="flex gap-[3px]">
-                                <div className="h-3 w-[3px] rounded-sm bg-white" />
-                                <div className="h-3 w-[3px] rounded-sm bg-white" />
-                              </div>
-                            ) : (
-                              <svg className="ml-0.5 h-4 w-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                            )}
+            {/* Desktop: Card carousel */}
+            {!isMobile && (
+              <div className="relative flex items-center justify-center" style={{ height: '240px', width: '100%', minWidth: '300px' }}>
+                {projects.map((project, i) => {
+                  const offset = getOffset(i);
+                  const isActive = offset === 0;
+                  const isHovered = hoveredIndex === i;
+                  const isVisible = Math.abs(offset) <= 1;
+
+                  // Desktop: smaller + faded by default, expand on hover
+                  const tx = offset * 110;
+                  const sc = isActive ? 0.9 : isHovered ? 0.95 : 0.6;
+                  const op = isActive ? 1 : isHovered ? 0.9 : 0.35;
+                  const zIdx = isActive ? 10 : isHovered ? 8 : 5 - Math.abs(offset);
+
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      className="absolute outline-none"
+                      style={{
+                        transform: `translateX(${tx}px) scale(${sc})`,
+                        opacity: isVisible ? op : 0,
+                        zIndex: zIdx,
+                        transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                        pointerEvents: isVisible ? 'auto' : 'none',
+                      }}
+                      onClick={() => goTo(i)}
+                      onMouseEnter={() => setHoveredIndex(i)}
+                      onMouseLeave={() => setHoveredIndex(null)}
+                    >
+                      <div className="relative overflow-hidden rounded-xl" style={{ width: '140px', height: '210px' }}>
+                        {project.poster && (
+                          <img src={project.poster} alt={project.title} className="absolute inset-0 h-full w-full object-cover" />
+                        )}
+                        <div className={`absolute inset-0 transition-all duration-500 ${isActive ? 'bg-black/10' : isHovered ? 'bg-black/20' : 'bg-black/50'}`} />
+
+                        {/* Progress ring — active only */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="relative h-10 w-10">
+                            <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 48 48">
+                              <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="2" />
+                              {isActive && (
+                                <circle
+                                  cx="24" cy="24" r="20" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"
+                                  strokeDasharray={RING_C}
+                                  strokeDashoffset={RING_C * (1 - progress / 100)}
+                                  style={{ transition: 'stroke-dashoffset 0.15s linear' }}
+                                />
+                              )}
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              {isActive ? (
+                                <div className="flex gap-[3px]">
+                                  <div className="h-2.5 w-[2.5px] rounded-sm bg-white" />
+                                  <div className="h-2.5 w-[2.5px] rounded-sm bg-white" />
+                                </div>
+                              ) : (
+                                <svg className="ml-0.5 h-3.5 w-3.5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Title */}
-                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 px-3 py-2">
-                        <p className="truncate text-[11px] font-medium text-white">{project.title}</p>
+                        {/* Title */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 px-2.5 py-1.5">
+                          <p className="truncate text-[10px] font-medium text-white">{project.title}</p>
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
-            {/* Arrows + dots — centered below carousel */}
+            {/* Navigation: arrows + dots */}
             <div className="mt-3 flex items-center justify-center gap-4">
               <button
                 type="button"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-500 text-white transition-all duration-300 hover:border-white hover:bg-white/10"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-neutral-500 text-white transition-all duration-300 hover:border-white hover:bg-white/10"
                 onClick={() => goTo(activeIndex - 1)}
                 aria-label="Previous"
               >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
 
-              {/* Dots */}
               <div className="flex items-center gap-1.5">
                 {projects.map((_, i) => (
                   <button
@@ -226,11 +249,11 @@ export default function HeroInteractive({
 
               <button
                 type="button"
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-neutral-500 text-white transition-all duration-300 hover:border-white hover:bg-white/10"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-neutral-500 text-white transition-all duration-300 hover:border-white hover:bg-white/10"
                 onClick={() => goTo(activeIndex + 1)}
                 aria-label="Next"
               >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
