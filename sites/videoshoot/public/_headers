@@ -2,13 +2,13 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://plausible.io https://cdn.usefathom.com https://www.instagram.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://plausible.io https://api.resend.com; media-src 'self' https://videos.pexels.com; frame-src https://www.youtube.com https://player.vimeo.com https://www.instagram.com; frame-ancestors 'self' https://cms.nikolaspetrou.com; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://plausible.io https://cdn.usefathom.com https://www.instagram.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://plausible.io https://api.resend.com; media-src 'self' https:; frame-src https://www.youtube.com https://player.vimeo.com https://www.instagram.com; frame-ancestors 'self' https://cms.nikolaspetrou.com; base-uri 'self'; form-action 'self'
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 
 # Preview routes — allow Directus to embed in iframe
 /preview/*
   X-Frame-Options: ALLOWALL
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://cms.nikolaspetrou.com; media-src 'self' https://videos.pexels.com; frame-ancestors https://cms.nikolaspetrou.com; base-uri 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://cms.nikolaspetrou.com; media-src 'self' https:; frame-ancestors https://cms.nikolaspetrou.com; base-uri 'self'
 
 # Cache fingerprinted static assets (immutable — Astro hashes filenames)
 /_astro/*
