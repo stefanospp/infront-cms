@@ -256,5 +256,85 @@ export const CUSTOM_CSS = `
   [class*="rounded-lg"] {
     border-radius: 12px !important;
   }
+
+  /* ── Light mode fixes for invisible elements ──────────────── */
+
+  /* Modal overlay and close buttons */
+  html:not(.dark) [class*="fixed"][class*="inset-0"][class*="z-"] {
+    background: rgba(0,0,0,0.5) !important;
+  }
+  html:not(.dark) [role="dialog"],
+  html:not(.dark) [class*="modal"] {
+    background: #ffffff !important;
+    color: var(--th-text) !important;
+    border: 1px solid var(--th-border) !important;
+  }
+  html:not(.dark) [role="dialog"] *,
+  html:not(.dark) [class*="modal"] * {
+    color: var(--th-text) !important;
+  }
+  html:not(.dark) [role="dialog"] button,
+  html:not(.dark) [class*="modal"] button {
+    color: var(--th-text) !important;
+    border-color: var(--th-border) !important;
+  }
+
+  /* Dropdown menus */
+  html:not(.dark) [class*="absolute"][class*="z-"][class*="rounded"][class*="shadow"] {
+    background: #ffffff !important;
+    border: 1px solid var(--th-border) !important;
+  }
+
+  /* Toggle switches and checkboxes */
+  html:not(.dark) input[type="checkbox"] {
+    accent-color: var(--th-accent) !important;
+  }
+
+  /* Chart and graph labels */
+  html:not(.dark) canvas + * { color: var(--th-text) !important; }
+
+  /* Help text and descriptions */
+  html:not(.dark) [class*="text-white\\/"],
+  html:not(.dark) [class*="text-white"] {
+    color: var(--th-text-secondary) !important;
+  }
+
+  /* Tooltip text */
+  html:not(.dark) [class*="tooltip"],
+  html:not(.dark) [role="tooltip"] {
+    background: var(--th-text) !important;
+    color: #ffffff !important;
+  }
+
+  /* Selected/active nav items */
+  html:not(.dark) aside a[class*="bg-white\\/"],
+  html:not(.dark) aside a.active {
+    background: #eef2ff !important;
+    color: var(--th-accent) !important;
+  }
+
+  /* Notification badges */
+  html:not(.dark) [class*="bg-white"][class*="text-white"] {
+    color: var(--th-text) !important;
+  }
+
+  /* Version history close button fix */
+  html:not(.dark) [class*="fixed"] [class*="close"],
+  html:not(.dark) [class*="fixed"] button[class*="absolute"] {
+    color: var(--th-text) !important;
+    background: rgba(255,255,255,0.9) !important;
+  }
+
+  /* Ensure all text in content area is visible */
+  html:not(.dark) .lg\\:col-span-1 * {
+    color: var(--th-text) !important;
+  }
+  html:not(.dark) .lg\\:col-span-1 a {
+    color: var(--th-accent) !important;
+  }
+  html:not(.dark) .lg\\:col-span-1 .text-red-400,
+  html:not(.dark) .lg\\:col-span-1 [class*="text-red"] {
+    color: #dc2626 !important;
+  }
 </style>
 `;

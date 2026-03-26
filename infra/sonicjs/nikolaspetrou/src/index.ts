@@ -63,6 +63,14 @@ const app = createSonicJSApp({
           html = html.replace(/<a[^>]*href="\/admin\/forms"[^>]*>[\s\S]*?<\/a>/g, '');
         }
 
+        // Override "Preview Content" link to open our staging preview
+        const siteUrl = 'http://localhost:4322'; // TODO: change to production URL
+        const previewToken = 'np-preview-2026-secret';
+        html = html.replace(
+          /Preview Content/g,
+          `<a href="${siteUrl}/staging/?token=${previewToken}" target="_blank" style="color:inherit;text-decoration:none;">Preview on Site</a>`
+        );
+
         html = html
           .replace('</head>', `${CUSTOM_CSS}\n</head>`)
           .replace('</body>', `${THEME_SCRIPT}\n</body>`);
