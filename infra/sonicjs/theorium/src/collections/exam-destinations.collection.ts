@@ -5,7 +5,6 @@ const examDestinations: CollectionConfig = {
   displayName: 'Exam Destinations',
   description: 'University entrance exam destinations. Title = country/destination name.',
   icon: '✈️',
-  managed: true,
   isActive: true,
   schema: {
     type: 'object',
@@ -20,9 +19,10 @@ const examDestinations: CollectionConfig = {
       },
       description: { type: 'textarea', title: 'Description' },
       subjects: {
-        type: 'json',
+        type: 'array',
         title: 'Subjects',
-        description: 'JSON array of subject strings',
+        helpText: 'Subjects covered for this exam destination',
+        items: { type: 'string', title: 'Subject' },
       },
       sort: { type: 'number', title: 'Sort Order' },
     },

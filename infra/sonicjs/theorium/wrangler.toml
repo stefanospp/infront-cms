@@ -16,3 +16,8 @@ bucket_name = "theorium-cms-media"
 [[kv_namespaces]]
 binding = "CACHE_KV"
 id = "TODO"
+
+[vars]
+ADMIN_EMAIL = "admin@theorium.cy"
+ADMIN_PASSWORD = "admin1234!"
+JWT_SECRET = "theorium-cms-local-dev-secret"

@@ -112,44 +112,75 @@ export async function getCourses(options?: { limit?: number }): Promise<Course[]
 }
 
 export async function getSiteContent(): Promise<SiteContent> {
-  const items = await fetchCollection('site_content', { limit: 1 });
-  if (items.length === 0 || !items[0]) return getFallbackSiteContent();
+  // Fetch from 4 focused collections in parallel
+  const [heroItems, sectionItems, pageItems, contactItems] = await Promise.all([
+    fetchCollection('hero_content', { limit: 1 }),
+    fetchCollection('section_headings'),
+    fetchCollection('page_content'),
+    fetchCollection('contact_content', { limit: 1 }),
+  ]);
 
-  const d = items[0].data;
+  // If no CMS data at all, return fallback
+  if (heroItems.length === 0 && sectionItems.length === 0) return getFallbackSiteContent();
+
+  const hero = heroItems[0]?.data ?? {};
+  const contact = contactItems[0]?.data ?? {};
+
+  // Build section lookup by slug (slug = section name)
+  const section = (name: string) => {
+    const item = sectionItems.find((s) => s.data.section === name || s.slug === name);
+    return item?.data ?? {};
+  };
+
+  // Build page lookup by slug
+  const page = (name: string) => {
+    const item = pageItems.find((p) => p.data.page === name || p.slug === `${name}-page`);
+    return item?.data ?? {};
+  };
+
+  const schools = section('schools');
+  const exams = section('exams');
+  const resources = section('resources');
+  const courses = section('courses');
+  const contactSec = section('contact');
+  const resourcesPage = page('resources');
+  const coursesPage = page('courses');
+  const tutoringPage = page('tutoring');
+
   return {
-    hero_badge: (d.hero_badge as string) ?? '',
-    hero_heading: (d.hero_heading as string) ?? '',
-    hero_heading_highlight: (d.hero_heading_highlight as string) ?? '',
-    hero_subheading: (d.hero_subheading as string) ?? '',
-    hero_cta_primary_text: (d.hero_cta_primary_text as string) ?? '',
-    hero_cta_primary_href: (d.hero_cta_primary_href as string) ?? '',
-    hero_whatsapp_url: (d.hero_whatsapp_url as string) ?? '',
-    hero_viber_url: (d.hero_viber_url as string) ?? '',
-    ticker_items: parseJsonField<string[]>(d.ticker_items) ?? [],
-    schools_badge: (d.schools_badge as string) ?? '',
-    schools_heading: (d.schools_heading as string) ?? '',
-    schools_subtitle: (d.schools_subtitle as string) ?? '',
-    exams_badge: (d.exams_badge as string) ?? '',
-    exams_heading: (d.exams_heading as string) ?? '',
-    exams_subtitle: (d.exams_subtitle as string) ?? '',
-    exams_band_text: (d.exams_band_text as string) ?? '',
-    resources_badge: (d.resources_badge as string) ?? '',
-    resources_heading: (d.resources_heading as string) ?? '',
-    resources_subtitle: (d.resources_subtitle as string) ?? '',
-    courses_badge: (d.courses_badge as string) ?? '',
-    courses_heading: (d.courses_heading as string) ?? '',
-    courses_subtitle: (d.courses_subtitle as string) ?? '',
-    contact_badge: (d.contact_badge as string) ?? '',
-    contact_heading: (d.contact_heading as string) ?? '',
-    contact_direct_heading: (d.contact_direct_heading as string) ?? '',
-    contact_direct_description: (d.contact_direct_description as string) ?? '',
-    contact_location_note: (d.contact_location_note as string) ?? '',
-    resources_page_title: (d.resources_page_title as string) ?? '',
-    resources_page_subtitle: (d.resources_page_subtitle as string) ?? '',
-    courses_page_title: (d.courses_page_title as string) ?? '',
-    courses_page_subtitle: (d.courses_page_subtitle as string) ?? '',
-    tutoring_page_title: (d.tutoring_page_title as string) ?? '',
-    tutoring_page_subtitle: (d.tutoring_page_subtitle as string) ?? '',
+    hero_badge: (hero.badge as string) ?? '',
+    hero_heading: (hero.heading as string) ?? '',
+    hero_heading_highlight: (hero.heading_highlight as string) ?? '',
+    hero_subheading: (hero.subheading as string) ?? '',
+    hero_cta_primary_text: (hero.cta_text as string) ?? '',
+    hero_cta_primary_href: (hero.cta_href as string) ?? '',
+    hero_whatsapp_url: (hero.whatsapp_url as string) ?? '',
+    hero_viber_url: (hero.viber_url as string) ?? '',
+    ticker_items: parseJsonField<string[]>(hero.ticker_items) ?? [],
+    schools_badge: (schools.badge as string) ?? '',
+    schools_heading: (schools.heading as string) ?? '',
+    schools_subtitle: (schools.subtitle as string) ?? '',
+    exams_badge: (exams.badge as string) ?? '',
+    exams_heading: (exams.heading as string) ?? '',
+    exams_subtitle: (exams.subtitle as string) ?? '',
+    exams_band_text: (exams.band_text as string) ?? '',
+    resources_badge: (resources.badge as string) ?? '',
+    resources_heading: (resources.heading as string) ?? '',
+    resources_subtitle: (resources.subtitle as string) ?? '',
+    courses_badge: (courses.badge as string) ?? '',
+    courses_heading: (courses.heading as string) ?? '',
+    courses_subtitle: (courses.subtitle as string) ?? '',
+    contact_badge: (contactSec.badge as string) ?? '',
+    contact_heading: (contactSec.heading as string) ?? '',
+    contact_direct_heading: (contact.direct_heading as string) ?? '',
+    contact_direct_description: (contact.direct_description as string) ?? '',
+    contact_location_note: (contact.location_note as string) ?? '',
+    resources_page_title: (resourcesPage.page_title as string) ?? '',
+    resources_page_subtitle: (resourcesPage.page_subtitle as string) ?? '',
+    courses_page_title: (coursesPage.page_title as string) ?? '',
+    courses_page_subtitle: (coursesPage.page_subtitle as string) ?? '',
+    tutoring_page_title: (tutoringPage.page_title as string) ?? '',
+    tutoring_page_subtitle: (tutoringPage.page_subtitle as string) ?? '',
   };
 }
 

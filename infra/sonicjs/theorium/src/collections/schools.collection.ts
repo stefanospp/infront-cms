@@ -5,21 +5,43 @@ const schools: CollectionConfig = {
   displayName: 'Schools',
   description: 'Schools served — curriculum and subject data. Title = school name.',
   icon: '🏫',
-  managed: true,
   isActive: true,
   schema: {
     type: 'object',
     properties: {
-      type: { type: 'string', title: 'School Type', description: 'e.g. Private English School, IB World School' },
+      type: { type: 'string', title: 'School Type', placeholder: 'e.g. Private English School, IB World School' },
       qualifications: {
-        type: 'json',
+        type: 'array',
         title: 'Qualifications',
-        description: 'JSON array: [{ "label": "IGCSE", "color": "yellow" }]',
+        helpText: 'Qualification badges shown on the school card',
+        items: {
+          type: 'object',
+          properties: {
+            label: { type: 'string', title: 'Label', required: true },
+            color: {
+              type: 'select',
+              title: 'Color',
+              enum: ['yellow', 'green', 'blue', 'orange', 'purple', 'default'],
+            },
+          },
+        },
       },
       subjects: {
-        type: 'json',
+        type: 'array',
         title: 'Subjects',
-        description: 'JSON array: [{ "name": "Biology", "accentColor": "green", "topics": "..." }]',
+        helpText: 'Subjects taught at this school',
+        items: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', title: 'Subject Name', required: true },
+            accentColor: {
+              type: 'select',
+              title: 'Accent Color',
+              enum: ['green', 'blue', 'orange'],
+            },
+            topics: { type: 'textarea', title: 'Topics Covered' },
+          },
+        },
       },
       sort: { type: 'number', title: 'Sort Order' },
     },

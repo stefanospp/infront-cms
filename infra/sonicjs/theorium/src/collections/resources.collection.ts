@@ -5,7 +5,6 @@ const resources: CollectionConfig = {
   displayName: 'Resources',
   description: 'Free study resources — revision notes, past papers, formula sheets',
   icon: '📚',
-  managed: true,
   isActive: true,
   schema: {
     type: 'object',

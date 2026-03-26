@@ -5,7 +5,6 @@ const courses: CollectionConfig = {
   displayName: 'Courses',
   description: 'Online revision courses via Zoom',
   icon: '🎓',
-  managed: true,
   isActive: true,
   schema: {
     type: 'object',
@@ -18,7 +17,12 @@ const courses: CollectionConfig = {
       },
       level: { type: 'string', title: 'Level' },
       description: { type: 'textarea', title: 'Description' },
-      syllabus: { type: 'json', title: 'Syllabus', description: 'JSON array of topic strings' },
+      syllabus: {
+        type: 'array',
+        title: 'Syllabus Topics',
+        helpText: 'Topics covered in this course',
+        items: { type: 'string', title: 'Topic' },
+      },
       schedule: { type: 'string', title: 'Schedule' },
       start_date: { type: 'string', title: 'Start Date' },
       duration: { type: 'string', title: 'Duration' },

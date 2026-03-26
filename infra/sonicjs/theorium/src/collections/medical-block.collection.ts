@@ -5,7 +5,6 @@ const medicalBlock: CollectionConfig = {
   displayName: 'Medical Block',
   description: 'Medical school applications specialisation block. Only one item should exist (singleton).',
   icon: '🏥',
-  managed: true,
   isActive: true,
   schema: {
     type: 'object',

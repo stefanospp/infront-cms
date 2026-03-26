@@ -5,13 +5,17 @@ const tutoringSubjects: CollectionConfig = {
   displayName: 'Tutoring Subjects',
   description: 'Subjects available for tutoring. Title = subject name.',
   icon: '🔬',
-  managed: true,
   isActive: true,
   schema: {
     type: 'object',
     properties: {
-      accent_color: { type: 'string', title: 'Accent Color', description: 'CSS variable e.g. var(--th-green)' },
-      levels: { type: 'json', title: 'Levels', description: 'JSON array of level strings e.g. IGCSE, A-Level' },
+      accent_color: { type: 'string', title: 'Accent Color', helpText: 'CSS variable e.g. var(--th-green)' },
+      levels: {
+        type: 'array',
+        title: 'Levels',
+        helpText: 'Available exam levels for this subject',
+        items: { type: 'string', title: 'Level' },
+      },
       sort: { type: 'number', title: 'Sort Order' },
     },
   },

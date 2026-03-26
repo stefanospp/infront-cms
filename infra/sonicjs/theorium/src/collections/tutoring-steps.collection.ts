@@ -5,7 +5,6 @@ const tutoringSteps: CollectionConfig = {
   displayName: 'Tutoring Steps',
   description: 'How-it-works steps, shared by tutoring and courses pages. Title = step title.',
   icon: '📋',
-  managed: true,
   isActive: true,
   schema: {
     type: 'object',
