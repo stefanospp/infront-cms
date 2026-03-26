@@ -1,0 +1,147 @@
+---
+import InnerLayout from '../../layouts/InnerLayout.astro';
+import { getProjects } from '../../lib/payload';
+
+let projects;
+try {
+  projects = await getProjects();
+} catch {
+  projects = [
+    { id: '1', title: 'Coastal', slug: 'coastal', category: 'Videography', year: 2024, video_url: 'https://cdn.pixabay.com/video/2016/05/12/3127-166335864_large.mp4', order: 1 },
+    { id: '2', title: 'Stay True to Yourself', slug: 'stay-true', category: 'Creative Direction', year: 2024, video_url: 'https://cdn.pixabay.com/video/2022/11/22/140111-774507949_large.mp4', order: 2 },
+    { id: '3', title: 'Aerial Perspectives', slug: 'aerial-perspectives', category: 'Drone Operation', year: 2024, video_url: 'https://cdn.pixabay.com/video/2024/06/29/218714_large.mp4', order: 3 },
+    { id: '4', title: 'Underwater World', slug: 'underwater-world', category: 'Documentary', year: 2023, video_url: 'https://cdn.pixabay.com/video/2025/04/29/275633_large.mp4', order: 4 },
+    { id: '5', title: 'Golden Hour', slug: 'golden-hour', category: 'Brand Content', year: 2023, video_url: 'https://cdn.pixabay.com/video/2022/11/11/138588-770315514_large.mp4', order: 5 },
+  ];
+}
+---
+
+<InnerLayout title="Works" description="Selected works by Nikolas Petrou" dark>
+  <section class="px-4 md:px-8 pb-16 md:pb-24">
+    <div class="mb-12 md:mb-16">
+      <span class="text-label opacity-50 block mb-4">(Portfolio)</span>
+      <h1 class="text-giant text-white">Selected<br />Works</h1>
+    </div>
+
+    <div class="works-grid">
+      {
+        projects.map((project) => (
+          <a href={`/works/${project.slug}`} class="work-card cursor-hover" data-video={project.video_url}>
+            <div class="work-card-video">
+              <video muted loop playsinline preload="none" />
+            </div>
+            <div class="work-card-overlay" />
+            <div class="work-card-content">
+              <h2 class="work-card-title">{project.title}</h2>
+              <span class="text-label opacity-50">{project.category} / {project.year}</span>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+  </section>
+</InnerLayout>
+
+<style>
+  .works-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .works-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  .work-card {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background: #111;
+    text-decoration: none;
+    color: #fff;
+  }
+
+  .work-card-video {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+
+  .work-card-video video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .work-card.video-loaded .work-card-video {
+    opacity: 1;
+  }
+
+  .work-card-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%);
+    z-index: 1;
+    transition: background 0.3s;
+  }
+
+  .work-card:hover .work-card-overlay {
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%);
+  }
+
+  .work-card-content {
+    position: absolute;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    z-index: 2;
+  }
+
+  .work-card-title {
+    font-size: clamp(1.25rem, 3vw, 2rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+</style>
+
+<script>
+  // Preload and play videos on hover / intersection
+  document.querySelectorAll('.work-card').forEach((card) => {
+    const video = card.querySelector('.work-card-video video') as HTMLVideoElement;
+    const src = card.getAttribute('data-video');
+    let loaded = false;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !loaded && src) {
+            video.src = src;
+            video.preload = 'auto';
+            video.load();
+            video.addEventListener('canplay', () => {
+              card.classList.add('video-loaded');
+              video.play();
+            }, { once: true });
+            loaded = true;
+            observer.unobserve(card);
+          }
+        });
+      },
+      { rootMargin: '300px 0px' },
+    );
+    observer.observe(card);
+
+    card.addEventListener('mouseenter', () => {
+      if (loaded) video.play();
+    });
+    card.addEventListener('mouseleave', () => {
+      video.pause();
+    });
+  });
+</script>
