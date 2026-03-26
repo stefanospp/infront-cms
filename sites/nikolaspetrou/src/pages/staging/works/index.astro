@@ -1,0 +1,65 @@
+---
+export const prerender = false;
+
+import "../../../styles/global.css";
+import VideoLayout from '../../../components/VideoLayout.astro';
+import Hero from '../../../components/Hero.astro';
+import ProjectCard from '../../../components/ProjectCard.astro';
+// config built from CMS
+import { setPreviewMode, getSiteSettings, buildConfig, getProjects } from '../../../lib/cms';
+
+const token = Astro.url.searchParams.get('token');
+const PREVIEW_TOKEN = import.meta.env.PREVIEW_TOKEN || 'preview-secret';
+if (token !== PREVIEW_TOKEN) return new Response('Unauthorized', { status: 401 });
+
+setPreviewMode(true);
+const settings = await getSiteSettings();
+const config = buildConfig(settings);
+
+Astro.response.headers.set('X-Frame-Options', 'ALLOWALL');
+Astro.response.headers.set('Content-Security-Policy', "frame-ancestors https://cms.nikolaspetrou.com");
+
+const cmsProjects = await getProjects();
+const works = cmsProjects.map((p, i) => ({
+  title: p.title,
+  subtitle: p.data.subtitle || '',
+  image: `/images/project-${i + 1}.jpg`,
+  videoSrc: p.data.video_url || '',
+  slug: p.slug,
+}));
+---
+
+<div class="fixed top-0 left-0 right-0 z-[9999] bg-blue-500 px-4 py-1.5 text-center shadow-md">
+  <p class="text-xs font-semibold text-white">Staging Preview — Draft content, not live</p>
+</div>
+<div class="h-8"></div>
+
+<VideoLayout
+  title="Works"
+  description="Selected video production projects and creative work."
+  config={config}
+>
+  {/* Hero */}
+  <Hero
+    variant="minimal"
+    heading="My work."
+    subheading="Selected projects showcasing brand films, creative content, and visual storytelling."
+  />
+
+  {/* Portfolio Grid */}
+  <section class="bg-white pb-20 sm:pb-28">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {works.map((work) => (
+          <ProjectCard
+            title={work.title}
+            subtitle={work.subtitle}
+            image={work.image}
+            videoSrc={work.videoSrc}
+            href={`/works/${work.slug}`}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+</VideoLayout>

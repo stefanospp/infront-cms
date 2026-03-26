@@ -1,0 +1,48 @@
+---
+import "../../styles/global.css";
+import VideoLayout from '../../components/VideoLayout.astro';
+import Hero from '../../components/Hero.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { getSiteSettings, buildConfig, getProjects } from '../../lib/cms';
+
+const settings = await getSiteSettings();
+const config = buildConfig(settings);
+const cmsProjects = await getProjects();
+const works = cmsProjects.map((p, i) => ({
+  title: p.title,
+  subtitle: p.data.subtitle || '',
+  image: `/images/project-${i + 1}.jpg`,
+  videoSrc: p.data.video_url || '',
+  slug: p.slug,
+}));
+---
+
+<VideoLayout
+  title="Works"
+  description="Selected video production projects and creative work."
+  config={config}
+>
+  {/* Hero */}
+  <Hero
+    variant="minimal"
+    heading="My work."
+    subheading="Selected projects showcasing brand films, creative content, and visual storytelling."
+  />
+
+  {/* Portfolio Grid */}
+  <section class="bg-white pb-20 sm:pb-28">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {works.map((work) => (
+          <ProjectCard
+            title={work.title}
+            subtitle={work.subtitle}
+            image={work.image}
+            videoSrc={work.videoSrc}
+            href={`/works/${work.slug}`}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+</VideoLayout>

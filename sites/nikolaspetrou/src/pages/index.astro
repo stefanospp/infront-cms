@@ -1,0 +1,230 @@
+---
+import "../styles/global.css";
+import VideoLayout from '../components/VideoLayout.astro';
+import Hero from '../components/Hero.astro';
+import HeroInteractive from '../components/HeroInteractive';
+import ReelsShowcase from '../components/ReelsShowcase.astro';
+import VideoTestimonials from '../components/VideoTestimonials.astro';
+import ValuesSection from '../components/ValuesSection.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import HorizontalScroller from '../components/HorizontalScroller.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { getSiteSettings, buildConfig, getProjects, getServices, getTestimonials, getReels, getHero } from '../lib/cms';
+
+const settings = await getSiteSettings();
+const config = buildConfig(settings);
+
+const heroData = await getHero();
+const hero = heroData?.data;
+const cmsProjects = await getProjects();
+const cmsServices = await getServices({ limit: 3 });
+const cmsTestimonials = await getTestimonials();
+const cmsReels = await getReels();
+
+const projects = cmsProjects.slice(0, 4).map(p => ({
+  title: p.title,
+  video: p.data.video_url || '',
+  poster: `/images/project-${cmsProjects.indexOf(p) + 1}.jpg`,
+}));
+
+const videoTestimonials = cmsTestimonials.map(t => ({
+  name: t.data.name,
+  role: t.data.role || '',
+  quote: t.data.quote,
+  videoSrc: t.data.video_url || '',
+  image: `/images/testimonial-${cmsTestimonials.indexOf(t) + 1}.jpg`,
+}));
+
+const valueVideos = cmsProjects.slice(0, 4).map(p => ({
+  image: `/images/project-${cmsProjects.indexOf(p) + 1}.jpg`,
+  title: p.title,
+  videoSrc: p.data.video_url || '',
+}));
+
+const services = cmsServices.map(s => ({
+  title: s.title,
+  description: s.data.description,
+  tags: s.data.tags || [],
+  href: '/services',
+  videoSrc: s.data.video_url || '',
+}));
+
+const works = cmsProjects.map(p => ({
+  title: p.title,
+  subtitle: p.data.subtitle || '',
+  image: `/images/project-${cmsProjects.indexOf(p) + 1}.jpg`,
+  videoSrc: p.data.video_url || '',
+}));
+
+const reels = cmsReels.map(r => ({
+  url: r.data.url,
+  image: `/images/project-${cmsReels.indexOf(r) + 1}.jpg`,
+  date: r.data.date_label || '',
+}));
+
+---
+
+<VideoLayout
+  title={config.seo.defaultTitle}
+  description={config.seo.defaultDescription}
+  config={config}
+>
+  {/* Interactive Hero */}
+  <HeroInteractive
+      client:load
+      eyebrow={hero?.eyebrow || "Videographer · Content Creator"}
+      heading={hero?.heading || "Stay true to yourself."}
+      subheading={hero?.subheading || "High-quality video content that engages, inspires, and tells stories worth sharing."}
+      ctaText={hero?.cta_text || "Get in touch"}
+      ctaHref={hero?.cta_href || "/contact"}
+      secondaryCtaText={hero?.secondary_cta_text || "Watch showreel"}
+      secondaryCtaHref={hero?.secondary_cta_href || "/works"}
+      backgroundVideo={cmsProjects[0]?.data.video_url || "/images/hero-bg.jpg"}
+      backgroundPoster="/images/hero-bg.jpg"
+      projects={projects}
+  />
+
+  {/* Values / About Section */}
+  <ValuesSection
+    heading="I create visual content that captures moments and tells stories that move people."
+    description="Every project is an opportunity to push creative boundaries. I turn ideas into powerful visual stories that leave a lasting impact and deliver real results."
+    linkText="About me"
+    linkHref="/about"
+    videos={valueVideos}
+  />
+
+  {/* Services Section */}
+  <section class="relative overflow-hidden bg-neutral-50 py-20 sm:py-28" id="services-section">
+    {/* Shared background video — inserted by script */}
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="mb-14 flex items-end justify-between">
+        <div>
+          <p class="text-sm font-medium uppercase tracking-widest text-neutral-500">What I offer</p>
+          <h2 class="mt-2 text-3xl font-bold text-neutral-900 sm:text-4xl lg:text-5xl">My services.</h2>
+        </div>
+        <a
+          href="/services"
+          class="hidden items-center gap-2 rounded-full bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 sm:inline-flex"
+        >
+          View all
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+          </svg>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {services.map((service, i) => (
+          <ServiceCard
+            title={service.title}
+            description={service.description}
+            tags={service.tags}
+            href={service.href}
+            number={String(i + 1).padStart(2, '0')}
+            videoSrc={service.videoSrc}
+          />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* Services section-level video script — works on both hover and touch */}
+  <script>
+    const section = document.getElementById('services-section');
+    if (section) {
+      const isTouchDevice = window.matchMedia('(hover: none)').matches;
+      let video: HTMLVideoElement | null = null;
+      let overlay: HTMLDivElement | null = null;
+      let activeServiceCard: Element | null = null;
+      const cards = section.querySelectorAll('.service-card');
+
+      function ensureVideoElements() {
+        if (!video) {
+          video = document.createElement('video');
+          video.muted = true; video.loop = true; video.playsInline = true;
+          video.className = 'absolute inset-0 h-full w-full object-cover';
+          video.style.transition = 'opacity 0.6s ease';
+          video.style.opacity = '0'; video.style.zIndex = '1';
+          section.prepend(video);
+          overlay = document.createElement('div');
+          overlay.className = 'absolute inset-0';
+          overlay.style.background = 'rgba(245,245,245,0.75)';
+          overlay.style.transition = 'opacity 0.6s ease';
+          overlay.style.opacity = '0'; overlay.style.zIndex = '2';
+          video.after(overlay);
+        }
+      }
+
+      function activateCard(card: Element) {
+        const src = (card as HTMLElement).dataset.serviceVideo;
+        if (!src) return;
+        ensureVideoElements();
+        if (video!.src !== src) { video!.src = src; video!.load(); }
+        video!.play().catch(() => {});
+        video!.style.opacity = '1';
+        if (overlay) overlay.style.opacity = '1';
+        cards.forEach((c) => {
+          (c as HTMLElement).style.transition = 'opacity 0.4s ease';
+          (c as HTMLElement).style.opacity = c === card ? '1' : '0.5';
+        });
+        activeServiceCard = card;
+      }
+
+      function deactivateAll() {
+        if (video) video.style.opacity = '0';
+        if (overlay) overlay.style.opacity = '0';
+        cards.forEach((c) => { (c as HTMLElement).style.opacity = '1'; });
+        activeServiceCard = null;
+      }
+
+      cards.forEach((card) => {
+        if (isTouchDevice) {
+          card.addEventListener('click', (e) => {
+            if (activeServiceCard === card) {
+              deactivateAll();
+            } else {
+              e.preventDefault();
+              activateCard(card);
+            }
+          });
+        } else {
+          card.addEventListener('mouseenter', () => activateCard(card));
+          card.addEventListener('mouseleave', deactivateAll);
+        }
+      });
+    }
+  </script>
+
+  {/* Latest Works */}
+  <section class="bg-neutral-50 py-20 sm:py-28">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="mb-12">
+        <h2 class="text-3xl font-bold text-neutral-900 sm:text-4xl">Latest works.</h2>
+      </div>
+
+      <HorizontalScroller>
+        {works.map((work) => (
+          <div class="w-72 flex-shrink-0 snap-start sm:w-80 md:w-96">
+            <ProjectCard
+              title={work.title}
+              subtitle={work.subtitle}
+              image={work.image}
+              videoSrc={work.videoSrc}
+            />
+          </div>
+        ))}
+      </HorizontalScroller>
+    </div>
+  </section>
+
+  {/* Instagram Reels */}
+  <ReelsShowcase
+    heading="Latest Instagram Posts"
+    username="nikolaspetrouu"
+    postCount={221}
+    reels={reels}
+  />
+
+  {/* Video Testimonials */}
+  <VideoTestimonials testimonials={videoTestimonials} />
+</VideoLayout>
