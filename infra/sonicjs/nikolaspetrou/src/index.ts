@@ -59,6 +59,12 @@ const app = createSonicJSApp({
 
         html = whiteLabel(html);
 
+        // On login/register pages, clean up to show only the login card
+        if (url.pathname.startsWith('/auth')) {
+          html = html.replace(/<span style="font-size:20px[^"]*">Nikolas Petrou<\/span>\s*<span[^>]*>CMS<\/span>/g, '');
+          html = html.replace(/<title>[^<]*<\/title>/, '<title>Login - CMS</title>');
+        }
+
         // Hide Forms sidebar (not used — contact form is custom)
         html = html.replace(/<a[^>]*href="\/admin\/forms"[^>]*>[\s\S]*?<\/a>/g, '');
 

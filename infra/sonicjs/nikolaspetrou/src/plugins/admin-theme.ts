@@ -22,14 +22,18 @@ export const WHITE_LABEL: [string, string][] = [
   ['Welcome to your Nikolas Petrou CMS admin dashboard', 'Welcome to the Nikolas Petrou content management system'],
   ['A modern headless CMS powered by AI', 'Videographer Private Science & Maths Tutoring Content Creator — Content Management'],
 
-  // Login page
-  ['Welcome Back', 'Nikolas Petrou CMS'],
-  ['Sign in to your account to continue', 'Sign in to manage your content'],
+  // Login page — clean card only, no client branding
+  ['Welcome Back', 'Content Management'],
+  ['Sign in to your account to continue', 'Sign in to continue'],
+  ["Don't have an account?", ''],
+  ['Create one here', ''],
+  ['v2.8.0', ''],
 ];
 
 // Replace the SonicJs SVG logo + version badge with Nikolas Petrou text logo.
 // Uses regex because the SVG is a large inline blob that can't be matched with simple strings.
-const THEORIUM_LOGO = '<span style="font-size:20px;font-weight:700;letter-spacing:-0.5px;color:#465FFF;">Nikolas Petrou</span> <span style="font-size:11px;color:#94a3b8;font-weight:500;">CMS</span>';
+// Sidebar logo — shows client branding in the admin sidebar only
+const SIDEBAR_LOGO = '<span style="font-size:20px;font-weight:700;letter-spacing:-0.5px;color:#465FFF;">Nikolas Petrou</span> <span style="font-size:11px;color:#94a3b8;font-weight:500;">CMS</span>';
 
 export function whiteLabel(html: string): string {
   // Replace all simple string pairs
@@ -40,7 +44,7 @@ export function whiteLabel(html: string): string {
   // Replace the SVG logo (viewBox="380 1300 2250 400") + version badge with Nikolas Petrou text
   html = html.replace(
     /<svg[^>]*viewBox="380 1300 2250 400"[^>]*>[\s\S]*?<\/svg>/g,
-    THEORIUM_LOGO
+    SIDEBAR_LOGO
   );
 
   // Remove version badge spans (e.g. "2.8.0")
@@ -252,9 +256,15 @@ export const CUSTOM_CSS = `
 
   html:not(.dark) hr { border-color: var(--th-border) !important; }
 
-  /* Login page */
+  /* Login page — clean card only */
   html:not(.dark) [class*="min-h-screen"] {
     background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%) !important;
+  }
+
+  /* Hide logo/branding above login card — auth pages only */
+  body:has(form[action*="login"]) [class*="min-h-screen"] > div > div:first-child,
+  body:has(button[type="submit"]) [class*="min-h-screen"] svg[viewBox="380 1300 2250 400"] {
+    display: none !important;
   }
 
   /* ── Shared Improvements ─────────────────────────────────────── */
