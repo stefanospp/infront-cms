@@ -105,7 +105,12 @@ id = "TODO"
 ADMIN_EMAIL = "admin@<domain>"
 ADMIN_PASSWORD = "<strong-password>"
 JWT_SECRET = "<random-secret>"
+MAX_FILE_SIZE = "104857600"
+ALLOWED_FILE_TYPES = "image/jpeg,image/png,image/webp,image/svg+xml,image/gif,video/mp4,video/webm,video/quicktime,application/pdf"
+BUCKET_NAME = "<client-slug>-cms-media"
 ```
+
+**Note:** `MAX_FILE_SIZE` is in bytes (104857600 = 100MB). Adjust per client — 10MB for basic sites, 100MB for video-heavy sites.
 
 Install dependencies:
 
@@ -115,7 +120,9 @@ npm install
 
 ### 2.2 Create the entry point
 
-Create `src/index.ts`:
+Create `src/index.ts` — this is the most critical file. It handles collections, middleware, security, white-labeling, and role filtering. Use the nikolaspetrou implementation as the reference:
+
+**Reference:** `infra/sonicjs/nikolaspetrou/src/index.ts`
 
 ```typescript
 import { createSonicJSApp, registerCollections } from '@sonicjs-cms/core';
@@ -124,15 +131,31 @@ import { THEME_SCRIPT, CUSTOM_CSS, whiteLabel } from './plugins/admin-theme';
 
 // Import all collection definitions
 import siteSettings from './collections/site-settings.collection';
-// ... more collections
+import submissions from './collections/submissions.collection';
+import formSettings from './collections/form-settings.collection';
+// ... more collections per client
 
-const collections: CollectionConfig[] = [siteSettings /* ... */];
+const collections: CollectionConfig[] = [siteSettings, submissions, formSettings /* ... */];
 registerCollections(collections);
 
 const app = createSonicJSApp({
   collections: { autoSync: true },
   plugins: { autoLoad: true },
   middleware: {
+    // Block public registration (allow seed script with JWT_SECRET header)
+    beforeAuth: [
+      async (c, next) => {
+        const url = new URL(c.req.url);
+        if (url.pathname === '/auth/register' && c.req.method === 'POST') {
+          const seedSecret = c.req.header('x-seed-secret');
+          const jwtSecret = c.env?.JWT_SECRET || '';
+          if (seedSecret !== jwtSecret) {
+            return c.json({ error: 'Registration is disabled.' }, 403);
+          }
+        }
+        await next();
+      },
+    ],
     afterAuth: [
       async (c, next) => {
         await next();
@@ -143,7 +166,14 @@ const app = createSonicJSApp({
 
         let html = await c.res.text();
 
-        // Light theme: strip dark class server-side
+        // CRITICAL: Skip HTMX partial responses (no <!DOCTYPE)
+        // Without this, modals (Version History) and dynamic content break
+        if (!html.includes('<!DOCTYPE') && !html.includes('<html')) {
+          c.res = new Response(html, { status: c.res.status, headers: c.res.headers });
+          return;
+        }
+
+        // Light theme: strip dark class server-side (prevents flash)
         html = html.replace(/class="([^"]*)\bdark\b([^"]*)"/g, (_, b, a) => {
           const cleaned = `${b}${a}`.replace(/\s+/g, ' ').trim();
           return cleaned ? `class="${cleaned}"` : '';
@@ -151,6 +181,9 @@ const app = createSonicJSApp({
 
         // White-label branding
         html = whiteLabel(html);
+
+        // Hide Forms sidebar (we use custom contact form, not SonicJs Forms plugin)
+        html = html.replace(/<a[^>]*href="\/admin\/forms"[^>]*>[\s\S]*?<\/a>/g, '');
 
         // Role-based menu: hide admin-only items for editors
         const user = c.get('user') as { role?: string } | undefined;
@@ -160,8 +193,22 @@ const app = createSonicJSApp({
           html = html.replace(/<a[^>]*href="\/admin\/plugins"[^>]*>[\s\S]*?<\/a>/g, '');
           html = html.replace(/<a[^>]*href="\/admin\/cache"[^>]*>[\s\S]*?<\/a>/g, '');
           html = html.replace(/<a[^>]*href="\/admin\/settings[^"]*"[^>]*>[\s\S]*?<\/a>/g, '');
-          html = html.replace(/<a[^>]*href="\/admin\/forms"[^>]*>[\s\S]*?<\/a>/g, '');
         }
+
+        // Clean login page — remove branding, show only login card
+        if (url.pathname.startsWith('/auth')) {
+          // Remove logo text and page title branding
+          html = html.replace(/<span style="font-size:20px[^"]*">[^<]*<\/span>\s*<span[^>]*>CMS<\/span>/g, '');
+          html = html.replace(/<title>[^<]*<\/title>/, '<title>Login - CMS</title>');
+        }
+
+        // Override "Preview Content" button → link to staging preview
+        const siteUrl = 'https://<domain>'; // Change per client
+        const previewToken = '<PREVIEW_TOKEN>';
+        html = html.replace(
+          /<button[^>]*onclick="previewContent\(\)"[^>]*>[\s\S]*?<\/button>/g,
+          `<a href="${siteUrl}/staging/?token=${previewToken}" target="_blank" class="w-full inline-flex items-center gap-x-2 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-zinc-100 rounded-lg transition-colors"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>Preview on Site</a>`
+        );
 
         // Inject theme CSS and script
         html = html
@@ -176,6 +223,14 @@ const app = createSonicJSApp({
 
 export default app;
 ```
+
+**Key lessons from the nikolaspetrou migration:**
+
+1. **Always skip HTMX partials** — without the `<!DOCTYPE` check, the middleware breaks modals (Version History), dynamic content, and any HTMX-loaded HTML fragments.
+2. **Block registration in `beforeAuth`** — use `x-seed-secret` header matching `JWT_SECRET` to allow the seed script through while blocking public registration.
+3. **Replace the Preview button element, not just text** — the SonicJs preview button has an `onclick="previewContent()"` handler. Replacing just the text nests a link inside the button, and the button's handler fires first. Replace the entire `<button>` element with an `<a>` link.
+4. **Hide Forms sidebar for all users** — we use a custom contact form, not SonicJs's built-in Forms plugin.
+5. **Clean the login page** — remove logo, registration link, version badge. Only show the login card.
 
 ### 2.3 First run
 
@@ -443,13 +498,51 @@ export async function getResources(options?: { limit?: number }): Promise<CmsIte
 const FALLBACK_RESOURCES: CmsItem<ResourceData>[] = [ /* ... */ ];
 ```
 
-### 4.3 Key principles
+### 4.3 Essential helpers
+
+**`resolveMediaUrl()`** — handles R2 media IDs, external URLs, and CDN URLs transparently:
+
+```typescript
+export function resolveMediaUrl(value: string | undefined | null): string {
+  if (!value) return '';
+  if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/')) return value;
+  const cmsUrl = import.meta.env.SONICJS_URL || '';
+  return cmsUrl ? `${cmsUrl}/media/serve/${value}` : value;
+}
+```
+
+**`buildConfig()`** — constructs a `SiteConfig`-compatible object from CMS settings for Nav/Footer/Layout components:
+
+```typescript
+export function buildConfig(settings: CmsItem<SiteSettingsData> | null) {
+  const s = settings?.data;
+  return {
+    name: settings?.title ?? '<Client>',
+    tagline: s?.tagline ?? '',
+    url: 'https://<domain>',
+    locale: 'en-GB',
+    contact: { email: s?.email ?? '', phone: '', address: { street: '', city: '', postcode: '', country: '' } },
+    seo: { defaultTitle: s?.seo_title ?? '', titleTemplate: '%s | <Client>', defaultDescription: s?.seo_description ?? '', defaultOgImage: '/og-default.svg', structuredData: { type: 'Organization' as const } },
+    nav: { items: (s?.nav_items ?? []).map(i => ({ label: i.label, href: i.href })), cta: s?.nav_cta_label ? { label: s.nav_cta_label, href: s.nav_cta_href ?? '/contact' } : undefined },
+    footer: { columns: [], legalLinks: [], text: s?.footer_text ?? '', socialLinks: { instagram: s?.instagram_url ?? '', facebook: s?.facebook_url ?? '' } },
+    theme: { navStyle: 'fixed' as const, footerStyle: 'multi-column' as const, heroDefault: 'fullscreen' as const, borderStyle: 'pill' as const },
+  };
+}
+```
+
+This is essential when the site uses shared `@agency/ui` components that expect the full `SiteConfig` type.
+
+### 4.4 Key principles
 
 1. **Every fetch function has fallback data** — the site must build without a CMS connection
 2. **JSON fields need parsing** — `array` and `object` fields may arrive as JSON strings from D1
 3. **Sort client-side** — SonicJs cannot sort by fields inside the `data` JSON blob
 4. **Filter client-side** — SonicJs cannot filter by `data.*` fields (only top-level `status`, `collection_id`)
 5. **No mapping layer** — components consume the native `CmsItem<T>` shape directly
+6. **Use `resolveMediaUrl()`** for all media fields — supports external URLs, R2 CDN, and SonicJs media IDs
+7. **Use `buildConfig()`** in pages — constructs the config object Nav/Footer/Layout expect from CMS settings
+
+**Reference:** `sites/nikolaspetrou/src/lib/cms.ts`
 
 ---
 
@@ -547,14 +640,16 @@ SONICJS_URL=http://localhost:8787 npx astro dev
 
 SonicJs admin is white-labeled via server-side middleware — no forking required.
 
+**Reference implementation:** `infra/sonicjs/nikolaspetrou/src/plugins/admin-theme.ts`
+
 ### 6.1 Create the theme plugin
 
-Create `src/plugins/admin-theme.ts` with three exports:
+Create `src/plugins/admin-theme.ts` with four exports:
 
 1. **`WHITE_LABEL`** — string replacements for branding (page titles, headings, descriptions)
 2. **`whiteLabel(html)`** — function that applies replacements + replaces the SVG logo with text
 3. **`CUSTOM_CSS`** — light theme CSS overrides injected into `<head>`
-4. **`THEME_SCRIPT`** — theme toggle button injected before `</body>`
+4. **`THEME_SCRIPT`** — theme toggle + Version History fix injected before `</body>`
 
 Key replacements:
 
@@ -563,16 +658,22 @@ export const WHITE_LABEL: [string, string][] = [
   ['SonicJS AI Admin', '<Client> CMS'],
   ['SonicJS AI', '<Client> CMS'],
   ['SonicJS', '<Client>'],
-  ['Welcome Back', '<Client> CMS'],
-  ['Sign in to your account to continue', 'Sign in to manage your content'],
+  ['Sonic JS', '<Client>'],
+  ['Welcome to your <Client> CMS admin dashboard', 'Welcome to the <Client> content management system'],
+  // Login page — clean card, no client branding
+  ['Welcome Back', 'Content Management'],
+  ['Sign in to your account to continue', 'Sign in to continue'],
+  ["Don't have an account?", ''],
+  ['Create one here', ''],
+  ['v2.8.0', ''],
 ];
 ```
 
-The SVG logo (viewBox `380 1300 2250 400`) is replaced via regex in the `whiteLabel()` function.
+The SVG logo (viewBox `380 1300 2250 400`) is replaced via regex in the `whiteLabel()` function. On auth pages, the logo is removed entirely in the middleware (see Section 2.2).
 
 ### 6.2 Light theme
 
-The dark class is stripped server-side in the middleware (not via JavaScript) to prevent any flash:
+The dark class is stripped **server-side** in the middleware (not via JavaScript) to prevent any flash of dark theme:
 
 ```typescript
 html = html.replace(/class="([^"]*)\bdark\b([^"]*)"/g, (_, b, a) => {
@@ -581,7 +682,39 @@ html = html.replace(/class="([^"]*)\bdark\b([^"]*)"/g, (_, b, a) => {
 });
 ```
 
-See `infra/sonicjs/theorium/src/plugins/theorium-admin.ts` for the complete reference implementation.
+### 6.3 Light mode CSS — critical fixes
+
+The SonicJs admin was designed for dark mode. Stripping the `dark` class makes many elements invisible (light text on light background). The `CUSTOM_CSS` must include fixes for:
+
+| Element | Issue | Fix |
+|---|---|---|
+| All buttons (Cancel, Update, etc.) | Invisible borders/text | Add `border-color` + `color` overrides |
+| Header buttons (Docs, OpenAPI) | Faint border | Add border + background |
+| Action icons (edit, delete) | Invisible SVG | Set `color` on SVG parents |
+| Modals (Version History) | Invisible backdrop + text | Dark overlay background, dark text |
+| Dropdowns | Invisible | White background + border |
+| Tooltips | Invisible text | Dark background, white text |
+| Checkboxes | Invisible | `accent-color` |
+| Dashed borders (Add item) | Invisible | `border-color` override |
+| `bg-white/10` transparent elements | Invisible | Convert to light hover style |
+
+**Reference:** See the full CSS in `infra/sonicjs/nikolaspetrou/src/plugins/admin-theme.ts` — copy and adapt for each new client.
+
+### 6.4 Theme script — Version History fix
+
+SonicJs's Version History modal loads via HTMX, which injects a `<script>` tag containing `closeVersionHistory()`. Browsers don't execute `<script>` tags injected via `innerHTML`. The fix: define `closeVersionHistory` globally in the theme script:
+
+```javascript
+window.closeVersionHistory = function() {
+  var modal = document.querySelector('.version-history-modal');
+  if (modal) {
+    var overlay = modal.closest('.fixed') || modal.parentElement;
+    if (overlay) overlay.remove();
+  }
+};
+```
+
+Without this, the Version History modal cannot be closed.
 
 ---
 
@@ -998,16 +1131,25 @@ Dashboard: https://dash.cloudflare.com → Workers & Pages → Usage
 
 ## 14. Migration Guide: Importing from Other CMS
 
-### 10.1 From Directus
+**Reference implementation:** The nikolaspetrou migration from Directus is a complete worked example — see `infra/sonicjs/nikolaspetrou/` and `sites/nikolaspetrou/`.
+
+### 14.1 From Directus
 
 **Step 1: Export content from Directus**
 
+Get the Directus token from the site's `.env` file, then export all collections:
+
 ```bash
-# Export each collection as JSON via the Directus API
-curl -H "Authorization: Bearer <TOKEN>" \
-  https://cms.<domain>/items/<collection>?limit=-1 \
-  > <collection>.json
+TOKEN="<from sites/<slug>/.env DIRECTUS_TOKEN>"
+CMS="https://cms.<domain>"
+
+for col in projects services testimonials reels hero about site_settings; do
+  curl -s -H "Authorization: Bearer $TOKEN" "$CMS/items/$col?limit=-1" > /tmp/directus-$col.json
+  echo "$col: $(python3 -c "import json; d=json.load(open('/tmp/directus-$col.json')); print(len(d.get('data',[])))")"
+done
 ```
+
+This gives you real video URLs, descriptions, image references, Instagram reel links — everything.
 
 **Step 2: Map Directus fields to SonicJs collections**
 
@@ -1502,52 +1644,89 @@ wrangler d1 export <db> --output=backup.sql
 
 **CMS Setup:**
 - [ ] Create CMS project in `infra/sonicjs/<slug>/`
+- [ ] Copy `admin-theme.ts` from nikolaspetrou and update branding
 - [ ] Define all collections in `src/collections/`
-- [ ] Create `src/plugins/admin-theme.ts` with client branding
-- [ ] Write `seed.ts` with initial content data
-- [ ] Include `site_settings` collection (nav, footer, SEO, contact)
+- [ ] Include `site_settings` collection (nav, footer, SEO, contact, social links)
+- [ ] Include `submissions` collection (contact form storage)
+- [ ] Include `form_settings` collection (notification recipients, field config)
+- [ ] Write `seed.ts` — if migrating, export real content from live Directus first
+- [ ] Set `MAX_FILE_SIZE`, `ALLOWED_FILE_TYPES`, `BUCKET_NAME` in wrangler.toml
+
+**CMS Middleware (src/index.ts):**
+- [ ] Block open registration with `x-seed-secret` header check in `beforeAuth`
+- [ ] Skip HTMX partials — check for `<!DOCTYPE` before modifying HTML
+- [ ] Strip `dark` class server-side
+- [ ] Apply white-label branding via `whiteLabel()`
+- [ ] Hide Forms sidebar for all users
+- [ ] Role-based menu filtering for non-admin users
+- [ ] Clean login page (remove logo, registration link, version badge)
+- [ ] Replace Preview Content button with staging preview `<a>` link
+- [ ] Inject `CUSTOM_CSS` and `THEME_SCRIPT`
+
+**Admin Theme (src/plugins/admin-theme.ts):**
+- [ ] Light theme CSS — all buttons have proper contrast
+- [ ] Modal/dropdown/tooltip visibility fixes
+- [ ] `closeVersionHistory()` global function fix
+- [ ] Theme toggle button (sun/moon)
+- [ ] Login page: no client branding, no registration link
 
 **Site Build:**
 - [ ] Create site in `sites/<slug>/`
 - [ ] Build `src/lib/types.ts` with `CmsItem<T>` interfaces
-- [ ] Build `src/lib/cms.ts` with fetch functions + fallback data
-- [ ] Create all page files with CMS data fetching
-- [ ] Add `[...slug].astro` for dynamic CMS pages
-- [ ] Add preview route at `src/pages/preview/index.astro`
-- [ ] Nav and Footer read from CMS site_settings
+- [ ] Build `src/lib/cms.ts` with:
+  - [ ] `fetchCollection()` with preview mode toggle
+  - [ ] `resolveMediaUrl()` helper (R2 + CDN + external URLs)
+  - [ ] `buildConfig()` helper (SiteConfig for Nav/Footer/Layout)
+  - [ ] Individual fetch functions per collection
+  - [ ] Fallback data for all functions
+- [ ] Create all page files — use `buildConfig(settings)` for Nav/Footer
+- [ ] Flatten `CmsItem<T>` in page frontmatter before passing to components
+- [ ] Add staging preview routes in `src/pages/staging/`
+- [ ] Update `public/_headers` — remove Directus CSP, set appropriate security headers
+- [ ] Add `SONICJS_URL` and `PREVIEW_TOKEN` to `sites/<slug>/wrangler.toml`
 
 **Security (before production):**
-- [ ] Disable open registration (block `/auth/register` POST in middleware)
-- [ ] Restrict CORS to site domain only
 - [ ] Set strong `JWT_SECRET` (not the dev default)
 - [ ] Set unique `PREVIEW_TOKEN` (not `preview-secret`)
-- [ ] Set up role-based menu filtering in middleware
+- [ ] Verify registration is blocked (test with curl)
+- [ ] Update preview link URL in middleware from localhost to production domain
 
 **User Management:**
-- [ ] Create admin user (admin role)
+- [ ] Create admin user (admin role) — via seed script with `x-seed-secret`
 - [ ] Create editor user (editor role) for client
-- [ ] Enable OTP/MFA plugin if required
-- [ ] Enable Workflow plugin for content approval chain
+- [ ] Update roles via `wrangler d1 execute` after seeding
 
 **Infrastructure:**
 - [ ] Create D1 database
 - [ ] Create KV namespace
 - [ ] Create R2 bucket with `--jurisdiction eu`
-- [ ] Configure `MAX_FILE_SIZE` and `ALLOWED_FILE_TYPES`
 - [ ] Set up staging and production environments in `wrangler.toml`
 - [ ] Deploy CMS and seed production data
 - [ ] Deploy site with `SONICJS_URL` pointing to production CMS
 - [ ] Set up custom domains
 
+**Monorepo:**
+- [ ] Ensure `.npmrc` has `link-workspace-packages=true`
+- [ ] Run `pnpm install` to link new site's `node_modules`
+
+**Verification:**
+- [ ] All pages build with CMS data
+- [ ] Dynamic routes (e.g., works/[slug]) generate correctly
+- [ ] Videos play from external URLs and R2
+- [ ] Staging preview shows draft content with blue banner
+- [ ] CMS admin: light theme, no SonicJs branding
+- [ ] Editor role: only sees Dashboard/Content/Media
+- [ ] Version History modal opens and closes
+- [ ] Preview on Site link opens staging in new tab
+- [ ] Contact form stores submissions in CMS
+- [ ] Registration blocked for non-seed requests
+
 **Operations:**
 - [ ] Set up CI/CD workflow (GitHub Actions)
-- [ ] Add `content:publish` hook for auto-deploy
 - [ ] Set up automated D1 backups (weekly cron)
 - [ ] Set up uptime monitoring (Betterstack or similar)
-- [ ] Wire analytics from CMS settings (Plausible/Fathom/GA)
 
 **Client Handoff:**
-- [ ] Create editor handbook (login, editing, page builder, preview, publishing)
-- [ ] Test admin on tablet/mobile
 - [ ] Share editor credentials and preview URL with client
 - [ ] Verify all content is editable from the admin
+- [ ] Test admin on tablet/mobile
