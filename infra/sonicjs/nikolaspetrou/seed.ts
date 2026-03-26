@@ -1,16 +1,16 @@
 /**
  * Seed script for Nikolas Petrou SonicJs CMS
+ * Content exported from live Directus instance (2026-03-26)
  *
  * Usage:
- *   1. Start the dev server: npm run dev
- *   2. Run this script:      npm run seed
+ *   1. Start the dev server: npm run dev -- --port 8788
+ *   2. Run: SONICJS_URL=http://localhost:8788 npm run seed
  */
 
-const API_URL = process.env.SONICJS_URL || 'http://localhost:8787';
+const API_URL = process.env.SONICJS_URL || 'http://localhost:8788';
+const SEED_SECRET = process.env.SEED_SECRET || 'nikolaspetrou-cms-local-dev-secret';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
-
-const SEED_SECRET = process.env.SEED_SECRET || 'nikolaspetrou-cms-local-dev-secret';
 
 async function getAdminToken(): Promise<string> {
   await fetch(`${API_URL}/auth/register`, {
@@ -50,7 +50,7 @@ async function create(token: string, colId: string, title: string, slug: string,
   }
 }
 
-// ─── Seed Data ────────────────────────────────────────────────────────────────
+// ─── Seed Data (exported from live Directus 2026-03-26) ───────────────────────
 
 async function seedSiteSettings(token: string, colId: string) {
   console.log('  site_settings');
@@ -58,9 +58,9 @@ async function seedSiteSettings(token: string, colId: string) {
     tagline: 'Videographer & Content Creator',
     email: 'hello@nikolaspetrou.com',
     seo_title: 'Nikolas Petrou — Videographer & Content Creator',
-    seo_description: 'High-quality video content that engages, inspires, and tells stories worth sharing. Based in Cyprus.',
+    seo_description: 'Professional videographer and content creator. Cinematic video production, creative direction, and social media content. Based in Cyprus.',
     instagram_url: 'https://instagram.com/nikolaspetrouu',
-    facebook_url: 'https://facebook.com/nikolaspetrou',
+    facebook_url: 'https://facebook.com/Nikolaspetrouu',
     notification_emails: JSON.stringify(['hello@nikolaspetrou.com']),
     nav_items: JSON.stringify([
       { label: 'About', href: '/about' },
@@ -78,8 +78,8 @@ async function seedHero(token: string, colId: string) {
   console.log('  hero');
   await create(token, colId, 'Homepage Hero', 'homepage-hero', {
     eyebrow: 'Videographer · Content Creator',
-    heading: 'Stay true to yourself.',
-    subheading: 'High-quality video content that engages, inspires, and tells stories worth sharing.',
+    heading: 'Stay true to yourself...',
+    subheading: 'Video content that engages, inspires, and tells stories worth sharing.',
     cta_text: 'Get in touch',
     cta_href: '/contact',
     secondary_cta_text: 'Watch showreel',
@@ -92,36 +92,41 @@ async function seedHero(token: string, colId: string) {
 async function seedAbout(token: string, colId: string) {
   console.log('  about');
   await create(token, colId, 'About Page', 'about-page', {
-    heading: 'About Nikolas',
-    subheading: 'Videographer and content creator telling stories through film.',
-    description: '<p>I create visual content that captures moments and tells stories that move people. Every project is an opportunity to push creative boundaries and deliver real results.</p>',
+    heading: 'I tell stories through film.',
+    subheading: "I'm Nikolas Petrou — a videographer and content creator focused on crafting cinematic visuals that connect with people.",
+    description: '<p>Every project is an opportunity to push creative boundaries. I turn ideas into powerful visual stories that leave a lasting impact and deliver real results.</p>',
     hero_image: '/images/about-hero.jpg',
     cta_text: 'Get in touch',
-    values_heading: 'What drives me',
-    values_description: '<p>Creativity, authenticity, and excellence in every frame.</p>',
+    values_heading: 'I believe every project deserves the same passion, creativity, and attention to detail — no matter the size.',
+    values_description: 'My approach is simple: understand the story, capture it authentically, and edit it to perfection. Every frame matters.',
   });
 }
 
 async function seedProjects(token: string, colId: string) {
   console.log('  projects');
   const projects = [
-    { title: 'Golden Hour', slug: 'golden-hour', subtitle: 'A cinematic journey through light and shadow', image: '/images/project-1.jpg', video_url: '', sort_order: 1, featured_in_hero: true, hero_sort_order: 1, description: '<p>A cinematic exploration of light captured during the golden hour. This project showcases the beauty of natural lighting in videography.</p>', client: 'Personal Project', year: '2025', category: 'Cinematic' },
-    { title: 'Urban Stories', slug: 'urban-stories', subtitle: 'Street culture and city life', image: '/images/project-2.jpg', video_url: '', sort_order: 2, featured_in_hero: true, hero_sort_order: 2, description: '<p>Capturing the energy and culture of urban life through dynamic video content.</p>', client: 'Urban Magazine', year: '2025', category: 'Documentary' },
-    { title: 'Brand Film', slug: 'brand-film', subtitle: 'Visual identity through motion', image: '/images/project-3.jpg', video_url: '', sort_order: 3, featured_in_hero: true, hero_sort_order: 3, description: '<p>A brand film that brings company values to life through powerful visual storytelling.</p>', client: 'Tech Startup', year: '2024', category: 'Commercial' },
-    { title: 'Music Video', slug: 'music-video', subtitle: 'Rhythm meets visual art', image: '/images/project-4.jpg', video_url: '', sort_order: 4, featured_in_hero: true, hero_sort_order: 4, description: '<p>A music video combining creative direction with cinematic techniques.</p>', client: 'Independent Artist', year: '2024', category: 'Music Video' },
+    { title: 'Coastal', slug: 'coastal', subtitle: 'Where Land Meets Sea', video_url: 'https://cdn.pixabay.com/video/2022/08/16/128015-740186542_large.mp4', sort_order: 1, featured_in_hero: true, hero_sort_order: 0, description: '<p>A cinematic exploration of coastlines and the stories they hold. Dramatic cliffs, hidden coves, and the ever-changing light.</p><p>Featuring aerial drone footage and underwater sequences for a tourism campaign.</p>', client: 'Tourism Campaign', year: '2024', category: 'Brand Film' },
+    { title: 'Stay True to Yourself', slug: 'stay-true', subtitle: 'Cinematic Self-Expression', video_url: 'https://cdn.pixabay.com/video/2025/07/27/293788_large.mp4', sort_order: 2, featured_in_hero: false, hero_sort_order: 0, description: '<p>A personal project exploring themes of authenticity and self-expression through cinematic visuals.</p><p>The project was entirely self-directed, from concept development through to final color grade and sound design.</p>', client: 'Personal Project', year: '2025', category: 'Personal' },
+    { title: 'Aerial Perspectives', slug: 'aerial', subtitle: 'A View From Above', video_url: 'https://cdn.pixabay.com/video/2024/12/13/246462_large.mp4', sort_order: 3, featured_in_hero: false, hero_sort_order: 0, description: "<p>Showcasing the world from a bird's eye view. Aerial footage that reveals patterns, textures, and stories invisible from the ground.</p><p>Shot using FPV and stabilized drone technology in 4K resolution.</p>", client: 'Various Clients', year: '2024', category: 'Commercial' },
+    { title: 'Mountain Adventures', slug: 'mountains', subtitle: 'Exploring New Heights', video_url: '/images/pv4.mp4', sort_order: 4, featured_in_hero: false, hero_sort_order: 0, description: '<p>An adventure film documenting mountain expeditions. From pre-dawn starts to summit celebrations, capturing the full emotional arc.</p><p>Created as a brand film for an outdoor equipment company.</p>', client: 'Outdoor Brand', year: '2024', category: 'Brand Film' },
+    { title: 'Underwater World', slug: 'underwater', subtitle: 'Beneath the Surface', video_url: 'https://videos.pexels.com/video-files/36473015/15465933_640_360_30fps.mp4', sort_order: 5, featured_in_hero: false, hero_sort_order: 0, description: '<p>Diving beneath the surface to capture the hidden world below with specialized underwater housing and lighting.</p><p>Used across social media campaigns and a mini-documentary about ocean conservation.</p>', client: 'Conservation Foundation', year: '2025', category: 'Documentary' },
+    { title: 'Golden Hour', slug: 'golden-hour', subtitle: 'Chasing the Light', video_url: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4', sort_order: 6, featured_in_hero: false, hero_sort_order: 0, description: '<p>A visual love letter to the golden hour. Compiled from shoots across multiple countries.</p><p>Originally a showreel piece, it became a viral social media hit.</p>', client: 'Personal Project', year: '2025', category: 'Social Media' },
   ];
   for (const p of projects) {
     const { title, slug, ...data } = p;
-    await create(token, colId, title, slug, data);
+    await create(token, colId, title, slug, { ...data, image: '', reel_url: '', gallery: JSON.stringify([]) });
   }
 }
 
 async function seedServices(token: string, colId: string) {
   console.log('  services');
   const services = [
-    { title: 'Video Production', slug: 'video-production', description: '<p>End-to-end video production from concept to final cut. Corporate films, brand videos, and promotional content.</p>', tags: JSON.stringify(['Concept Development', 'Filming', 'Post-Production', 'Color Grading']), icon: '🎬', video_url: '', sort_order: 1 },
-    { title: 'Content Creation', slug: 'content-creation', description: '<p>Social media content that stops the scroll. Reels, stories, and platform-native video optimised for engagement.</p>', tags: JSON.stringify(['Social Media', 'Reels', 'Stories', 'Platform Strategy']), icon: '📱', video_url: '', sort_order: 2 },
-    { title: 'Event Coverage', slug: 'event-coverage', description: '<p>Professional event videography capturing the atmosphere, key moments, and emotions of your event.</p>', tags: JSON.stringify(['Live Events', 'Conferences', 'Weddings', 'Highlights']), icon: '🎤', video_url: '', sort_order: 3 },
+    { title: 'Video Production', slug: 'video-production', description: 'From concept to final cut, I handle the entire production process. Scripting, filming, editing — delivering polished content that tells your story.', tags: JSON.stringify(['Commercials', 'Brand Films', 'Short Films', 'Reels']), icon: '🎬', video_url: 'https://videos.pexels.com/video-files/5544413/5544413-sd_640_360_24fps.mp4', sort_order: 1 },
+    { title: 'Creative Direction', slug: 'creative-direction', description: 'I work closely with you to develop unique concepts and visual narratives that resonate with your audience and elevate your brand.', tags: JSON.stringify(['Concept Development', 'Storyboarding', 'Art Direction', 'Brand Identity']), icon: '🎨', video_url: 'https://videos.pexels.com/video-files/6981425/6981425-sd_640_360_25fps.mp4', sort_order: 2 },
+    { title: 'Content Creation', slug: 'content-creation', description: 'Professional content for social media, websites, and campaigns. Optimized for engagement and crafted to stand out in crowded feeds.', tags: JSON.stringify(['Social Media', 'Instagram Reels', 'YouTube', 'Campaign Content']), icon: '📱', video_url: 'https://videos.pexels.com/video-files/4232189/4232189-sd_640_360_24fps.mp4', sort_order: 3 },
+    { title: 'Aerial & Drone Filming', slug: 'aerial-drone', description: 'Cinematic drone footage that adds depth, scale, and a unique perspective to any project. Breathtaking aerial shots for any occasion.', tags: JSON.stringify(['Drone Cinematography', 'Aerial Shots', 'FPV Filming', 'Landscape']), icon: '🚁', video_url: '', sort_order: 4 },
+    { title: 'Post-Production & Editing', slug: 'post-production', description: 'Expert editing, color grading, motion graphics, and sound design. Every frame polished to perfection for maximum impact.', tags: JSON.stringify(['Video Editing', 'Color Grading', 'Motion Graphics', 'Sound Design']), icon: '✂️', video_url: '', sort_order: 5 },
+    { title: 'Brand Partnerships', slug: 'brand-partnerships', description: 'Authentic content creation for brands and businesses. Reaching engaged audiences through compelling visual storytelling across platforms.', tags: JSON.stringify(['Sponsored Content', 'Brand Stories', 'UGC', 'Campaign Content']), icon: '🤝', video_url: '', sort_order: 6 },
   ];
   for (const s of services) {
     const { title, slug, ...data } = s;
@@ -132,9 +137,9 @@ async function seedServices(token: string, colId: string) {
 async function seedTestimonials(token: string, colId: string) {
   console.log('  testimonials');
   const testimonials = [
-    { title: 'Maria K.', slug: 'maria-k', name: 'Maria K.', role: 'Marketing Director', quote: 'Nikolas captured our brand perfectly. The video exceeded all expectations and drove incredible engagement on our social channels.', video_url: '', image: '/images/testimonial-1.jpg', sort_order: 1 },
-    { title: 'Andreas P.', slug: 'andreas-p', name: 'Andreas P.', role: 'Event Organiser', quote: 'Professional, creative, and easy to work with. The event highlight reel was exactly what we needed.', video_url: '', image: '/images/testimonial-2.jpg', sort_order: 2 },
-    { title: 'Elena S.', slug: 'elena-s', name: 'Elena S.', role: 'Brand Manager', quote: 'Working with Nikolas was a fantastic experience. He understood our vision immediately and delivered stunning content.', video_url: '', image: '/images/testimonial-3.jpg', sort_order: 3 },
+    { title: 'Satisfied Client', slug: 'satisfied-client', name: 'Satisfied Client', role: 'Brand Partnership', quote: 'Nikolas has an incredible eye for storytelling. He understood our vision instantly and delivered content that exceeded every expectation.', video_url: 'https://videos.pexels.com/video-files/8336666/8336666-sd_960_506_25fps.mp4', image: '', sort_order: 1 },
+    { title: 'Happy Client', slug: 'happy-client', name: 'Happy Client', role: 'Content Campaign', quote: 'Professional, creative, and incredibly easy to work with. The final videos were stunning — exactly what we needed to elevate our brand.', video_url: 'https://videos.pexels.com/video-files/36473005/15465944_640_360_30fps.mp4', image: '', sort_order: 2 },
+    { title: 'Returning Client', slug: 'returning-client', name: 'Returning Client', role: 'Ongoing Collaboration', quote: 'The quality of his work speaks for itself. His reels consistently perform well and his attention to detail in every frame is unmatched.', video_url: 'https://videos.pexels.com/video-files/32860581/14006554_640_360_60fps.mp4', image: '', sort_order: 3 },
   ];
   for (const t of testimonials) {
     const { title, slug, ...data } = t;
@@ -145,15 +150,35 @@ async function seedTestimonials(token: string, colId: string) {
 async function seedReels(token: string, colId: string) {
   console.log('  reels');
   const reels = [
-    { title: 'Reel 1', slug: 'reel-1', url: 'https://instagram.com/reel/1', image: '/images/project-1.jpg', date_label: 'Mar 2026', sort_order: 1 },
-    { title: 'Reel 2', slug: 'reel-2', url: 'https://instagram.com/reel/2', image: '/images/project-2.jpg', date_label: 'Feb 2026', sort_order: 2 },
-    { title: 'Reel 3', slug: 'reel-3', url: 'https://instagram.com/reel/3', image: '/images/project-3.jpg', date_label: 'Jan 2026', sort_order: 3 },
-    { title: 'Reel 4', slug: 'reel-4', url: 'https://instagram.com/reel/4', image: '/images/project-4.jpg', date_label: 'Dec 2025', sort_order: 4 },
+    { title: 'Reel 1', slug: 'reel-1', url: 'https://www.instagram.com/reel/C14N94RKhK_/', image: '/images/project-1.jpg', date_label: '2 months ago', sort_order: 1 },
+    { title: 'Reel 2', slug: 'reel-2', url: 'https://www.instagram.com/reel/DFM7L9Uugq9/', image: '/images/project-2.jpg', date_label: '3 months ago', sort_order: 2 },
+    { title: 'Reel 3', slug: 'reel-3', url: 'https://www.instagram.com/reel/CjA5aKVguYE/', image: '/images/project-3.jpg', date_label: '4 months ago', sort_order: 3 },
+    { title: 'Reel 4', slug: 'reel-4', url: 'https://www.instagram.com/reel/DDBQo9sTKR0/', image: '/images/project-4.jpg', date_label: '5 months ago', sort_order: 4 },
+    { title: 'Reel 5', slug: 'reel-5', url: 'https://www.instagram.com/reel/DB_ZIJTh3Fe/', image: '/images/project-1.jpg', date_label: '6 months ago', sort_order: 5 },
+    { title: 'Reel 6', slug: 'reel-6', url: 'https://www.instagram.com/reel/C8Ccm9_Bg-4/', image: '/images/project-2.jpg', date_label: '7 months ago', sort_order: 6 },
   ];
   for (const r of reels) {
     const { title, slug, ...data } = r;
     await create(token, colId, title, slug, data);
   }
+}
+
+async function seedFormSettings(token: string, colId: string) {
+  console.log('  form_settings');
+  await create(token, colId, 'Contact Form', 'contact-form', {
+    form_name: 'contact',
+    fields: JSON.stringify([
+      { name: 'name', label: 'Your name', type: 'text', required: true, placeholder: 'John Smith' },
+      { name: 'email', label: 'Email address', type: 'email', required: true, placeholder: 'john@example.com' },
+      { name: 'phone', label: 'Phone (optional)', type: 'tel', required: false, placeholder: '+357 99 000 000' },
+      { name: 'message', label: 'Your message', type: 'textarea', required: true, placeholder: "Tell me about your project..." },
+    ]),
+    notification_recipients: JSON.stringify(['hello@nikolaspetrou.com']),
+    success_message: "Thanks for reaching out! I'll get back to you shortly.",
+    error_message: 'Something went wrong. Please try again or email me directly.',
+    submit_button_text: 'Send message',
+    enable_turnstile: false,
+  });
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
@@ -164,14 +189,13 @@ async function main() {
   const token = await getAdminToken();
   console.log('Authenticated\n');
 
-  // Activate Quill editor
+  // Activate Quill + Workflow
   await fetch(`${API_URL}/admin/plugins/quill-editor/toggle`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, Cookie: `auth_token=${token}` },
+    method: 'POST', headers: { Authorization: `Bearer ${token}`, Cookie: `auth_token=${token}` },
   }).catch(() => {});
 
   const ids = new Map<string, string>();
-  const names = ['site_settings', 'hero', 'about', 'projects', 'services', 'testimonials', 'reels'];
+  const names = ['site_settings', 'hero', 'about', 'projects', 'services', 'testimonials', 'reels', 'form_settings'];
   for (const n of names) ids.set(n, await getCollectionId(token, n));
 
   console.log('Seeding collections:');
@@ -182,8 +206,9 @@ async function main() {
   await seedServices(token, ids.get('services')!);
   await seedTestimonials(token, ids.get('testimonials')!);
   await seedReels(token, ids.get('reels')!);
+  await seedFormSettings(token, ids.get('form_settings')!);
 
-  // Create editor user for Nikolas
+  // Create editor user
   console.log('\nCreating editor user...');
   await fetch(`${API_URL}/auth/register`, {
     method: 'POST',

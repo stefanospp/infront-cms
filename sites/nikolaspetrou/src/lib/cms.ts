@@ -47,6 +47,16 @@ function sortBy<T>(items: CmsItem<T>[], field: keyof T): CmsItem<T>[] {
   return [...items].sort((a, b) => ((a.data[field] as number) ?? 999) - ((b.data[field] as number) ?? 999));
 }
 
+/** Resolve a media value — supports external URLs, R2 CDN URLs, local paths, and SonicJs media IDs */
+export function resolveMediaUrl(value: string | undefined | null): string {
+  if (!value) return '';
+  // Already a full URL or local path — use as-is
+  if (value.startsWith('http://') || value.startsWith('https://') || value.startsWith('/')) return value;
+  // Otherwise treat as SonicJs media ID — resolve via CMS
+  const cmsUrl = import.meta.env.SONICJS_URL || '';
+  return cmsUrl ? `${cmsUrl}/media/serve/${value}` : value;
+}
+
 // ─── Site Settings ────────────────────────────────────────────────────────────
 
 export async function getSiteSettings(): Promise<CmsItem<SiteSettingsData> | null> {

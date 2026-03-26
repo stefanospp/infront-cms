@@ -10,9 +10,10 @@ import services from './collections/services.collection';
 import testimonials from './collections/testimonials.collection';
 import reels from './collections/reels.collection';
 import submissions from './collections/submissions.collection';
+import formSettings from './collections/form-settings.collection';
 
 const collections: CollectionConfig[] = [
-  siteSettings, hero, about, projects, services, testimonials, reels, submissions,
+  siteSettings, hero, about, projects, services, testimonials, reels, submissions, formSettings,
 ];
 
 registerCollections(collections);
