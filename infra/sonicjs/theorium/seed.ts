@@ -210,6 +210,32 @@ async function seedTutoringSubjects(token: string, colId: string) {
   for (const s of items) { const { title, slug, ...data } = s; await create(token, colId, title, slug, data); }
 }
 
+async function seedSiteSettings(token: string, colId: string) {
+  console.log('  site_settings');
+  await create(token, colId, 'Theorium', 'site-settings', {
+    tagline: 'Private Science & Maths Tutoring',
+    url: 'https://theorium.infront.cy',
+    locale: 'en-GB',
+    contact_email: 'theodora@theorium.cy',
+    contact_phone: '+357 99 000 000',
+    contact_city: 'Larnaca',
+    contact_country: 'Cyprus',
+    nav_items: JSON.stringify([
+      { label: 'Tutoring', href: '/tutoring' },
+      { label: 'Resources', href: '/resources' },
+      { label: 'Courses', href: '/courses' },
+    ]),
+    nav_cta_label: 'Get in touch',
+    nav_cta_href: '/#contact',
+    footer_text: '© 2025 THEORIUM · PRIVATE SCIENCE & MATHS TUITION · LARNACA, CYPRUS',
+    meta_default_title: 'Theorium | Private Science & Maths Tuition in Larnaca, Cyprus',
+    meta_title_template: '%s | Theorium',
+    meta_default_description: 'One-on-one science and maths lessons for IGCSE, A-Level, IB, and Pancyprian students in Larnaca. Specialising in medical school preparation and university entrance exams.',
+    meta_og_image: '/og-default.svg',
+    structured_data_type: 'LocalBusiness',
+  });
+}
+
 async function seedPages(token: string, colId: string) {
   console.log('  pages');
   await create(token, colId, 'About', 'about', {
@@ -242,7 +268,7 @@ async function main() {
 
   const ids = new Map<string, string>();
   const names = [
-    'hero_content', 'section_headings', 'page_content', 'contact_content',
+    'site_settings', 'hero_content', 'section_headings', 'page_content', 'contact_content',
     'pages', 'medical_block', 'resources', 'courses', 'schools',
     'exam_destinations', 'tutoring_tiers', 'tutoring_steps', 'tutoring_subjects',
   ];
@@ -250,6 +276,7 @@ async function main() {
   for (const n of names) ids.set(n, await getCollectionId(token, n));
 
   console.log('Seeding collections:');
+  await seedSiteSettings(token, ids.get('site_settings')!);
   await seedHeroContent(token, ids.get('hero_content')!);
   await seedSectionHeadings(token, ids.get('section_headings')!);
   await seedPageContent(token, ids.get('page_content')!);

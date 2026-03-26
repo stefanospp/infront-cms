@@ -5,15 +5,18 @@ import Nav from '../components/Nav.astro';
 import PageHero from '../components/PageHero.astro';
 import CourseCard from '../components/CourseCard.astro';
 import Footer from '../components/Footer.astro';
-import { getCourses, getSiteContent, getTutoringSteps } from '../lib/cms';
-import config from '../../site.config';
+import { getCourses, getPageContent, getTutoringSteps, getSiteSettings } from '../lib/cms';
 
-const siteContent = await getSiteContent();
+const settings = await getSiteSettings();
+const s = settings!.data;
+const page = await getPageContent('courses');
 const courses = await getCourses();
 const howItWorks = await getTutoringSteps('courses');
-const upcoming = courses.filter(c => c.course_status === 'upcoming');
-const inProgress = courses.filter(c => c.course_status === 'in-progress');
-const past = courses.filter(c => c.course_status === 'completed' || c.course_status === 'full');
+const upcoming = courses.filter(c => c.data.course_status === 'upcoming');
+const inProgress = courses.filter(c => c.data.course_status === 'in-progress');
+const past = courses.filter(c => c.data.course_status === 'completed' || c.data.course_status === 'full');
+const config = { seo: { defaultTitle: s.meta_default_title, defaultDescription: s.meta_default_description }, url: s.url, contact: { phone: s.contact_phone, email: s.contact_email, address: { city: s.contact_city, country: s.contact_country } } };
+const siteContent = { courses_page_title: page?.data.page_title ?? '', courses_page_subtitle: page?.data.page_subtitle ?? '' };
 ---
 
 <BaseLayout
@@ -36,9 +39,9 @@ const past = courses.filter(c => c.course_status === 'completed' || c.course_sta
       <div class="mb-12 grid gap-6 sm:grid-cols-3">
         {howItWorks.map((step) => (
           <div class="rounded-lg border border-[var(--th-border)] bg-white p-6 text-center">
-            <span class="text-3xl">{step.emoji}</span>
+            <span class="text-3xl">{step.data.emoji}</span>
             <h3 class="mt-3 text-base font-bold uppercase">{step.title}</h3>
-            <p class="mt-1 text-sm text-neutral-500">{step.description}</p>
+            <p class="mt-1 text-sm text-neutral-500">{step.data.description}</p>
           </div>
         ))}
       </div>

@@ -2,6 +2,9 @@ import { createSonicJSApp, registerCollections } from '@sonicjs-cms/core';
 import type { CollectionConfig } from '@sonicjs-cms/core';
 import { THEME_SCRIPT, CUSTOM_CSS, whiteLabel } from './plugins/theorium-admin';
 
+// Site settings (replaces site.config.ts)
+import siteSettings from './collections/site-settings.collection';
+
 // Site content (split into 4 focused collections)
 import heroContent from './collections/hero-content.collection';
 import sectionHeadings from './collections/section-headings.collection';
@@ -22,6 +25,8 @@ import tutoringSteps from './collections/tutoring-steps.collection';
 import tutoringSubjects from './collections/tutoring-subjects.collection';
 
 const collections: CollectionConfig[] = [
+  // Settings
+  siteSettings,
   // Site content
   heroContent,
   sectionHeadings,

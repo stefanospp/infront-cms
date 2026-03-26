@@ -1,11 +1,12 @@
 ---
-import type { MedicalBlockData } from '../lib/directus';
+import type { CmsItem, MedicalBlockData } from '../lib/types';
 
 interface Props {
-  block: MedicalBlockData;
+  block: CmsItem<MedicalBlockData>;
 }
 
-const { block } = Astro.props;
+const { block: item } = Astro.props;
+const block = { title: item.title, ...item.data };
 ---
 
 <div class="overflow-hidden rounded-lg border border-[var(--th-border)] bg-[var(--th-purple)] shadow-[var(--th-shadow-lg)]">

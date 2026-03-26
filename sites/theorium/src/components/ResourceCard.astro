@@ -1,11 +1,12 @@
 ---
-import type { Resource } from '../lib/directus';
+import type { CmsItem, ResourceData } from '../lib/types';
 
 interface Props {
-  resource: Resource;
+  resource: CmsItem<ResourceData>;
 }
 
 const { resource } = Astro.props;
+const d = resource.data;
 
 const subjectColors: Record<string, string> = {
   Biology: 'var(--th-green)',
@@ -25,23 +26,23 @@ const typeIcons: Record<string, string> = {
 
 <div
   class="flex h-full flex-col overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow)] transition-all hover:shadow-none"
-  data-subject={resource.subject}
-  data-board={resource.exam_board}
+  data-subject={d.subject}
+  data-board={d.exam_board}
 >
   <!-- Color bar -->
-  <div class="h-[4px]" style={`background-color: ${subjectColors[resource.subject] || 'var(--th-green)'}`} />
+  <div class="h-[4px]" style={`background-color: ${subjectColors[d.subject] || 'var(--th-green)'}`} />
 
   <div class="flex flex-1 flex-col p-5">
     <!-- Type + Board badges -->
     <div class="mb-3 flex flex-wrap items-center gap-2">
       <span class="rounded border border-neutral-300 bg-neutral-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase">
-        {typeIcons[resource.resource_type] || '📄'} {resource.resource_type}
+        {typeIcons[d.resource_type] || '📄'} {d.resource_type}
       </span>
       <span
         class="rounded border border-neutral-300 px-2 py-0.5 font-mono text-[10px] font-bold uppercase"
-        style={`background-color: ${subjectColors[resource.subject] || 'var(--th-green)'}40`}
+        style={`background-color: ${subjectColors[d.subject] || 'var(--th-green)'}40`}
       >
-        {resource.exam_board}
+        {d.exam_board}
       </span>
     </div>
 
@@ -49,13 +50,13 @@ const typeIcons: Record<string, string> = {
     <h3 class="text-base font-bold leading-snug">{resource.title}</h3>
 
     <!-- Description -->
-    {resource.description && (
-      <p class="mt-2 flex-1 text-sm text-neutral-500">{resource.description}</p>
+    {d.description && (
+      <p class="mt-2 flex-1 text-sm text-neutral-500">{d.description}</p>
     )}
 
     <!-- Download button -->
     <a
-      href={resource.drive_url}
+      href={d.drive_url}
       target="_blank"
       rel="noopener noreferrer"
       class="mt-4 inline-flex items-center gap-2 self-start rounded-md border-2 border-[var(--th-black)] bg-[var(--th-black)] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white transition-all hover:bg-[var(--th-yellow)] hover:text-[var(--th-black)]"

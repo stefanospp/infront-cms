@@ -6,12 +6,14 @@ import PageHero from '../components/PageHero.astro';
 import SubjectFilter from '../components/SubjectFilter.astro';
 import ResourceCard from '../components/ResourceCard.astro';
 import Footer from '../components/Footer.astro';
-import { getResources, getSiteContent } from '../lib/cms';
-import config from '../../site.config';
+import { getResources, getPageContent, getSiteSettings } from '../lib/cms';
 
-const siteContent = await getSiteContent();
+const settings = await getSiteSettings();
+const s = settings!.data;
+const page = await getPageContent('resources');
 const resources = await getResources();
 const subjects = ['Biology', 'Chemistry', 'Physics', 'Mathematics'];
+const config = { seo: { defaultTitle: s.meta_default_title, defaultDescription: s.meta_default_description }, url: s.url, contact: { phone: s.contact_phone, email: s.contact_email, address: { city: s.contact_city, country: s.contact_country } } };
 ---
 
 <BaseLayout
@@ -25,8 +27,8 @@ const subjects = ['Biology', 'Chemistry', 'Physics', 'Mathematics'];
     <PageHero
       badge="Free Resources"
       badgeColor="var(--th-green)"
-      title={siteContent.resources_page_title}
-      subtitle={siteContent.resources_page_subtitle}
+      title={page?.data.page_title ?? 'FREE STUDY <mark>RESOURCES.</mark>'}
+      subtitle={page?.data.page_subtitle}
     />
 
     <section class="px-6 py-16 sm:px-10 sm:py-20 lg:px-16">
@@ -40,7 +42,7 @@ const subjects = ['Biology', 'Chemistry', 'Physics', 'Mathematics'];
       <!-- Resource grid -->
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {resources.map((resource) => (
-          <div class="resource-card" data-subject={resource.subject}>
+          <div class="resource-card" data-subject={resource.data.subject}>
             <ResourceCard resource={resource} />
           </div>
         ))}

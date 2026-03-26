@@ -4,18 +4,22 @@ import BaseLayout from '@agency/ui/layouts/BaseLayout.astro';
 import Nav from '../components/Nav.astro';
 import PageHero from '../components/PageHero.astro';
 import Footer from '../components/Footer.astro';
-import config from '../../site.config';
 import {
-  getSiteContent,
+  getSiteSettings,
+  getPageContent,
   getTutoringTiers,
   getTutoringSteps,
   getTutoringSubjects,
 } from '../lib/cms';
 
-const siteContent = await getSiteContent();
+const settings = await getSiteSettings();
+const s = settings!.data;
+const page = await getPageContent('tutoring');
 const tiers = await getTutoringTiers();
 const steps = await getTutoringSteps('tutoring');
 const subjects = await getTutoringSubjects();
+const config = { seo: { defaultTitle: s.meta_default_title, defaultDescription: s.meta_default_description }, url: s.url, contact: { phone: s.contact_phone, email: s.contact_email, address: { city: s.contact_city, country: s.contact_country } } };
+const siteContent = { tutoring_page_title: page?.data.page_title ?? '', tutoring_page_subtitle: page?.data.page_subtitle ?? '' };
 ---
 
 <BaseLayout
@@ -38,21 +42,21 @@ const subjects = await getTutoringSubjects();
       <div class="grid gap-8 lg:grid-cols-2">
         {tiers.map((tier, idx) => (
           <div class="flex h-full flex-col overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow-lg)]">
-            <div class="h-[4px]" style={`background-color: ${tier.accent_color}`} />
+            <div class="h-[4px]" style={`background-color: ${tier.data.accent_color}`} />
             <div class="flex flex-1 flex-col p-8">
-              <span class="text-4xl">{tier.emoji}</span>
+              <span class="text-4xl">{tier.data.emoji}</span>
               <h2 class="mt-4 text-2xl font-extrabold uppercase">
-                {tier.name}
-                {tier.size_label && <span class="text-lg font-bold text-neutral-400"> {tier.size_label}</span>}
+                {tier.title}
+                {tier.data.size_label && <span class="text-lg font-bold text-neutral-400"> {tier.data.size_label}</span>}
               </h2>
               <p class="mt-3 text-[15px] font-medium leading-relaxed text-neutral-500">
-                {tier.description}
+                {tier.data.description}
               </p>
 
               <ul class="mt-6 space-y-3">
-                {tier.benefits.map((item) => (
+                {tier.data.benefits.map((item) => (
                   <li class="flex items-start gap-3 text-sm">
-                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full" style={`background-color: ${tier.accent_color}`}>
+                    <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full" style={`background-color: ${tier.data.accent_color}`}>
                       <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </span>
                     <span class="font-medium">{item}</span>
@@ -62,15 +66,15 @@ const subjects = await getTutoringSubjects();
 
               <div class="mt-6 rounded-lg border border-neutral-200 bg-neutral-100 p-4">
                 <span class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Best for</span>
-                <p class="mt-1 text-sm text-neutral-600">{tier.best_for}</p>
+                <p class="mt-1 text-sm text-neutral-600">{tier.data.best_for}</p>
               </div>
 
               <div class="mt-auto pt-8">
                 <p class="font-mono text-[10px] uppercase tracking-wider text-neutral-400">Starting from</p>
-                <p class="text-3xl font-extrabold">{tier.price}<span class="text-base font-medium text-neutral-400">{tier.price_unit}</span></p>
+                <p class="text-3xl font-extrabold">{tier.data.price}<span class="text-base font-medium text-neutral-400">{tier.data.price_unit}</span></p>
 
                 <a
-                  href={tier.cta_url}
+                  href={tier.data.cta_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   class:list={[
@@ -80,7 +84,7 @@ const subjects = await getTutoringSubjects();
                       : 'border-[var(--th-black)] bg-white text-[var(--th-black)] shadow-[var(--th-shadow)] hover:shadow-none',
                   ]}
                 >
-                  {tier.cta_text}
+                  {tier.data.cta_text}
                 </a>
               </div>
             </div>
@@ -104,10 +108,10 @@ const subjects = await getTutoringSubjects();
         {steps.map((step) => (
           <div class="text-center">
             <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[var(--th-border)] bg-white text-2xl font-extrabold shadow-[var(--th-shadow)]">
-              {step.emoji}
+              {step.data.emoji}
             </div>
             <h3 class="mt-5 text-lg font-extrabold uppercase">{step.title}</h3>
-            <p class="mt-2 text-sm text-neutral-500">{step.description}</p>
+            <p class="mt-2 text-sm text-neutral-500">{step.data.description}</p>
           </div>
         ))}
       </div>
@@ -125,11 +129,11 @@ const subjects = await getTutoringSubjects();
       <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {subjects.map((subject) => (
           <div class="overflow-hidden rounded-lg border border-[var(--th-border)] bg-white shadow-[var(--th-shadow)]">
-            <div class="h-[4px]" style={`background-color: ${subject.accent_color}`} />
+            <div class="h-[4px]" style={`background-color: ${subject.data.accent_color}`} />
             <div class="p-6">
-              <h3 class="text-lg font-extrabold">{subject.name}</h3>
+              <h3 class="text-lg font-extrabold">{subject.title}</h3>
               <div class="mt-3 flex flex-wrap gap-1.5">
-                {subject.levels.map((level) => (
+                {subject.data.levels.map((level) => (
                   <span class="rounded border border-neutral-300 bg-neutral-100 px-2 py-0.5 font-mono text-[10px] font-bold uppercase">
                     {level}
                   </span>

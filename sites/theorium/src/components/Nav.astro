@@ -1,12 +1,15 @@
 ---
 import ElementTile from './ElementTile.astro';
-import config from '../../site.config';
+import { getSiteSettings } from '../lib/cms';
 
 interface Props {
   class?: string;
 }
 
 const { class: className } = Astro.props;
+const settings = await getSiteSettings();
+const s = settings!.data;
+const navItems = s.nav_items ?? [];
 ---
 
 <nav
@@ -15,14 +18,14 @@ const { class: className } = Astro.props;
     className,
   ]}
 >
-  <a href="/" class="flex items-center gap-3" aria-label="Theorium home">
+  <a href="/" class="flex items-center gap-3" aria-label={`${settings!.title} home`}>
     <ElementTile size="nav" />
-    <span class="text-lg font-bold tracking-tight">THEORIUM</span>
+    <span class="text-lg font-bold tracking-tight">{settings!.title.toUpperCase()}</span>
   </a>
 
   <!-- Nav links + CTA -->
   <div class="flex items-center gap-6">
-    {config.nav.items.map((item) => (
+    {navItems.map((item) => (
       <a
         href={item.href}
         class="hidden text-sm font-semibold uppercase tracking-wider text-neutral-600 transition-colors hover:text-[var(--th-black)] sm:inline"
@@ -31,10 +34,10 @@ const { class: className } = Astro.props;
       </a>
     ))}
     <a
-      href={config.nav.cta?.href || '/#contact'}
+      href={s.nav_cta_href || '/#contact'}
       class="rounded-md border-2 border-[var(--th-black)] bg-[var(--th-yellow)] px-5 py-2.5 text-sm font-bold uppercase tracking-wider text-[var(--th-black)] shadow-[var(--th-shadow)] transition-all hover:shadow-none"
     >
-      {config.nav.cta?.label || 'Get in touch'}
+      {s.nav_cta_label || 'Get in touch'}
     </a>
   </div>
 </nav>

@@ -1,11 +1,12 @@
 ---
-import type { ExamDestination } from '../lib/directus';
+import type { CmsItem, ExamDestinationData } from '../lib/types';
 
 interface Props {
-  exam: ExamDestination;
+  exam: CmsItem<ExamDestinationData>;
 }
 
 const { exam } = Astro.props;
+const d = exam.data;
 
 const tagColorMap: Record<string, string> = {
   green: 'bg-[var(--th-green)]',
@@ -20,27 +21,27 @@ const tagColorMap: Record<string, string> = {
   <!-- Header -->
   <div class="border-b border-neutral-200 px-7 py-6">
     <span class="font-mono text-[11px] uppercase tracking-wider text-neutral-400">
-      {exam.flag} {exam.destination}
+      {d.flag} {exam.title}
     </span>
-    <h3 class="mt-1 text-2xl font-extrabold uppercase sm:text-3xl">{exam.exam_name}</h3>
+    <h3 class="mt-1 text-2xl font-extrabold uppercase sm:text-3xl">{d.exam_name}</h3>
     <span
       class:list={[
         'mt-3 inline-block rounded border border-neutral-300 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider',
-        tagColorMap[exam.tag_color],
+        tagColorMap[d.tag_color],
       ]}
     >
-      {exam.tag_label}
+      {d.tag_label}
     </span>
   </div>
 
   <!-- Description -->
   <div class="flex-1 px-7 py-6">
-    <p class="text-[15px] font-medium leading-relaxed text-neutral-500">{exam.description}</p>
+    <p class="text-[15px] font-medium leading-relaxed text-neutral-500">{d.description}</p>
   </div>
 
   <!-- Subject pills -->
   <div class="flex flex-wrap gap-2 border-t border-neutral-200 px-7 py-6">
-    {exam.subjects.map((subject) => (
+    {d.subjects.map((subject) => (
       <span class="rounded border border-neutral-300 bg-neutral-100 px-3 py-1.5 font-mono text-[11px] font-bold">
         {subject}
       </span>

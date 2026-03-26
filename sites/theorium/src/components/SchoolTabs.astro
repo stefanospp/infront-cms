@@ -1,11 +1,13 @@
 ---
-import type { School, BadgeColor, SubjectColor } from '../lib/directus';
+import type { CmsItem, SchoolData, BadgeColor, SubjectColor } from '../lib/types';
 
 interface Props {
-  schools: School[];
+  schools: CmsItem<SchoolData>[];
 }
 
-const { schools } = Astro.props;
+const { schools: rawSchools } = Astro.props;
+// Flatten to the shape the template expects: { name, type, qualifications, subjects }
+const schools = rawSchools.map(s => ({ name: s.title, type: s.data.type, qualifications: s.data.qualifications, subjects: s.data.subjects }));
 
 const accentColors: Record<SubjectColor, string> = {
   green: 'var(--th-green)',

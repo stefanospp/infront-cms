@@ -12,51 +12,64 @@ import CourseCard from '../components/CourseCard.astro';
 import ContactSection from '../components/ContactSection.astro';
 import Footer from '../components/Footer.astro';
 import {
-  getSiteContent,
+  getSiteSettings,
+  getHero,
+  getSectionHeading,
+  getContactContent,
   getSchools,
   getExamDestinations,
   getMedicalBlock,
   getResources,
   getCourses,
 } from '../lib/cms';
-import config from '../../site.config';
 
-const siteContent = await getSiteContent();
+const settings = await getSiteSettings();
+const hero = await getHero();
+const schoolsHeading = await getSectionHeading('schools');
+const examsHeading = await getSectionHeading('exams');
+const resourcesHeading = await getSectionHeading('resources');
+const coursesHeading = await getSectionHeading('courses');
+const contactHeading = await getSectionHeading('contact');
+const contact = await getContactContent();
 const schoolsData = await getSchools();
 const examDestinations = await getExamDestinations();
 const medBlock = await getMedicalBlock();
 const featuredResources = await getResources({ limit: 3 });
-const upcomingCourses = (await getCourses({ limit: 3 })).filter(c => c.course_status === 'upcoming');
+const upcomingCourses = (await getCourses({ limit: 3 })).filter(c => c.data.course_status === 'upcoming');
+
+// Flatten for template compatibility (same variable names the template uses)
+const s = settings!.data;
+const h = hero!.data;
+const siteContent = {
+  hero_badge: h.badge, hero_heading: h.heading, hero_heading_highlight: h.heading_highlight,
+  hero_subheading: h.subheading, hero_cta_primary_text: h.cta_text, hero_cta_primary_href: h.cta_href,
+  hero_whatsapp_url: h.whatsapp_url, hero_viber_url: h.viber_url, ticker_items: h.ticker_items,
+  schools_badge: schoolsHeading?.data.badge ?? '', schools_heading: schoolsHeading?.data.heading ?? '', schools_subtitle: schoolsHeading?.data.subtitle ?? '',
+  exams_badge: examsHeading?.data.badge ?? '', exams_heading: examsHeading?.data.heading ?? '', exams_subtitle: examsHeading?.data.subtitle ?? '', exams_band_text: examsHeading?.data.band_text ?? '',
+  resources_badge: resourcesHeading?.data.badge ?? '', resources_heading: resourcesHeading?.data.heading ?? '', resources_subtitle: resourcesHeading?.data.subtitle ?? '',
+  courses_badge: coursesHeading?.data.badge ?? '', courses_heading: coursesHeading?.data.heading ?? '', courses_subtitle: coursesHeading?.data.subtitle ?? '',
+  contact_badge: contactHeading?.data.badge ?? '', contact_heading: contactHeading?.data.heading ?? '',
+  contact_direct_heading: contact?.data.direct_heading ?? '', contact_direct_description: contact?.data.direct_description ?? '',
+  contact_location_note: contact?.data.location_note ?? '',
+};
+
+const config = {
+  seo: { defaultTitle: s.meta_default_title, defaultDescription: s.meta_default_description },
+  url: s.url, contact: { phone: s.contact_phone, email: s.contact_email, address: { city: s.contact_city, country: s.contact_country } },
+};
 
 const structuredData = {
   '@context': 'https://schema.org',
-  '@type': 'LocalBusiness',
-  name: 'Theorium',
-  description: config.seo.defaultDescription,
-  url: config.url,
-  telephone: config.contact.phone,
-  email: config.contact.email,
-  address: {
-    '@type': 'PostalAddress',
-    addressLocality: 'Larnaca',
-    addressCountry: 'CY',
-  },
-  areaServed: {
-    '@type': 'City',
-    name: 'Larnaca',
-  },
+  '@type': s.structured_data_type || 'LocalBusiness',
+  name: settings!.title,
+  description: s.meta_default_description,
+  url: s.url,
+  telephone: s.contact_phone,
+  email: s.contact_email,
+  address: { '@type': 'PostalAddress', addressLocality: s.contact_city, addressCountry: 'CY' },
+  areaServed: { '@type': 'City', name: s.contact_city },
   priceRange: '$$',
-  knowsAbout: [
-    'Science tutoring',
-    'Mathematics tutoring',
-    'IGCSE preparation',
-    'A-Level preparation',
-    'IB Diploma preparation',
-    'UCAT preparation',
-    'SAT preparation',
-    'Pancyprian exam preparation',
-    'Medical school preparation',
-  ],
+  knowsAbout: ['Science tutoring', 'Mathematics tutoring', 'IGCSE preparation', 'A-Level preparation', 'IB Diploma preparation', 'UCAT preparation', 'SAT preparation', 'Pancyprian exam preparation', 'Medical school preparation'],
 };
 ---
 
