@@ -230,7 +230,7 @@ export const CUSTOM_CSS = `
   html:not(.dark) p, html:not(.dark) label { color: var(--th-text) !important; }
   html:not(.dark) [class*="text-zinc-4"], html:not(.dark) [class*="text-zinc-5"] { color: var(--th-text-secondary) !important; }
 
-  /* Buttons */
+  /* Primary buttons (submit, save, update) */
   html:not(.dark) button[type="submit"],
   html:not(.dark) [class*="bg-blue-6"] {
     background: var(--th-accent) !important;
@@ -241,6 +241,73 @@ export const CUSTOM_CSS = `
   html:not(.dark) button[type="submit"]:hover,
   html:not(.dark) [class*="bg-blue-6"]:hover {
     background: var(--th-accent-hover) !important;
+  }
+
+  /* All buttons — ensure visible borders and text in light mode */
+  html:not(.dark) button:not([type="submit"]) {
+    color: var(--th-text) !important;
+    border-color: var(--th-border) !important;
+  }
+
+  html:not(.dark) button:not([type="submit"]):hover {
+    background: var(--th-hover) !important;
+  }
+
+  /* Outlined/ghost buttons (New Content, Advanced Search, Refresh, Bulk Actions, Cancel) */
+  html:not(.dark) a[class*="rounded"][class*="border"],
+  html:not(.dark) button[class*="rounded"][class*="border"],
+  html:not(.dark) a[class*="rounded-lg"][class*="px-"],
+  html:not(.dark) button[class*="rounded-lg"][class*="px-"] {
+    border-color: var(--th-border) !important;
+    color: var(--th-text) !important;
+  }
+
+  /* Action icons in content list (edit, view API, delete) */
+  html:not(.dark) button[class*="text-zinc"] svg,
+  html:not(.dark) button[class*="hover:text"] svg {
+    color: var(--th-text-secondary) !important;
+  }
+
+  html:not(.dark) button:hover svg {
+    color: var(--th-text) !important;
+  }
+
+  /* Delete button — keep red */
+  html:not(.dark) button[class*="text-red"] {
+    color: #dc2626 !important;
+  }
+
+  /* "Add item" button for arrays */
+  html:not(.dark) button[class*="border-dashed"],
+  html:not(.dark) [class*="border-dashed"] {
+    border-color: var(--th-border) !important;
+    color: var(--th-text-secondary) !important;
+  }
+
+  /* Header action buttons (Developer Docs, API Docs, OpenAPI) */
+  html:not(.dark) header a[class*="rounded"],
+  html:not(.dark) header button[class*="rounded"] {
+    border: 1px solid var(--th-border) !important;
+    color: var(--th-text) !important;
+    background: var(--th-card-bg) !important;
+  }
+
+  html:not(.dark) header a[class*="rounded"]:hover,
+  html:not(.dark) header button[class*="rounded"]:hover {
+    background: var(--th-hover) !important;
+  }
+
+  /* White/transparent buttons that disappear in light mode (not sidebar) */
+  html:not(.dark) main [class*="bg-white\\/10"],
+  html:not(.dark) main [class*="bg-white\\/5"] {
+    background: var(--th-hover) !important;
+    border: 1px solid var(--th-border) !important;
+    color: var(--th-text) !important;
+  }
+
+  /* Fix sidebar background — keep it clean white */
+  html:not(.dark) aside {
+    background: var(--th-sidebar-bg) !important;
   }
 
   /* Status badges */
