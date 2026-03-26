@@ -89,7 +89,7 @@ const { words } = Astro.props;
   }
 
   .word-slide-text {
-    font-size: clamp(4rem, 15vw, 14rem);
+    font-size: clamp(2.5rem, 15vw, 14rem);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: -0.04em;
@@ -121,20 +121,34 @@ const { words } = Astro.props;
   /* Progress indicator — bottom right */
   .word-progress {
     position: absolute;
-    bottom: 3rem;
-    right: 2.5rem;
+    bottom: 1.5rem;
+    right: 1rem;
     z-index: 10;
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .word-progress {
+      bottom: 3rem;
+      right: 2.5rem;
+      gap: 1.5rem;
+    }
   }
 
   .word-progress-track {
-    width: 120px;
+    width: 60px;
     height: 1px;
     background: rgba(255, 255, 255, 0.2);
     position: relative;
     overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .word-progress-track {
+      width: 120px;
+    }
   }
 
   .word-progress-fill {
@@ -174,29 +188,57 @@ const { words } = Astro.props;
   let prevIndex = -1;
 
   if (section && totalSlides > 0) {
-    const scrollPerSlide = window.innerHeight * 0.6;
+    const isMobile = window.innerWidth < 768;
+    const scrollPerSlide = window.innerHeight * (isMobile ? 0.4 : 0.6);
     const totalScroll = scrollPerSlide * totalSlides;
 
     // Set first slide active
     slides[0]?.classList.add('active');
     prevIndex = 0;
 
-    // Load all videos
-    slides.forEach((slide) => {
-      const video = slide.querySelector('.word-slide-video') as HTMLVideoElement;
-      const src = slide.getAttribute('data-video');
-      if (src) {
-        video.src = src;
-        video.load();
-        video.addEventListener(
-          'canplay',
-          () => {
-            video.classList.add('loaded');
-          },
-          { once: true },
-        );
-      }
-    });
+    // Eagerly preload first slide's video immediately
+    const firstVideo = slides[0]?.querySelector('.word-slide-video') as HTMLVideoElement;
+    const firstSrc = slides[0]?.getAttribute('data-video');
+    if (firstVideo && firstSrc) {
+      firstVideo.src = firstSrc;
+      firstVideo.preload = 'auto';
+      firstVideo.load();
+      firstVideo.addEventListener('canplay', () => {
+        firstVideo.classList.add('loaded');
+      }, { once: true });
+    }
+
+    // Preload remaining videos when section is ~800px from viewport
+    let videosLoaded = false;
+    const sectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !videosLoaded) {
+            videosLoaded = true;
+            slides.forEach((slide, i) => {
+              if (i === 0) return; // already loaded
+              const video = slide.querySelector('.word-slide-video') as HTMLVideoElement;
+              const src = slide.getAttribute('data-video');
+              if (src) {
+                video.src = src;
+                video.preload = 'auto';
+                video.load();
+                video.addEventListener(
+                  'canplay',
+                  () => {
+                    video.classList.add('loaded');
+                  },
+                  { once: true },
+                );
+              }
+            });
+            sectionObserver.unobserve(section);
+          }
+        });
+      },
+      { rootMargin: '800px 0px' },
+    );
+    sectionObserver.observe(section);
 
     ScrollTrigger.create({
       trigger: section,

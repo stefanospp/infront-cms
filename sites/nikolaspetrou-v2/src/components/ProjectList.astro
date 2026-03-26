@@ -13,7 +13,7 @@ interface Props {
 const { projects } = Astro.props;
 ---
 
-<section id="works" class="py-32 px-8 min-h-screen">
+<section id="works" class="py-16 px-4 md:py-32 md:px-8 min-h-screen">
   <div class="mb-16">
     <span class="text-label opacity-50">(Selected Works)</span>
   </div>
@@ -32,14 +32,14 @@ const { projects } = Astro.props;
             <div class="project-video">
               <video muted loop playsinline preload="none" />
             </div>
-            <div class="flex justify-between items-end relative z-10 w-full pb-6">
+            <div class="flex justify-between items-end relative z-10 w-full pb-4 md:pb-6 px-4 md:px-0">
               <div>
                 <h3 class="project-title">{project.title}</h3>
                 <div class="project-meta">
                   {project.category} / {project.year}
                 </div>
               </div>
-              <span class="text-label opacity-30">
+              <span class="text-label opacity-30 hidden md:inline">
                 {String(i + 1).padStart(2, '0')}
               </span>
             </div>
@@ -56,6 +56,23 @@ const { projects } = Astro.props;
     const videoSrc = item.getAttribute('data-video');
     let videoTimer: ReturnType<typeof setTimeout> | null = null;
     let loaded = false;
+
+    // Preload video when section is ~500px from viewport
+    const preloadObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !loaded && videoSrc) {
+            videoEl.src = videoSrc;
+            videoEl.preload = 'auto';
+            videoEl.load();
+            loaded = true;
+            preloadObserver.unobserve(item);
+          }
+        });
+      },
+      { rootMargin: '500px 0px' },
+    );
+    preloadObserver.observe(item);
 
     item.addEventListener('mouseenter', () => {
       document.getElementById('cursorRing')?.classList.add('hover');

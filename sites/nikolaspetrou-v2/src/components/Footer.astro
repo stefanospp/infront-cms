@@ -19,20 +19,32 @@ const year = new Date().getFullYear();
         {videoUrl && <source src={videoUrl} type="video/mp4" />}
       </video>
 
-      <!-- Black overlay with knockout text -->
-      <div class="footer-knockout">
+      <!-- Black overlay with knockout text — Desktop -->
+      <div class="footer-knockout footer-knockout-desktop">
         <svg class="footer-svg" viewBox="0 0 1200 400" preserveAspectRatio="xMinYMid slice">
           <defs>
             <mask id="textMask">
-              <!-- White = visible, Black = hidden. Fill rect white, text black = cutout -->
               <rect width="100%" height="100%" fill="white" />
               <text x="0" y="130" class="footer-svg-text">LET'S</text>
               <text x="0" y="260" class="footer-svg-text">WORK</text>
               <text x="0" y="390" class="footer-svg-text">TOGETHER</text>
             </mask>
           </defs>
-          <!-- Black rect with text cut out, revealing video beneath -->
           <rect width="100%" height="100%" fill="black" mask="url(#textMask)" />
+        </svg>
+      </div>
+      <!-- Black overlay with knockout text — Mobile -->
+      <div class="footer-knockout footer-knockout-mobile">
+        <svg class="footer-svg" viewBox="0 0 600 400" preserveAspectRatio="xMinYMid slice">
+          <defs>
+            <mask id="textMaskMobile">
+              <rect width="100%" height="100%" fill="white" />
+              <text x="0" y="110" class="footer-svg-text-mobile">LET'S</text>
+              <text x="0" y="220" class="footer-svg-text-mobile">WORK</text>
+              <text x="0" y="330" class="footer-svg-text-mobile">TOGETHER</text>
+            </mask>
+          </defs>
+          <rect width="100%" height="100%" fill="black" mask="url(#textMaskMobile)" />
         </svg>
       </div>
     </a>
@@ -60,9 +72,15 @@ const year = new Date().getFullYear();
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 4rem 2rem;
+    padding: 2rem 1rem;
     background: #000;
     color: #fff;
+  }
+
+  @media (min-width: 768px) {
+    .footer-section {
+      padding: 4rem 2rem;
+    }
   }
 
   .footer-cta-area {
@@ -120,6 +138,39 @@ const year = new Date().getFullYear();
     letter-spacing: -0.04em;
     fill: black;
   }
+
+  .footer-svg-text-mobile {
+    font-family: 'Inter', sans-serif;
+    font-size: 90px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    fill: black;
+  }
+
+  /* Show desktop SVG by default, hide mobile */
+  .footer-knockout-mobile {
+    display: none;
+  }
+  .footer-knockout-desktop {
+    display: block;
+  }
+
+  @media (max-width: 767px) {
+    .footer-knockout-desktop {
+      display: none;
+    }
+    .footer-knockout-mobile {
+      display: block;
+    }
+
+    .footer-cta-link {
+      aspect-ratio: 3 / 2;
+    }
+
+    .footer-label {
+      margin-bottom: 1rem;
+    }
+  }
 </style>
 
 <script>
@@ -127,7 +178,25 @@ const year = new Date().getFullYear();
   const video = footer?.querySelector('.footer-video') as HTMLVideoElement;
 
   if (footer && video) {
-    const observer = new IntersectionObserver(
+    // Preload video when footer is ~600px away
+    let preloaded = false;
+    const preloadObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !preloaded) {
+            video.preload = 'auto';
+            video.load();
+            preloaded = true;
+            preloadObserver.unobserve(footer);
+          }
+        });
+      },
+      { rootMargin: '600px 0px' },
+    );
+    preloadObserver.observe(footer);
+
+    // Play/pause when visible
+    const playObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
@@ -139,6 +208,6 @@ const year = new Date().getFullYear();
       },
       { threshold: 0.1 },
     );
-    observer.observe(footer);
+    playObserver.observe(footer);
   }
 </script>

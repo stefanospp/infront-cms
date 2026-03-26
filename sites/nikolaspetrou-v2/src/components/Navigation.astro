@@ -7,12 +7,14 @@ const { links } = Astro.props;
 ---
 
 <nav
-  class="fixed top-0 left-0 w-full px-10 py-8 flex justify-between items-start z-50 pointer-events-none text-white mix-blend-difference"
+  class="fixed top-0 left-0 w-full px-4 py-4 md:px-10 md:py-8 flex justify-between items-center md:items-start z-50 pointer-events-none text-white mix-blend-difference"
 >
-  <div class="pointer-events-auto cursor-hover font-bold tracking-[0.25em] text-lg">
+  <div class="pointer-events-auto cursor-hover font-bold tracking-[0.25em] text-base md:text-lg">
     NI<span style="display:inline-block;transform:scaleX(-1);margin-left:-0.35em">K</span>
   </div>
-  <div class="pointer-events-auto flex gap-8">
+
+  <!-- Desktop links -->
+  <div class="pointer-events-auto hidden md:flex gap-8">
     {
       links.map((link) => (
         <a href={link.href} class="cursor-hover text-label hover:opacity-50 transition-opacity">
@@ -21,4 +23,70 @@ const { links } = Astro.props;
       ))
     }
   </div>
+
+  <!-- Mobile hamburger button -->
+  <button
+    class="pointer-events-auto md:hidden flex flex-col gap-[5px] p-1"
+    id="mobileMenuBtn"
+    aria-label="Open menu"
+    aria-expanded="false"
+  >
+    <span class="block w-6 h-[1.5px] bg-white transition-all duration-300 origin-center" id="hamburgerTop"></span>
+    <span class="block w-6 h-[1.5px] bg-white transition-all duration-300" id="hamburgerMid"></span>
+    <span class="block w-6 h-[1.5px] bg-white transition-all duration-300 origin-center" id="hamburgerBot"></span>
+  </button>
 </nav>
+
+<!-- Mobile menu overlay -->
+<div
+  class="fixed inset-0 z-40 bg-black/95 flex flex-col items-center justify-center gap-8 opacity-0 pointer-events-none transition-opacity duration-300 md:hidden"
+  id="mobileMenu"
+>
+  {
+    links.map((link) => (
+      <a
+        href={link.href}
+        class="text-white text-2xl font-medium tracking-wide hover:opacity-50 transition-opacity mobile-menu-link"
+      >
+        {link.label}
+      </a>
+    ))
+  }
+</div>
+
+<script>
+  const btn = document.getElementById('mobileMenuBtn');
+  const menu = document.getElementById('mobileMenu');
+  const top = document.getElementById('hamburgerTop');
+  const mid = document.getElementById('hamburgerMid');
+  const bot = document.getElementById('hamburgerBot');
+  let open = false;
+
+  btn?.addEventListener('click', () => {
+    open = !open;
+    btn.setAttribute('aria-expanded', String(open));
+
+    if (open) {
+      menu?.classList.remove('opacity-0', 'pointer-events-none');
+      menu?.classList.add('opacity-100', 'pointer-events-auto');
+      top?.classList.add('rotate-45', 'translate-y-[6.5px]');
+      mid?.classList.add('opacity-0');
+      bot?.classList.add('-rotate-45', '-translate-y-[6.5px]');
+      document.body.style.overflow = 'hidden';
+    } else {
+      menu?.classList.add('opacity-0', 'pointer-events-none');
+      menu?.classList.remove('opacity-100', 'pointer-events-auto');
+      top?.classList.remove('rotate-45', 'translate-y-[6.5px]');
+      mid?.classList.remove('opacity-0');
+      bot?.classList.remove('-rotate-45', '-translate-y-[6.5px]');
+      document.body.style.overflow = '';
+    }
+  });
+
+  // Close menu when a link is clicked
+  document.querySelectorAll('.mobile-menu-link').forEach((link) => {
+    link.addEventListener('click', () => {
+      if (open) btn?.click();
+    });
+  });
+</script>

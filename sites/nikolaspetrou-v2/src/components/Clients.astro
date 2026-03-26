@@ -37,9 +37,15 @@ const { clients } = Astro.props;
 <style>
   .clients-section {
     position: relative;
-    padding: 8rem 2rem;
+    padding: 4rem 1rem;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
     overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .clients-section {
+      padding: 8rem 2rem;
+    }
   }
 
   .clients-bg-video {
@@ -72,9 +78,15 @@ const { clients } = Astro.props;
   }
 
   .client-name {
-    font-size: 1.5rem;
+    font-size: 1.15rem;
     font-weight: 500;
     transition: opacity 0.3s, transform 0.3s;
+  }
+
+  @media (min-width: 768px) {
+    .client-name {
+      font-size: 1.5rem;
+    }
   }
 
   .client-name:hover {
@@ -88,6 +100,34 @@ const { clients } = Astro.props;
   const bgVideo = document.getElementById('clientsBgVideo') as HTMLVideoElement;
   const clientNames = section?.querySelectorAll('.client-name');
   let currentSrc = '';
+
+  // Preload all client videos when section is ~600px from viewport
+  if (section) {
+    const videoUrls = new Set<string>();
+    clientNames?.forEach((el) => {
+      const url = el.getAttribute('data-video');
+      if (url) videoUrls.add(url);
+    });
+
+    const preloadObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            videoUrls.forEach((url) => {
+              const link = document.createElement('link');
+              link.rel = 'preload';
+              link.as = 'video';
+              link.href = url;
+              document.head.appendChild(link);
+            });
+            preloadObserver.unobserve(section);
+          }
+        });
+      },
+      { rootMargin: '600px 0px' },
+    );
+    preloadObserver.observe(section);
+  }
 
   clientNames?.forEach((el) => {
     const videoUrl = el.getAttribute('data-video');

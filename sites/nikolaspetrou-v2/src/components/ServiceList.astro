@@ -12,7 +12,7 @@ interface Props {
 const { services } = Astro.props;
 ---
 
-<section id="about" class="py-32 px-8">
+<section id="about" class="py-16 px-4 md:py-32 md:px-8">
   <div class="mb-16">
     <span class="text-label opacity-50">(Services)</span>
   </div>
@@ -31,12 +31,12 @@ const { services } = Astro.props;
             <div class="project-video">
               <video muted loop playsinline preload="none" />
             </div>
-            <div class="flex justify-between items-end relative z-10 w-full pb-6">
+            <div class="flex justify-between items-end relative z-10 w-full pb-4 md:pb-6 px-4 md:px-0">
               <div>
                 <h3 class="project-title">{service.title}</h3>
                 <div class="project-meta">{service.description}</div>
               </div>
-              <span class="text-label opacity-30">
+              <span class="text-label opacity-30 hidden md:inline">
                 {String(i + 1).padStart(2, '0')}
               </span>
             </div>
