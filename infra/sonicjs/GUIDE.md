@@ -19,7 +19,9 @@ Step-by-step instructions for designing, developing, and deploying client websit
 13. [Cost Management](#13-cost-management)
 14. [Migration Guide: Importing from Other CMS](#14-migration-guide-importing-from-other-cms)
 15. [Export Guide: Moving to Another CMS](#15-export-guide-moving-to-another-cms)
-16. [Reference](#16-reference)
+16. [Production Readiness](#16-production-readiness)
+17. [Known Limitations](#17-known-limitations)
+18. [Reference](#18-reference)
 
 ---
 
@@ -1144,7 +1146,291 @@ The Astro site has fallback data hardcoded in `cms.ts`. To freeze:
 
 ---
 
-## 16. Reference
+## 16. Production Readiness
+
+Before deploying a SonicJs-powered site for a real client, address these items in priority order.
+
+### 16.1 CRITICAL: Close open registration
+
+By default, anyone can create an account at `/auth/register`. This must be disabled before production.
+
+**Option A: Block the route in middleware** (recommended)
+
+Add to the `afterAuth` middleware in `src/index.ts`:
+
+```typescript
+// Block public registration in production
+async (c, next) => {
+  const url = new URL(c.req.url);
+  if (url.pathname === '/auth/register' && c.req.method === 'POST') {
+    return c.json({ error: 'Registration is disabled. Contact the administrator.' }, 403);
+  }
+  await next();
+},
+```
+
+**Option B: Hide the registration link** in the admin theme (cosmetic, not secure alone):
+
+Add to `WHITE_LABEL` replacements:
+```typescript
+["Don't have an account?", ''],
+['Create one here', ''],
+```
+
+Use both options together for defense in depth.
+
+### 16.2 Build the dynamic pages route
+
+The Pages collection has a block-based page builder, but the site needs a `[...slug].astro` route to render them:
+
+```astro
+---
+// src/pages/[...slug].astro
+import { getPages, getPageBySlug, getSiteSettings } from '../lib/cms';
+import BaseLayout from '@agency/ui/layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const pages = await getPages();
+  return pages.map(p => ({ params: { slug: p.slug }, props: { page: p } }));
+}
+
+const { page } = Astro.props;
+const settings = await getSiteSettings();
+const blocks = page.data.body ?? [];
+---
+
+<BaseLayout title={page.data.meta_title || page.title} config={/* ... */}>
+  {blocks.map(block => {
+    if (block.blockType === 'hero') return (
+      <section class="px-6 py-20 text-center">
+        <h1 class="text-4xl font-bold">{block.heading}</h1>
+        {block.subheading && <p class="mt-4 text-lg text-neutral-500">{block.subheading}</p>}
+      </section>
+    );
+    if (block.blockType === 'text') return (
+      <section class="prose mx-auto max-w-3xl px-6 py-12" set:html={block.content} />
+    );
+    if (block.blockType === 'features') return (
+      <section class="px-6 py-16">
+        {block.heading && <h2 class="mb-8 text-center text-2xl font-bold">{block.heading}</h2>}
+        <div class="grid gap-6 sm:grid-cols-3">
+          {block.items?.map(f => (
+            <div class="text-center">
+              <span class="text-3xl">{f.icon}</span>
+              <h3 class="mt-2 font-bold">{f.title}</h3>
+              <p class="mt-1 text-sm text-neutral-500">{f.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+    if (block.blockType === 'cta') return (
+      <section class="bg-neutral-100 px-6 py-16 text-center">
+        <h2 class="text-2xl font-bold">{block.heading}</h2>
+        {block.text && <p class="mt-3 text-neutral-500">{block.text}</p>}
+        {block.button_text && <a href={block.button_href} class="mt-6 inline-block rounded bg-blue-600 px-6 py-3 text-white">{block.button_text}</a>}
+      </section>
+    );
+    if (block.blockType === 'faq') return (
+      <section class="mx-auto max-w-3xl px-6 py-16">
+        {block.heading && <h2 class="mb-8 text-2xl font-bold">{block.heading}</h2>}
+        {block.items?.map(q => (
+          <details class="border-b py-4">
+            <summary class="cursor-pointer font-semibold">{q.question}</summary>
+            <p class="mt-2 text-neutral-500">{q.answer}</p>
+          </details>
+        ))}
+      </section>
+    );
+    if (block.blockType === 'image') return (
+      <figure class="mx-auto max-w-4xl px-6 py-8">
+        <img src={block.src} alt={block.alt || ''} class="w-full rounded-lg" loading="lazy" />
+        {block.caption && <figcaption class="mt-2 text-center text-sm text-neutral-500">{block.caption}</figcaption>}
+      </figure>
+    );
+  })}
+</BaseLayout>
+```
+
+### 16.3 Set up staging/production environments
+
+Add environment blocks to the CMS `wrangler.toml`:
+
+```toml
+# Default = development (local)
+
+[env.staging]
+name = "<slug>-cms-staging"
+vars = { ADMIN_EMAIL = "admin@<domain>", JWT_SECRET = "<staging-secret>" }
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "<slug>-cms-staging"
+database_id = "<staging-db-id>"
+
+[env.production]
+name = "<slug>-cms"
+vars = { ADMIN_EMAIL = "admin@<domain>", JWT_SECRET = "<production-secret>" }
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "<slug>-cms-prod"
+database_id = "<prod-db-id>"
+```
+
+Deploy per environment:
+```bash
+wrangler deploy --env staging
+wrangler deploy --env production
+```
+
+### 16.4 Restrict CORS and enable rate limiting
+
+Add `beforeAuth` middleware to restrict API access:
+
+```typescript
+middleware: {
+  beforeAuth: [
+    // CORS: only allow the site origin
+    async (c, next) => {
+      const origin = c.req.header('origin');
+      const allowed = ['https://<domain>', 'http://localhost:4322'];
+      if (origin && !allowed.includes(origin)) {
+        c.res.headers.set('Access-Control-Allow-Origin', '');
+      }
+      await next();
+    },
+  ],
+  afterAuth: [ /* existing middleware */ ],
+},
+```
+
+SonicJs has built-in security logging that detects XSS attempts, SQL injection patterns, and auth failures. Enable the logging middleware in the config.
+
+### 16.5 Enable content workflow
+
+Activate the Workflow plugin from the admin Plugins page, or via seed script:
+
+```bash
+wrangler d1 execute <db> --local \
+  --command "UPDATE plugins SET status = 'active' WHERE name = 'Workflow Management';"
+```
+
+This adds approval chains: Draft → Under Review → Published. Editors submit for review, admins approve.
+
+### 16.6 Wire analytics from CMS settings
+
+Add fields to `site-settings.collection.ts`:
+
+```typescript
+analytics_provider: {
+  type: 'select', title: 'Analytics Provider',
+  enum: ['none', 'plausible', 'fathom', 'google-analytics'],
+  default: 'none',
+},
+analytics_id: { type: 'string', title: 'Analytics ID', helpText: 'Site ID or measurement ID' },
+```
+
+Render in `BaseLayout` or `<head>`:
+```astro
+{settings.data.analytics_provider === 'plausible' && (
+  <script defer data-domain={new URL(settings.data.url).hostname} src="https://plausible.io/js/script.js" />
+)}
+```
+
+### 16.7 Implement automated backups
+
+GitHub Actions cron workflow:
+
+```yaml
+name: Weekly D1 Backup
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Every Sunday 3am
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npx wrangler d1 export <db-name> --output=backup.sql
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: d1-backup-${{ github.run_id }}
+          path: backup.sql
+          retention-days: 90
+```
+
+### 16.8 Add automated tests
+
+Minimum test coverage:
+
+```typescript
+// tests/cms.test.ts (Vitest)
+import { describe, it, expect, vi } from 'vitest';
+
+describe('cms.ts', () => {
+  it('returns fallback data when CMS is unavailable', async () => {
+    // Mock fetch to fail
+    vi.spyOn(global, 'fetch').mockRejectedValue(new Error('network'));
+    const { getResources } = await import('../src/lib/cms');
+    const resources = await getResources();
+    expect(resources.length).toBeGreaterThan(0);
+    expect(resources[0].title).toBeTruthy();
+  });
+
+  it('parses JSON string fields correctly', async () => {
+    // Mock CMS response with JSON strings
+    // Verify parseJson handles both string and parsed array
+  });
+});
+```
+
+Integration test: seed → build → check HTML output for expected content.
+
+### 16.9 Create an editor handbook
+
+Document for non-technical users:
+
+1. **Logging in** — URL, credentials, what the editor dashboard looks like
+2. **Editing content** — navigate to Content, filter by collection, click Edit
+3. **Using the page builder** — add blocks, reorder, delete, choose block types
+4. **Rich text editing** — Quill toolbar basics (bold, links, images)
+5. **Publishing** — change status from Draft to Published, save
+6. **Preview** — how to use the preview URL to see draft changes
+7. **Media** — uploading images, using them in content
+
+Store as a PDF or as a "Help" page accessible from the admin sidebar.
+
+### 16.10 Test admin mobile responsiveness
+
+Verify the admin works on:
+- iPad (1024px width) — most common editor device after desktop
+- Large phones (390px) — less critical but should be usable
+
+Test with browser DevTools responsive mode. Fix any layout issues in the custom CSS (`admin-theme.ts`).
+
+---
+
+## 17. Known Limitations
+
+Issues that exist in SonicJs v2.8.0 and cannot be fixed via configuration:
+
+| Limitation | Impact | Workaround |
+|---|---|---|
+| Appearance settings don't save | Low | Use middleware CSS injection (what we do) |
+| Config-managed badge always shows | Cosmetic | Collections still work; badge is informational |
+| No visual/inline editing | Medium | Use live preview routes instead |
+| Cannot sort/filter by data.* fields via API | Low | Sort and filter client-side after fetching |
+| Cloudflare-only deployment | Medium | Accept the lock-in; site code is portable |
+| TinyMCE requires paid API key | Low | Use Quill instead (free, no API key) |
+| No built-in theme toggle that persists | Low | Implemented via middleware server-side |
+| Registration defaults to viewer role | Low | Update role via D1 after registration |
+| Migration 013 has a SQL syntax error | None | Non-critical (code examples plugin); other migrations work fine |
+
+---
+
+## 18. Reference
 
 ### Project structure
 
@@ -1214,21 +1500,54 @@ wrangler d1 export <db> --output=backup.sql
 
 ### Checklist for new sites
 
+**CMS Setup:**
 - [ ] Create CMS project in `infra/sonicjs/<slug>/`
 - [ ] Define all collections in `src/collections/`
 - [ ] Create `src/plugins/admin-theme.ts` with client branding
 - [ ] Write `seed.ts` with initial content data
+- [ ] Include `site_settings` collection (nav, footer, SEO, contact)
+
+**Site Build:**
 - [ ] Create site in `sites/<slug>/`
 - [ ] Build `src/lib/types.ts` with `CmsItem<T>` interfaces
 - [ ] Build `src/lib/cms.ts` with fetch functions + fallback data
 - [ ] Create all page files with CMS data fetching
+- [ ] Add `[...slug].astro` for dynamic CMS pages
 - [ ] Add preview route at `src/pages/preview/index.astro`
-- [ ] Add `[...slug].astro` for CMS pages if using page builder
+- [ ] Nav and Footer read from CMS site_settings
+
+**Security (before production):**
+- [ ] Disable open registration (block `/auth/register` POST in middleware)
+- [ ] Restrict CORS to site domain only
+- [ ] Set strong `JWT_SECRET` (not the dev default)
+- [ ] Set unique `PREVIEW_TOKEN` (not `preview-secret`)
+- [ ] Set up role-based menu filtering in middleware
+
+**User Management:**
 - [ ] Create admin user (admin role)
 - [ ] Create editor user (editor role) for client
-- [ ] Set up role-based menu filtering in middleware
-- [ ] Create Cloudflare resources (D1, KV, R2)
+- [ ] Enable OTP/MFA plugin if required
+- [ ] Enable Workflow plugin for content approval chain
+
+**Infrastructure:**
+- [ ] Create D1 database
+- [ ] Create KV namespace
+- [ ] Create R2 bucket with `--jurisdiction eu`
+- [ ] Configure `MAX_FILE_SIZE` and `ALLOWED_FILE_TYPES`
+- [ ] Set up staging and production environments in `wrangler.toml`
 - [ ] Deploy CMS and seed production data
 - [ ] Deploy site with `SONICJS_URL` pointing to production CMS
 - [ ] Set up custom domains
+
+**Operations:**
+- [ ] Set up CI/CD workflow (GitHub Actions)
+- [ ] Add `content:publish` hook for auto-deploy
+- [ ] Set up automated D1 backups (weekly cron)
+- [ ] Set up uptime monitoring (Betterstack or similar)
+- [ ] Wire analytics from CMS settings (Plausible/Fathom/GA)
+
+**Client Handoff:**
+- [ ] Create editor handbook (login, editing, page builder, preview, publishing)
+- [ ] Test admin on tablet/mobile
 - [ ] Share editor credentials and preview URL with client
+- [ ] Verify all content is editable from the admin
