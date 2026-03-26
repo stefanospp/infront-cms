@@ -11,22 +11,12 @@ const formSettings: CollectionConfig = {
     properties: {
       form_name: { type: 'string', title: 'Form Name', required: true, helpText: 'Internal name (e.g. "contact")' },
       fields: {
-        type: 'array', title: 'Form Fields',
-        items: {
-          type: 'object',
-          properties: {
-            name: { type: 'string', title: 'Field Name', required: true },
-            label: { type: 'string', title: 'Label', required: true },
-            type: { type: 'select', title: 'Type', enum: ['text', 'email', 'tel', 'textarea', 'select'], default: 'text' },
-            required: { type: 'boolean', title: 'Required', default: false },
-            placeholder: { type: 'string', title: 'Placeholder' },
-          },
-        },
+        type: 'json', title: 'Form Fields',
+        helpText: 'JSON array: [{"name":"email","label":"Email","type":"email","required":true,"placeholder":"you@example.com"}]',
       },
       notification_recipients: {
-        type: 'array', title: 'Notification Recipients',
-        helpText: 'Email addresses that receive form submission notifications',
-        items: { type: 'email', title: 'Email' },
+        type: 'json', title: 'Notification Recipients',
+        helpText: 'JSON array of emails: ["hello@example.com"]',
       },
       success_message: { type: 'string', title: 'Success Message' },
       error_message: { type: 'string', title: 'Error Message' },
