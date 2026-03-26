@@ -13,12 +13,19 @@ interface SonicJsResponse<T> {
   meta?: Record<string, unknown>;
 }
 
+// Set to true in preview routes to fetch draft + published content
+let _previewMode = false;
+export function setPreviewMode(enabled: boolean) { _previewMode = enabled; }
+export function isPreviewMode() { return _previewMode; }
+
 async function fetchCollection<T>(collection: string, options?: { limit?: number }): Promise<CmsItem<T>[]> {
   const cmsUrl = import.meta.env.SONICJS_URL;
   if (!cmsUrl) return [];
 
   try {
-    const params = new URLSearchParams({ status: 'published' });
+    const params = new URLSearchParams();
+    // In preview mode, fetch all statuses; in production, only published
+    if (!_previewMode) params.set('status', 'published');
     if (options?.limit) params.set('limit', String(options.limit));
 
     const res = await fetch(`${cmsUrl}/api/collections/${collection}/content?${params}`, {

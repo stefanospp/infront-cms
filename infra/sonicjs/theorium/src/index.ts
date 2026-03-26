@@ -78,6 +78,22 @@ const app = createSonicJSApp({
         // White-label: replace all SonicJs branding with Theorium
         html = whiteLabel(html);
 
+        // Role-based menu filtering: hide admin-only items for non-admin users
+        const user = c.get('user') as { role?: string } | undefined;
+        if (user && user.role !== 'admin') {
+          // Remove sidebar links that editors/authors/viewers shouldn't see
+          html = html.replace(/<a[^>]*href="\/admin\/collections"[^>]*>[\s\S]*?<\/a>/g, '');
+          html = html.replace(/<a[^>]*href="\/admin\/users"[^>]*>[\s\S]*?<\/a>/g, '');
+          html = html.replace(/<a[^>]*href="\/admin\/plugins"[^>]*>[\s\S]*?<\/a>/g, '');
+          html = html.replace(/<a[^>]*href="\/admin\/cache"[^>]*>[\s\S]*?<\/a>/g, '');
+          html = html.replace(/<a[^>]*href="\/admin\/settings[^"]*"[^>]*>[\s\S]*?<\/a>/g, '');
+          html = html.replace(/<a[^>]*href="\/admin\/forms"[^>]*>[\s\S]*?<\/a>/g, '');
+          // Remove "New Collection" and other admin-only buttons
+          html = html.replace(/<a[^>]*href="\/admin\/collections\/new"[^>]*>[\s\S]*?<\/a>/g, '');
+          // Remove API Docs / OpenAPI links from header
+          html = html.replace(/<a[^>]*href="[^"]*\/docs[^"]*"[^>]*>[\s\S]*?<\/a>/g, '');
+        }
+
         // Inject CSS in <head> and theme toggle script before </body>
         html = html
           .replace('</head>', `${CUSTOM_CSS}\n</head>`)
