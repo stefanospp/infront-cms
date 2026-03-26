@@ -8,7 +8,7 @@
  */
 
 const API_URL = process.env.SONICJS_URL || 'http://localhost:8788';
-const SEED_SECRET = process.env.SEED_SECRET || 'nikolaspetrou-cms-local-dev-secret';
+const SEED_SECRET = process.env.SEED_SECRET || 'np-cms-prod-7f3a9b2e4d1c8e5f6a0b3c7d9e2f4a1b';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 

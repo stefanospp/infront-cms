@@ -79,7 +79,7 @@ const app = createSonicJSApp({
         }
 
         // Override "Preview Content" button to open our staging preview
-        const siteUrl = 'http://localhost:4322'; // TODO: change to production URL
+        const siteUrl = 'https://nikolaspetrou.com';
         const previewToken = 'np-preview-2026-secret';
         html = html.replace(
           /<button[^>]*onclick="previewContent\(\)"[^>]*>[\s\S]*?<\/button>/g,

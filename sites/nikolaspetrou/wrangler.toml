@@ -12,5 +12,5 @@ routes = [
 directory = "./dist"
 
 [vars]
-SONICJS_URL = "http://localhost:8788"
+SONICJS_URL = "https://admin.nikolaspetrou.com"
 PREVIEW_TOKEN = "np-preview-2026-secret"

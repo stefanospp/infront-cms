@@ -2,25 +2,31 @@ name = "nikolaspetrou-cms"
 main = "src/index.ts"
 compatibility_date = "2026-03-22"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+routes = [
+  { pattern = "admin.nikolaspetrou.com", custom_domain = true },
+]
 
 [[d1_databases]]
 binding = "DB"
 database_name = "nikolaspetrou-cms"
-database_id = "TODO"
+database_id = "6928ba30-c80f-4989-86c2-374deb25221b"
 migrations_dir = "node_modules/@sonicjs-cms/core/migrations"
 
 [[r2_buckets]]
 binding = "MEDIA_BUCKET"
 bucket_name = "nikolaspetrou-cms-media"
+jurisdiction = "eu"
 
 [[kv_namespaces]]
 binding = "CACHE_KV"
-id = "TODO"
+id = "c9d150f7df4d49d7b44645b602a8d597"
 
 [vars]
 ADMIN_EMAIL = "hello@infront.cy"
 ADMIN_PASSWORD = "np-admin-2026!"
-JWT_SECRET = "nikolaspetrou-cms-local-dev-secret"
+JWT_SECRET = "np-cms-prod-7f3a9b2e4d1c8e5f6a0b3c7d9e2f4a1b"
 MAX_FILE_SIZE = "104857600"
 ALLOWED_FILE_TYPES = "image/jpeg,image/png,image/webp,image/svg+xml,image/gif,video/mp4,video/webm,video/quicktime,application/pdf"
 BUCKET_NAME = "nikolaspetrou-cms-media"
