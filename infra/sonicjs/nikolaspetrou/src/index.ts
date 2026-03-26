@@ -53,6 +53,10 @@ const app = createSonicJSApp({
 
         html = whiteLabel(html);
 
+        // Hide Forms sidebar (not used — contact form is custom)
+        html = html.replace(/<a[^>]*href="\/admin\/forms"[^>]*>[\s\S]*?<\/a>/g, '');
+
+        // Role-based menu: hide admin-only items for editors
         const user = c.get('user') as { role?: string } | undefined;
         if (user && user.role !== 'admin') {
           html = html.replace(/<a[^>]*href="\/admin\/collections"[^>]*>[\s\S]*?<\/a>/g, '');
@@ -60,7 +64,6 @@ const app = createSonicJSApp({
           html = html.replace(/<a[^>]*href="\/admin\/plugins"[^>]*>[\s\S]*?<\/a>/g, '');
           html = html.replace(/<a[^>]*href="\/admin\/cache"[^>]*>[\s\S]*?<\/a>/g, '');
           html = html.replace(/<a[^>]*href="\/admin\/settings[^"]*"[^>]*>[\s\S]*?<\/a>/g, '');
-          html = html.replace(/<a[^>]*href="\/admin\/forms"[^>]*>[\s\S]*?<\/a>/g, '');
         }
 
         // Override "Preview Content" link to open our staging preview

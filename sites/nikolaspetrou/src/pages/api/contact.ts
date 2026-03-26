@@ -119,16 +119,16 @@ export const POST: APIRoute = async ({ request }) => {
   // Send notification email via Resend
   if (resendApiKey) {
     try {
-      // Fetch notification emails from CMS site_settings
+      // Fetch notification recipients from CMS form_settings
       let recipients = ['hello@nikolaspetrou.com'];
 
       if (sonicjsUrl) {
-        const settingsRes = await fetch(`${sonicjsUrl}/api/collections/site_settings/content?limit=1`);
-        if (settingsRes.ok) {
-          const settingsData = (await settingsRes.json()) as { data: Array<{ data: { notification_emails?: string | string[] } }> };
-          const item = settingsData.data[0];
+        const formRes = await fetch(`${sonicjsUrl}/api/collections/form_settings/content?limit=1`);
+        if (formRes.ok) {
+          const formData = (await formRes.json()) as { data: Array<{ data: { notification_recipients?: string | string[] } }> };
+          const item = formData.data[0];
           if (item) {
-            let emails = item.data.notification_emails;
+            let emails = item.data.notification_recipients;
             if (typeof emails === 'string') {
               try { emails = JSON.parse(emails); } catch { /* keep as-is */ }
             }
