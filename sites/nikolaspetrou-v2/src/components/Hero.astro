@@ -1,0 +1,66 @@
+---
+interface Props {
+  heading: string;
+  subtext: string;
+  videoUrl: string;
+}
+
+const { heading, subtext, videoUrl } = Astro.props;
+const [firstName, lastName] = heading.split(' ');
+---
+
+<header class="hero-video-wrapper">
+  <video autoplay muted loop playsinline>
+    <source src={videoUrl} type="video/mp4" />
+  </video>
+  <div class="hero-overlay"></div>
+
+  <div class="hero-content">
+    <h1 class="text-giant">{firstName}<br />{lastName}</h1>
+    <p class="hero-subtext">{subtext}</p>
+  </div>
+
+  <div class="hero-scroll-indicator">
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <polyline points="19 12 12 19 5 12"></polyline>
+    </svg>
+  </div>
+</header>
+
+<script>
+  import { gsap } from 'gsap';
+
+  gsap.from('.hero-content .text-giant', {
+    y: 80,
+    opacity: 0,
+    duration: 1.6,
+    ease: 'power4.out',
+    delay: 0.3,
+  });
+
+  gsap.from('.hero-subtext', {
+    y: 20,
+    opacity: 0,
+    duration: 1,
+    ease: 'power3.out',
+    delay: 0.8,
+  });
+
+  gsap.from('.hero-scroll-indicator', {
+    opacity: 0,
+    y: -10,
+    duration: 1,
+    ease: 'power2.out',
+    delay: 1.5,
+  });
+</script>

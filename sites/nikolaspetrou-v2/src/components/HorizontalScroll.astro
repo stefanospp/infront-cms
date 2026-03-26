@@ -1,0 +1,251 @@
+---
+interface WordItem {
+  word: string;
+  videoUrl?: string;
+}
+
+interface Props {
+  words: WordItem[];
+}
+
+const { words } = Astro.props;
+---
+
+<section class="word-slides" id="wordSlides">
+  {
+    words.map((item, i) => (
+      <div class="word-slide" data-video={item.videoUrl || ''} data-index={i}>
+        <video class="word-slide-video" muted loop playsinline preload="none" />
+        <div class="word-slide-overlay" />
+        <div class="word-slide-content">
+          <span class="word-slide-text">{item.word}</span>
+        </div>
+      </div>
+    ))
+  }
+
+  <!-- Progress indicator -->
+  <div class="word-progress" id="wordProgress">
+    <div class="word-progress-track">
+      <div class="word-progress-fill" id="wordProgressFill"></div>
+    </div>
+    <div class="word-progress-count">
+      <span id="wordCurrent">01</span>
+      <span class="word-progress-sep">/</span>
+      <span id="wordTotal">{String(words.length).padStart(2, '0')}</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .word-slides {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .word-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    z-index: 0;
+  }
+
+  .word-slide.active {
+    opacity: 1;
+    z-index: 1;
+  }
+
+  .word-slide-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+
+  .word-slide-video.loaded {
+    opacity: 1;
+  }
+
+  .word-slide-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+  }
+
+  .word-slide-content {
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+  }
+
+  .word-slide-text {
+    font-size: clamp(4rem, 15vw, 14rem);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.04em;
+    color: #fff;
+    white-space: nowrap;
+    display: block;
+  }
+
+  /* Slide transition — text slides up in, previous slides up out */
+  .word-slide .word-slide-text {
+    transform: translateY(100%);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .word-slide.active .word-slide-text {
+    transform: translateY(0);
+  }
+
+  .word-slide.exiting .word-slide-text {
+    transform: translateY(-100%);
+    transition: transform 0.4s cubic-bezier(0.7, 0, 0.84, 0);
+  }
+
+  /* Video crossfade */
+  .word-slide {
+    transition: opacity 0.6s ease;
+  }
+
+  /* Progress indicator — bottom right */
+  .word-progress {
+    position: absolute;
+    bottom: 3rem;
+    right: 2.5rem;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .word-progress-track {
+    width: 120px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .word-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: #fff;
+    transition: width 0.4s ease;
+  }
+
+  .word-progress-count {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.5);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .word-progress-sep {
+    margin: 0 0.2em;
+    opacity: 0.4;
+  }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const section = document.getElementById('wordSlides');
+  const slides = document.querySelectorAll('.word-slide');
+  const totalSlides = slides.length;
+  const progressFill = document.getElementById('wordProgressFill');
+  const currentCount = document.getElementById('wordCurrent');
+  let prevIndex = -1;
+
+  if (section && totalSlides > 0) {
+    const scrollPerSlide = window.innerHeight * 0.6;
+    const totalScroll = scrollPerSlide * totalSlides;
+
+    // Set first slide active
+    slides[0]?.classList.add('active');
+    prevIndex = 0;
+
+    // Load all videos
+    slides.forEach((slide) => {
+      const video = slide.querySelector('.word-slide-video') as HTMLVideoElement;
+      const src = slide.getAttribute('data-video');
+      if (src) {
+        video.src = src;
+        video.load();
+        video.addEventListener(
+          'canplay',
+          () => {
+            video.classList.add('loaded');
+          },
+          { once: true },
+        );
+      }
+    });
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top top',
+      end: () => `+=${totalScroll}`,
+      pin: true,
+      scrub: 0.5,
+      onUpdate: (self) => {
+        const progress = self.progress;
+        const currentIndex = Math.min(
+          Math.floor(progress * totalSlides),
+          totalSlides - 1,
+        );
+
+        // Update progress bar
+        const fillPercent = ((currentIndex + 1) / totalSlides) * 100;
+        if (progressFill) progressFill.style.width = `${fillPercent}%`;
+        if (currentCount)
+          currentCount.textContent = String(currentIndex + 1).padStart(2, '0');
+
+        if (currentIndex !== prevIndex) {
+          // Mark previous as exiting
+          if (prevIndex >= 0 && prevIndex < totalSlides) {
+            const prevSlide = slides[prevIndex];
+            const prevVideo = prevSlide?.querySelector(
+              '.word-slide-video',
+            ) as HTMLVideoElement;
+            prevSlide?.classList.remove('active');
+            prevSlide?.classList.add('exiting');
+            prevVideo?.pause();
+
+            // Remove exiting class after animation
+            setTimeout(() => {
+              prevSlide?.classList.remove('exiting');
+            }, 400);
+          }
+
+          // Activate current
+          const currentSlide = slides[currentIndex];
+          const currentVideo = currentSlide?.querySelector(
+            '.word-slide-video',
+          ) as HTMLVideoElement;
+          currentSlide?.classList.remove('exiting');
+          currentSlide?.classList.add('active');
+          currentVideo?.play();
+
+          prevIndex = currentIndex;
+        }
+      },
+    });
+  }
+</script>

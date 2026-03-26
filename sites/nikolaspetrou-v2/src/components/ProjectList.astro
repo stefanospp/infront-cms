@@ -1,0 +1,80 @@
+---
+interface Project {
+  title: string;
+  category: string;
+  year: number;
+  video_url: string;
+}
+
+interface Props {
+  projects: Project[];
+}
+
+const { projects } = Astro.props;
+---
+
+<section id="works" class="py-32 px-8 min-h-screen">
+  <div class="mb-16">
+    <span class="text-label opacity-50">(Selected Works)</span>
+  </div>
+
+  <div class="projects-wrapper">
+    <div class="project-list">
+      {
+        projects.map((project, i) => (
+          <div
+            class:list={[
+              'project-item cursor-hover',
+              i === projects.length - 1 && 'border-b border-black/10',
+            ]}
+            data-video={project.video_url}
+          >
+            <div class="project-video">
+              <video muted loop playsinline preload="none" />
+            </div>
+            <div class="flex justify-between items-end relative z-10 w-full pb-6">
+              <div>
+                <h3 class="project-title">{project.title}</h3>
+                <div class="project-meta">
+                  {project.category} / {project.year}
+                </div>
+              </div>
+              <span class="text-label opacity-30">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('.project-item').forEach((item) => {
+    const videoEl = item.querySelector('.project-video video') as HTMLVideoElement;
+    const videoSrc = item.getAttribute('data-video');
+    let videoTimer: ReturnType<typeof setTimeout> | null = null;
+    let loaded = false;
+
+    item.addEventListener('mouseenter', () => {
+      document.getElementById('cursorRing')?.classList.add('hover');
+      if (!loaded && videoSrc) {
+        videoEl.src = videoSrc;
+        videoEl.load();
+        loaded = true;
+      }
+      videoTimer = setTimeout(() => {
+        videoEl.play();
+        item.classList.add('video-active');
+      }, 400);
+    });
+
+    item.addEventListener('mouseleave', () => {
+      document.getElementById('cursorRing')?.classList.remove('hover');
+      if (videoTimer) clearTimeout(videoTimer);
+      item.classList.remove('video-active');
+      videoEl.pause();
+    });
+  });
+</script>

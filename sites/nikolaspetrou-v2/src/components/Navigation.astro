@@ -1,0 +1,24 @@
+---
+interface Props {
+  links: { label: string; href: string }[];
+}
+
+const { links } = Astro.props;
+---
+
+<nav
+  class="fixed top-0 left-0 w-full px-10 py-8 flex justify-between items-start z-50 pointer-events-none text-white mix-blend-difference"
+>
+  <div class="pointer-events-auto cursor-hover font-bold tracking-[0.25em] text-lg">
+    NI<span style="display:inline-block;transform:scaleX(-1);margin-left:-0.35em">K</span>
+  </div>
+  <div class="pointer-events-auto flex gap-8">
+    {
+      links.map((link) => (
+        <a href={link.href} class="cursor-hover text-label hover:opacity-50 transition-opacity">
+          {link.label}
+        </a>
+      ))
+    }
+  </div>
+</nav>

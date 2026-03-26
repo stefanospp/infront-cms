@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nikolas Petrou — Videographer</title>
+
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --white: #ffffff;
+            --black: #1a1a1a;
+            --gray: #666666;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            background: var(--white);
+        }
+
+        html.lenis {
+            height: auto;
+        }
+
+        body {
+            background: var(--white);
+            color: var(--black);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Typography */
+        .text-giant {
+            font-size: clamp(2.5rem, 8vw, 7rem);
+            line-height: 0.9;
+            font-weight: 600;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+        }
+
+        .text-huge {
+            font-size: clamp(2rem, 8vw, 6rem);
+            line-height: 1;
+            font-weight: 500;
+            letter-spacing: -0.02em;
+        }
+
+        .text-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 500;
+        }
+
+        /* Custom Cursor */
+        .cursor-ring {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--black);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transition: width 0.3s, height 0.3s, background 0.3s, border 0.3s;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+            background: transparent;
+        }
+
+        .cursor-ring.hover {
+            width: 80px;
+            height: 80px;
+            background: var(--black);
+            border-color: var(--black);
+        }
+
+        .cursor-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--black);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: difference;
+        }
+
+        /* Hero Video */
+        .hero-video-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .hero-video-wrapper video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                to top,
+                rgba(0, 0, 0, 0.55) 0%,
+                rgba(0, 0, 0, 0.2) 50%,
+                rgba(0, 0, 0, 0.15) 100%
+            );
+            z-index: 1;
+        }
+
+        .hero-content {
+            position: absolute;
+            bottom: 4rem;
+            left: 2.5rem;
+            z-index: 2;
+            color: #fff;
+        }
+
+        .hero-subtext {
+            font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+            letter-spacing: 0.05em;
+            opacity: 0.75;
+            margin-top: 1.25rem;
+            margin-left: 0.04em;
+        }
+
+.hero-scroll-indicator {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            color: rgba(255, 255, 255, 0.6);
+            width: 40px;
+            height: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: floatDown 2s ease-in-out infinite;
+        }
+
+        @keyframes floatDown {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(6px); }
+        }
+
+        /* Project List */
+        .projects-wrapper {
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .project-list {
+            position: relative;
+            z-index: 10;
+        }
+
+        .project-item {
+            border-top: 1px solid rgba(0,0,0,0.1);
+            padding: 0;
+            height: 280px;
+            display: flex;
+            align-items: flex-end;
+            cursor: pointer;
+            transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-item:hover {
+            padding-left: 20px;
+        }
+
+        .project-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: var(--black);
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: -1;
+        }
+
+        .project-item:hover::before {
+            width: 100%;
+        }
+
+        .project-item:hover .project-title,
+        .project-item:hover .project-meta {
+            color: var(--white);
+        }
+
+        .project-item .project-video {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .project-item .project-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .project-item.video-active .project-video {
+            opacity: 1;
+        }
+
+        .project-item.video-active .project-title,
+        .project-item.video-active .project-meta,
+        .project-item.video-active .text-label {
+            mix-blend-mode: difference;
+            color: #fff;
+        }
+
+        .project-title {
+            font-size: clamp(1.5rem, 4vw, 3rem);
+            font-weight: 500;
+            letter-spacing: -0.02em;
+            transition: color 0.3s;
+            mix-blend-mode: difference;
+        }
+
+        .project-meta {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--gray);
+            transition: color 0.3s;
+            margin-top: 0.5rem;
+        }
+
+
+        /* Horizontal Scroll */
+        .horizontal-section {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .horizontal-track {
+            display: flex;
+            gap: 4rem;
+            padding: 0 4rem;
+            will-change: transform;
+        }
+
+        .horizontal-item {
+            flex-shrink: 0;
+            font-size: clamp(3rem, 10vw, 8rem);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: -0.04em;
+            white-space: nowrap;
+            opacity: 0.2;
+            transition: opacity 0.3s;
+        }
+
+        .horizontal-item:hover {
+            opacity: 1;
+        }
+
+        /* Services */
+        /* Services */
+        .service-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 2rem;
+            padding: 3rem 0;
+            height: 220px;
+            border-top: 1px solid rgba(0,0,0,0.1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .service-row:last-child {
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .service-row:hover {
+            padding-left: 1rem;
+        }
+
+        .service-video {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .service-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .service-row.video-active .service-video {
+            opacity: 1;
+        }
+
+        .service-row.video-active .service-body h3,
+        .service-row.video-active .service-body p,
+        .service-row.video-active .service-number {
+            mix-blend-mode: difference;
+            color: #fff;
+        }
+
+        .service-row::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: var(--black);
+            transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 1;
+        }
+
+        .service-row:hover::before {
+            width: 100%;
+        }
+
+        .service-number {
+            font-size: clamp(3rem, 5vw, 5rem);
+            font-weight: 600;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            color: rgba(0,0,0,0.08);
+            flex-shrink: 0;
+            width: 100px;
+            position: relative;
+            z-index: 2;
+            transition: color 0.3s;
+        }
+
+        .service-row:hover .service-number {
+            color: rgba(255,255,255,0.15);
+        }
+
+        .service-body {
+            flex: 1;
+            position: relative;
+            z-index: 2;
+            padding-bottom: 0.5rem;
+        }
+
+        .service-body h3 {
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            font-weight: 500;
+            letter-spacing: -0.04em;
+            margin-bottom: 0.75rem;
+            transition: color 0.3s;
+        }
+
+        .service-body p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+            opacity: 0.5;
+            max-width: 500px;
+            transition: color 0.3s, opacity 0.3s;
+        }
+
+        .service-row:hover .service-body h3 {
+            color: #fff;
+        }
+
+        .service-row:hover .service-body p {
+            color: #fff;
+            opacity: 0.7;
+        }
+
+        /* Footer */
+        .footer-giant {
+            font-size: clamp(3rem, 12vw, 10rem);
+            line-height: 0.9;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: -0.04em;
+        }
+
+
+        @media (pointer: coarse) {
+            body { cursor: auto; }
+            .cursor-ring, .cursor-dot { display: none; }
+        }
+
+        @media (max-width: 768px) {
+            .hero-content {
+                bottom: 2rem;
+                left: 1.5rem;
+                right: 1.5rem;
+            }
+            .service-number {
+                width: 60px;
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Custom Cursor -->
+    <div class="cursor-ring" id="cursorRing"></div>
+    <div class="cursor-dot" id="cursorDot"></div>
+
+    <!-- Navigation — overlays hero -->
+    <nav class="fixed top-0 left-0 w-full px-10 py-8 flex justify-between items-start z-50 pointer-events-none text-white mix-blend-difference">
+        <!-- Logo: NIK with backwards K -->
+        <div class="pointer-events-auto cursor-hover font-bold tracking-[0.25em] text-lg">NI<span style="display:inline-block;transform:scaleX(-1);margin-left:-0.35em">K</span></div>
+        <div class="pointer-events-auto flex gap-8">
+            <a href="#about" class="cursor-hover text-label hover:opacity-50 transition-opacity">About</a>
+            <a href="#contact" class="cursor-hover text-label hover:opacity-50 transition-opacity">Contact</a>
+            <a href="#" class="cursor-hover text-label hover:opacity-50 transition-opacity">Instagram</a>
+        </div>
+    </nav>
+
+    <!-- Hero — Full-screen dark video, name bottom-left -->
+    <header class="hero-video-wrapper">
+        <video autoplay muted loop playsinline>
+            <source src="https://assets.mixkit.co/videos/preview/mixkit-waves-coming-to-the-beach-501-large.mp4" type="video/mp4">
+        </video>
+        <div class="hero-overlay"></div>
+
+        <!-- Bottom content -->
+        <div class="hero-content">
+            <h1 class="text-giant">Nikolas<br>Petrou</h1>
+            <p class="hero-subtext">Capturing moments that move.</p>
+        </div>
+
+        <!-- Scroll indicator — centered bottom -->
+        <div class="hero-scroll-indicator">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <polyline points="19 12 12 19 5 12"></polyline>
+            </svg>
+        </div>
+    </header>
+
+    <!-- Selected Works Section -->
+    <section id="works" class="py-32 px-8 min-h-screen">
+        <div class="mb-16">
+            <span class="text-label opacity-50">(Selected Works)</span>
+        </div>
+
+        <div class="projects-wrapper">
+            <div class="project-list">
+                <div class="project-item cursor-hover" data-video="https://assets.mixkit.co/videos/preview/mixkit-waves-coming-to-the-beach-501-large.mp4">
+                    <div class="project-video"><video muted loop playsinline preload="none"></video></div>
+                    <div class="flex justify-between items-end relative z-10 w-full pb-6">
+                        <div>
+                            <h3 class="project-title">Coastal</h3>
+                            <div class="project-meta">Videography / 2024</div>
+                        </div>
+                        <span class="text-label opacity-30">01</span>
+                    </div>
+                </div>
+
+                <div class="project-item cursor-hover" data-video="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-mountains-with-fog-3182-large.mp4">
+                    <div class="project-video"><video muted loop playsinline preload="none"></video></div>
+                    <div class="flex justify-between items-end relative z-10 w-full pb-6">
+                        <div>
+                            <h3 class="project-title">Mountain Adventures</h3>
+                            <div class="project-meta">Direction / 2024</div>
+                        </div>
+                        <span class="text-label opacity-30">02</span>
+                    </div>
+                </div>
+
+                <div class="project-item cursor-hover" data-video="https://assets.mixkit.co/videos/preview/mixkit-sunset-seen-from-a-forest-5258-large.mp4">
+                    <div class="project-video"><video muted loop playsinline preload="none"></video></div>
+                    <div class="flex justify-between items-end relative z-10 w-full pb-6">
+                        <div>
+                            <h3 class="project-title">Stay True</h3>
+                            <div class="project-meta">Creative Direction / 2023</div>
+                        </div>
+                        <span class="text-label opacity-30">03</span>
+                    </div>
+                </div>
+
+                <div class="project-item cursor-hover" data-video="https://assets.mixkit.co/videos/preview/mixkit-aerial-view-of-a-green-valley-4248-large.mp4">
+                    <div class="project-video"><video muted loop playsinline preload="none"></video></div>
+                    <div class="flex justify-between items-end relative z-10 w-full pb-6">
+                        <div>
+                            <h3 class="project-title">Aerial Perspectives</h3>
+                            <div class="project-meta">Drone Operation / 2023</div>
+                        </div>
+                        <span class="text-label opacity-30">04</span>
+                    </div>
+                </div>
+
+                <div class="project-item cursor-hover border-b border-black/10" data-video="https://assets.mixkit.co/videos/preview/mixkit-city-traffic-seen-from-a-bridge-at-night-3456-large.mp4">
+                    <div class="project-video"><video muted loop playsinline preload="none"></video></div>
+                    <div class="flex justify-between items-end relative z-10 w-full pb-6">
+                        <div>
+                            <h3 class="project-title">Urban Stories</h3>
+                            <div class="project-meta">Brand Content / 2023</div>
+                        </div>
+                        <span class="text-label opacity-30">05</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Horizontal Scroll Section -->
+    <section class="horizontal-section bg-black text-white overflow-hidden">
+        <div class="horizontal-track" id="horizontalTrack">
+            <div class="horizontal-item cursor-hover">Cinematic</div>
+            <div class="horizontal-item cursor-hover">Authentic</div>
+            <div class="horizontal-item cursor-hover">Visual</div>
+            <div class="horizontal-item cursor-hover">Stories</div>
+            <div class="horizontal-item cursor-hover">Capture</div>
+            <div class="horizontal-item cursor-hover">Movement</div>
+            <div class="horizontal-item cursor-hover">Emotion</div>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section id="about" class="py-32 px-8">
+        <div class="mb-16">
+            <span class="text-label opacity-50">(Services)</span>
+        </div>
+
+        <div>
+            <div class="service-row cursor-hover" data-video="https://assets.mixkit.co/videos/preview/mixkit-man-filming-with-a-camera-in-his-hands-34488-large.mp4">
+                <div class="service-video"><video muted loop playsinline preload="none"></video></div>
+                <span class="service-number">01</span>
+                <div class="service-body">
+                    <h3>Videography</h3>
+                    <p>Commercial and documentary filmmaking with cinematic quality. From concept to final delivery.</p>
+                </div>
+            </div>
+            <div class="service-row cursor-hover" data-video="https://assets.mixkit.co/videos/preview/mixkit-behind-the-scenes-of-a-film-shoot-34485-large.mp4">
+                <div class="service-video"><video muted loop playsinline preload="none"></video></div>
+                <span class="service-number">02</span>
+                <div class="service-body">
+                    <h3>Direction</h3>
+                    <p>Creative direction and visual storytelling. Guiding projects from initial concept through to final cut.</p>
+                </div>
+            </div>
+            <div class="service-row cursor-hover" data-video="https://assets.mixkit.co/videos/preview/mixkit-woman-using-a-laptop-at-home-4831-large.mp4">
+                <div class="service-video"><video muted loop playsinline preload="none"></video></div>
+                <span class="service-number">03</span>
+                <div class="service-body">
+                    <h3>Content Strategy</h3>
+                    <p>Brand content planning and social media visual strategies that drive engagement and growth.</p>
+                </div>
+            </div>
+            <div class="service-row cursor-hover" data-video="https://assets.mixkit.co/videos/preview/mixkit-editing-a-video-on-a-laptop-34487-large.mp4">
+                <div class="service-video"><video muted loop playsinline preload="none"></video></div>
+                <span class="service-number">04</span>
+                <div class="service-body">
+                    <h3>Post Production</h3>
+                    <p>Color grading, editing, and finishing with meticulous attention to detail and craft.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Clients -->
+    <section class="py-32 px-8 border-t border-black/10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+            <div>
+                <span class="text-label opacity-50 block mb-8">(Selected Clients)</span>
+                <div class="space-y-4">
+                    <div class="text-2xl font-medium cursor-hover hover:opacity-50 transition-opacity">Patagonia</div>
+                    <div class="text-2xl font-medium cursor-hover hover:opacity-50 transition-opacity">GoPro</div>
+                    <div class="text-2xl font-medium cursor-hover hover:opacity-50 transition-opacity">Sony</div>
+                    <div class="text-2xl font-medium cursor-hover hover:opacity-50 transition-opacity">DJI</div>
+                    <div class="text-2xl font-medium cursor-hover hover:opacity-50 transition-opacity">National Geographic</div>
+                </div>
+            </div>
+            <div class="flex items-end">
+                <p class="text-lg leading-relaxed opacity-70 max-w-md">
+                    Based in Los Angeles, working with brands worldwide to create visual content that resonates with audiences and drives engagement.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Contact -->
+    <section id="contact" class="min-h-screen flex flex-col justify-between px-8 py-16 bg-black text-white">
+        <div class="flex-1 flex items-center">
+            <div class="w-full">
+                <span class="text-label opacity-50 block mb-8">(Get in Touch)</span>
+                <a href="mailto:hello@nikolaspetrou.com" class="footer-giant block hover:opacity-70 transition-opacity cursor-hover">
+                    Let's<br>Work<br>Together
+                </a>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end pt-16 border-t border-white/20">
+            <div class="flex gap-8 mb-8 md:mb-0">
+                <a href="#" class="text-label cursor-hover hover:opacity-50 transition-opacity">Instagram</a>
+                <a href="#" class="text-label cursor-hover hover:opacity-50 transition-opacity">Vimeo</a>
+                <a href="#" class="text-label cursor-hover hover:opacity-50 transition-opacity">YouTube</a>
+            </div>
+            <div class="text-label opacity-50">
+                &copy; 2025 Nikolas Petrou
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Lenis Smooth Scroll
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            smooth: true,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // GSAP
+        gsap.registerPlugin(ScrollTrigger);
+
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => {
+            lenis.raf(time * 1000);
+        });
+        gsap.ticker.lagSmoothing(0);
+
+        // Custom Cursor
+        const cursorRing = document.getElementById('cursorRing');
+        const cursorDot = document.getElementById('cursorDot');
+        let mouseX = 0, mouseY = 0;
+        let ringX = 0, ringY = 0;
+        let dotX = 0, dotY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+            ringX += (mouseX - ringX) * 0.15;
+            ringY += (mouseY - ringY) * 0.15;
+            cursorRing.style.left = ringX + 'px';
+            cursorRing.style.top = ringY + 'px';
+
+            dotX += (mouseX - dotX) * 0.5;
+            dotY += (mouseY - dotY) * 0.5;
+            cursorDot.style.left = dotX + 'px';
+            cursorDot.style.top = dotY + 'px';
+
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // Cursor hover states
+        const hoverElements = document.querySelectorAll('.cursor-hover');
+        hoverElements.forEach(el => {
+            el.addEventListener('mouseenter', () => cursorRing.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursorRing.classList.remove('hover'));
+        });
+
+        // Project Inline Video — plays after the black fill animation completes
+        const projectItems = document.querySelectorAll('.project-item');
+
+        projectItems.forEach(item => {
+            const videoEl = item.querySelector('.project-video video');
+            const videoSrc = item.getAttribute('data-video');
+            let videoTimer = null;
+            let loaded = false;
+
+            item.addEventListener('mouseenter', () => {
+                cursorRing.classList.add('hover');
+
+                // Load video on first hover
+                if (!loaded && videoSrc) {
+                    videoEl.src = videoSrc;
+                    videoEl.load();
+                    loaded = true;
+                }
+
+                // Wait for the fill animation (0.4s) then show video
+                videoTimer = setTimeout(() => {
+                    videoEl.play();
+                    item.classList.add('video-active');
+                }, 400);
+            });
+
+            item.addEventListener('mouseleave', () => {
+                cursorRing.classList.remove('hover');
+                clearTimeout(videoTimer);
+                item.classList.remove('video-active');
+                videoEl.pause();
+            });
+        });
+
+        // Service Inline Video — same pattern as projects
+        document.querySelectorAll('.service-row').forEach(row => {
+            const videoEl = row.querySelector('.service-video video');
+            const videoSrc = row.getAttribute('data-video');
+            let videoTimer = null;
+            let loaded = false;
+
+            row.addEventListener('mouseenter', () => {
+                if (!loaded && videoSrc) {
+                    videoEl.src = videoSrc;
+                    videoEl.load();
+                    loaded = true;
+                }
+                videoTimer = setTimeout(() => {
+                    videoEl.play();
+                    row.classList.add('video-active');
+                }, 400);
+            });
+
+            row.addEventListener('mouseleave', () => {
+                clearTimeout(videoTimer);
+                row.classList.remove('video-active');
+                videoEl.pause();
+            });
+        });
+
+        // Horizontal Scroll Animation
+        const horizontalSection = document.querySelector('.horizontal-section');
+        const horizontalTrack = document.getElementById('horizontalTrack');
+
+        if (horizontalSection && horizontalTrack) {
+            const scrollWidth = horizontalTrack.scrollWidth - window.innerWidth;
+
+            gsap.to(horizontalTrack, {
+                x: -scrollWidth,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: horizontalSection,
+                    start: "top top",
+                    end: () => `+=${scrollWidth}`,
+                    pin: true,
+                    scrub: 1,
+                    invalidateOnRefresh: true,
+                }
+            });
+        }
+
+        // Hero Content Animation
+        gsap.from(".hero-content .text-giant", {
+            y: 80,
+            opacity: 0,
+            duration: 1.6,
+            ease: "power4.out",
+            delay: 0.3
+        });
+
+        gsap.from(".hero-subtext", {
+            y: 20,
+            opacity: 0,
+            duration: 1,
+            ease: "power3.out",
+            delay: 0.8
+        });
+
+        gsap.from(".hero-scroll-indicator", {
+            opacity: 0,
+            y: -10,
+            duration: 1,
+            ease: "power2.out",
+            delay: 1.5
+        });
+
+        // Mobile check
+        if (window.matchMedia('(pointer: coarse)').matches) {
+            document.body.style.cursor = 'auto';
+            cursorRing.style.display = 'none';
+            cursorDot.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

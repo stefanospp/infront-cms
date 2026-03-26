@@ -1,0 +1,184 @@
+---
+import '../styles/global.css';
+import V2Layout from '../layouts/V2Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Hero from '../components/Hero.astro';
+import ProjectList from '../components/ProjectList.astro';
+import HorizontalScroll from '../components/HorizontalScroll.astro';
+import ServiceList from '../components/ServiceList.astro';
+import Clients from '../components/Clients.astro';
+import Footer from '../components/Footer.astro';
+import { getProjects, getServices, getSiteSettings } from '../lib/payload';
+
+let projects, services, settings;
+
+try {
+  [projects, services, settings] = await Promise.all([
+    getProjects(),
+    getServices(),
+    getSiteSettings(),
+  ]);
+} catch {
+  // Fallback data when Payload is not running
+  settings = {
+    siteName: 'Nikolas Petrou',
+    tagline: 'Capturing moments that move.',
+    hero: {
+      heading: 'Nikolas Petrou',
+      subtext: 'Capturing moments that move.',
+      video_url:
+        'https://cdn.pixabay.com/video/2022/08/16/128015-740186542_large.mp4',
+    },
+    contact: { email: 'hello@nikolaspetrou.com' },
+    social: { instagram: '#', vimeo: '#', youtube: '#' },
+    clients: [
+      { name: 'Patagonia', description: 'Brand campaign series capturing outdoor adventures across Patagonia\'s seasonal collections. We spent three months embedded with their athletes across Chile and Argentina, documenting the raw beauty of untouched landscapes and the human stories that unfold within them.\n\nThe resulting twelve-part series drove a 40% increase in engagement across their digital channels and was featured at the Banff Mountain Film Festival.' },
+      { name: 'GoPro', description: 'Action sports content showcasing the limits of what\'s possible with compact camera systems. From big wave surfing in Nazaré to backcountry skiing in the Dolomites, every frame was designed to push the boundaries of perspective.\n\nThe campaign spanned six countries over four months, producing over 200 unique clips that became the foundation of GoPro\'s annual brand anthem.' },
+      { name: 'Sony', description: 'Product launch films and behind-the-scenes content for Sony\'s Alpha camera lineup. Each piece balanced technical precision with emotional storytelling, demonstrating the camera\'s capabilities through real-world creative scenarios.\n\nWe collaborated directly with Sony\'s engineering team in Tokyo to ensure every feature was showcased authentically, resulting in content that resonated with both professionals and enthusiasts.' },
+      { name: 'DJI', description: 'Aerial cinematography demos and creative direction for DJI\'s drone platform releases. The brief was simple: make people feel what it\'s like to see the world from above for the very first time.\n\nWe mapped and filmed over thirty locations across five continents, creating a visual library that DJI continues to use across their global marketing channels two years later.' },
+      { name: 'National Geographic', description: 'Documentary short films exploring coastal ecosystems and marine conservation efforts. This was a passion project that grew into a six-part series, following marine biologists and local communities working to protect endangered reef systems.\n\nThe series premiered on National Geographic\'s streaming platform and was nominated for a News & Documentary Emmy in the Outstanding Short Documentary category.' },
+    ],
+    horizontalWords: [
+      { word: 'Cinematic' },
+      { word: 'Authentic' },
+      { word: 'Visual' },
+      { word: 'Stories' },
+      { word: 'Capture' },
+      { word: 'Movement' },
+      { word: 'Emotion' },
+    ],
+  };
+
+  projects = [
+    {
+      id: '1',
+      title: 'Coastal',
+      slug: 'coastal',
+      category: 'Videography',
+      year: 2024,
+      video_url:
+        'https://cdn.pixabay.com/video/2016/05/12/3127-166335864_large.mp4',
+      order: 1,
+    },
+    {
+      id: '2',
+      title: 'Stay True to Yourself',
+      slug: 'stay-true',
+      category: 'Creative Direction',
+      year: 2024,
+      video_url:
+        'https://cdn.pixabay.com/video/2022/11/22/140111-774507949_large.mp4',
+      order: 2,
+    },
+    {
+      id: '3',
+      title: 'Aerial Perspectives',
+      slug: 'aerial-perspectives',
+      category: 'Drone Operation',
+      year: 2024,
+      video_url:
+        'https://cdn.pixabay.com/video/2024/06/29/218714_large.mp4',
+      order: 3,
+    },
+    {
+      id: '4',
+      title: 'Underwater World',
+      slug: 'underwater-world',
+      category: 'Documentary',
+      year: 2023,
+      video_url:
+        'https://cdn.pixabay.com/video/2025/04/29/275633_large.mp4',
+      order: 4,
+    },
+    {
+      id: '5',
+      title: 'Golden Hour',
+      slug: 'golden-hour',
+      category: 'Brand Content',
+      year: 2023,
+      video_url:
+        'https://cdn.pixabay.com/video/2022/11/11/138588-770315514_large.mp4',
+      order: 5,
+    },
+  ];
+
+  services = [
+    {
+      id: '1',
+      title: 'Video Production',
+      description:
+        'Commercial and documentary filmmaking with cinematic quality. From concept to final delivery.',
+      video_url:
+        'https://cdn.pixabay.com/video/2024/05/23/213425_large.mp4',
+      order: 1,
+    },
+    {
+      id: '2',
+      title: 'Creative Direction',
+      description:
+        'Creative direction and visual storytelling. Guiding projects from initial concept through to final cut.',
+      video_url:
+        'https://cdn.pixabay.com/video/2022/11/22/140111-774507949_large.mp4',
+      order: 2,
+    },
+    {
+      id: '3',
+      title: 'Content Creation',
+      description:
+        'Brand content planning and social media visual strategies that drive engagement and growth.',
+      video_url:
+        'https://cdn.pixabay.com/video/2024/06/29/218714_large.mp4',
+      order: 3,
+    },
+    {
+      id: '4',
+      title: 'Post Production',
+      description:
+        'Color grading, editing, and finishing with meticulous attention to detail and craft.',
+      video_url:
+        'https://cdn.pixabay.com/video/2025/04/29/275633_large.mp4',
+      order: 4,
+    },
+  ];
+}
+
+const navLinks = [
+  { label: 'About', href: '#about' },
+  { label: 'Contact', href: '#contact' },
+  ...(settings.social.instagram
+    ? [{ label: 'Instagram', href: settings.social.instagram }]
+    : []),
+];
+
+const socialLinks = [
+  ...(settings.social.instagram
+    ? [{ label: 'Instagram', href: settings.social.instagram }]
+    : []),
+  ...(settings.social.vimeo ? [{ label: 'Vimeo', href: settings.social.vimeo }] : []),
+  ...(settings.social.youtube ? [{ label: 'YouTube', href: settings.social.youtube }] : []),
+];
+
+const videoUrls = projects.map((p) => p.video_url);
+const words = settings.horizontalWords.map((w, i) => ({
+  word: w.word,
+  videoUrl: videoUrls[i % videoUrls.length],
+}));
+const clientItems = settings.clients.map((c: any, i: number) => ({
+  name: c.name,
+  videoUrl: videoUrls[i % videoUrls.length],
+}));
+---
+
+<V2Layout title={`${settings.siteName} — Videographer`}>
+  <Navigation links={navLinks} />
+  <Hero
+    heading={settings.hero.heading}
+    subtext={settings.hero.subtext}
+    videoUrl={settings.hero.video_url}
+  />
+  <ProjectList projects={projects} />
+  <HorizontalScroll words={words} />
+  <ServiceList services={services} />
+  <Clients clients={clientItems} />
+  <Footer email={settings.contact.email} social={socialLinks} videoUrl="https://cdn.pixabay.com/video/2024/05/23/213425_large.mp4" />
+</V2Layout>

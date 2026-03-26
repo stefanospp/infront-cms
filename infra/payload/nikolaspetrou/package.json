@@ -1,0 +1,36 @@
+{
+  "name": "nikolaspetrou-cms",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "deploy": "opennextjs-cloudflare build && wrangler deploy",
+    "preview": "opennextjs-cloudflare build && wrangler dev",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv",
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "generate:types": "payload generate:types",
+    "seed": "node --import tsx src/seed.ts"
+  },
+  "dependencies": {
+    "@payloadcms/db-d1-sqlite": "^3.80.0",
+    "@payloadcms/next": "^3.80.0",
+    "@payloadcms/richtext-lexical": "^3.80.0",
+    "@payloadcms/storage-r2": "^3.80.0",
+    "cross-env": "^7.0.3",
+    "next": "^15.4.0",
+    "payload": "^3.80.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "^1.11.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0",
+    "wrangler": "^4.61.0"
+  }
+}

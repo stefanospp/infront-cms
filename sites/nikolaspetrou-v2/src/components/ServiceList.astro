@@ -1,0 +1,48 @@
+---
+interface Service {
+  title: string;
+  description: string;
+  video_url?: string;
+}
+
+interface Props {
+  services: Service[];
+}
+
+const { services } = Astro.props;
+---
+
+<section id="about" class="py-32 px-8">
+  <div class="mb-16">
+    <span class="text-label opacity-50">(Services)</span>
+  </div>
+
+  <div class="projects-wrapper">
+    <div class="project-list">
+      {
+        services.map((service, i) => (
+          <div
+            class:list={[
+              'project-item cursor-hover',
+              i === services.length - 1 && 'border-b border-black/10',
+            ]}
+            data-video={service.video_url || ''}
+          >
+            <div class="project-video">
+              <video muted loop playsinline preload="none" />
+            </div>
+            <div class="flex justify-between items-end relative z-10 w-full pb-6">
+              <div>
+                <h3 class="project-title">{service.title}</h3>
+                <div class="project-meta">{service.description}</div>
+              </div>
+              <span class="text-label opacity-30">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

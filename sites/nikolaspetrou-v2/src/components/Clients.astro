@@ -1,0 +1,111 @@
+---
+interface Client {
+  name: string;
+  videoUrl?: string;
+}
+
+interface Props {
+  clients: Client[];
+}
+
+const { clients } = Astro.props;
+---
+
+<section class="clients-section" id="clientsSection">
+  <div class="clients-bg-video">
+    <video muted loop playsinline preload="none" id="clientsBgVideo" />
+    <div class="clients-bg-overlay" />
+  </div>
+
+  <div class="clients-content">
+    <span class="text-label opacity-50 block mb-8">(Selected Clients)</span>
+    <div class="space-y-4">
+      {
+        clients.map((client) => (
+          <div
+            class="client-name cursor-hover"
+            data-video={client.videoUrl || ''}
+          >
+            {client.name}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .clients-section {
+    position: relative;
+    padding: 8rem 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .clients-bg-video {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+
+  .clients-bg-video.active {
+    opacity: 1;
+  }
+
+  .clients-bg-video video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .clients-bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.75);
+  }
+
+  .clients-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .client-name {
+    font-size: 1.5rem;
+    font-weight: 500;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  .client-name:hover {
+    transform: translateX(8px);
+  }
+</style>
+
+<script>
+  const section = document.getElementById('clientsSection');
+  const bgContainer = section?.querySelector('.clients-bg-video') as HTMLElement;
+  const bgVideo = document.getElementById('clientsBgVideo') as HTMLVideoElement;
+  const clientNames = section?.querySelectorAll('.client-name');
+  let currentSrc = '';
+
+  clientNames?.forEach((el) => {
+    const videoUrl = el.getAttribute('data-video');
+
+    el.addEventListener('mouseenter', () => {
+      if (!videoUrl) return;
+      if (videoUrl !== currentSrc) {
+        currentSrc = videoUrl;
+        bgVideo.src = videoUrl;
+        bgVideo.load();
+      }
+      bgVideo.play();
+      bgContainer.classList.add('active');
+    });
+
+    el.addEventListener('mouseleave', () => {
+      bgContainer.classList.remove('active');
+      bgVideo.pause();
+    });
+  });
+</script>

@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "nikolaspetrou-cms",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2026-03-22",
+  "compatibility_flags": ["nodejs_compat"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  // D1 SQLite database
+  "d1_databases": [
+    {
+      "binding": "D1",
+      "database_name": "nikolaspetrou-cms",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID"
+    }
+  ],
+
+  // R2 media storage
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "infront-uploads"
+    }
+  ],
+
+  "vars": {
+    "PAYLOAD_SECRET": "REPLACE_WITH_SECRET",
+    "R2_PUBLIC_URL": "https://cdn.infront.cy"
+  }
+}
