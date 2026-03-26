@@ -106,6 +106,16 @@ export const THEME_SCRIPT = `
     headerButtons.appendChild(btn);
   });
 })();
+
+// Fix: closeVersionHistory is defined in an HTMX partial <script> that
+// browsers don't execute when injected via innerHTML. Define it globally.
+window.closeVersionHistory = function() {
+  var modal = document.querySelector('.version-history-modal');
+  if (modal) {
+    var overlay = modal.closest('.fixed') || modal.parentElement;
+    if (overlay) overlay.remove();
+  }
+};
 </script>
 `;
 

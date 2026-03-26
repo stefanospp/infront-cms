@@ -46,6 +46,12 @@ const app = createSonicJSApp({
 
         let html = await c.res.text();
 
+        // Only modify full HTML pages, not HTMX partials
+        if (!html.includes('<!DOCTYPE') && !html.includes('<html')) {
+          c.res = new Response(html, { status: c.res.status, headers: c.res.headers });
+          return;
+        }
+
         html = html.replace(/class="([^"]*)\bdark\b([^"]*)"/g, (_, b, a) => {
           const cleaned = `${b}${a}`.replace(/\s+/g, ' ').trim();
           return cleaned ? `class="${cleaned}"` : '';
@@ -66,12 +72,12 @@ const app = createSonicJSApp({
           html = html.replace(/<a[^>]*href="\/admin\/settings[^"]*"[^>]*>[\s\S]*?<\/a>/g, '');
         }
 
-        // Override "Preview Content" link to open our staging preview
+        // Override "Preview Content" button to open our staging preview
         const siteUrl = 'http://localhost:4322'; // TODO: change to production URL
         const previewToken = 'np-preview-2026-secret';
         html = html.replace(
-          /Preview Content/g,
-          `<a href="${siteUrl}/staging/?token=${previewToken}" target="_blank" style="color:inherit;text-decoration:none;">Preview on Site</a>`
+          /<button[^>]*onclick="previewContent\(\)"[^>]*>[\s\S]*?<\/button>/g,
+          `<a href="${siteUrl}/staging/?token=${previewToken}" target="_blank" class="w-full inline-flex items-center gap-x-2 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-zinc-100 rounded-lg transition-colors"><svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>Preview on Site</a>`
         );
 
         html = html
