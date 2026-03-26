@@ -25,7 +25,6 @@ function validate(data: Record<string, string>): { valid: boolean; errors: Recor
 }
 
 export const POST: APIRoute = async ({ request }) => {
-  // Runtime env: process.env for Cloudflare Workers (nodejs_compat), import.meta.env for dev
   const getEnv = (key: string) =>
     (typeof process !== 'undefined' ? process.env[key] : undefined) ||
     (import.meta.env as Record<string, string>)[key] || '';
@@ -53,51 +52,62 @@ export const POST: APIRoute = async ({ request }) => {
   // Honeypot — if filled, it's spam. Store but don't notify.
   const isSpam = website.length > 0;
 
-  // Get env vars (runtime secrets on Cloudflare Workers)
-  const directusUrl = getEnv('DIRECTUS_URL');
-  const directusToken = getEnv('DIRECTUS_TOKEN');
+  // Get env vars
+  const sonicjsUrl = getEnv('SONICJS_URL');
   const resendApiKey = getEnv('RESEND_API_KEY');
 
   // Extract metadata
   const ipAddress = request.headers.get('cf-connecting-ip') || request.headers.get('x-forwarded-for') || '';
   const userAgent = request.headers.get('user-agent') || '';
 
-  // Store in Directus
-  if (directusUrl && directusToken) {
+  // Store submission in SonicJs CMS
+  if (sonicjsUrl) {
     try {
-      // Rate limit check — same email in last 5 minutes
-      const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      const checkRes = await fetch(
-        `${directusUrl}/items/submissions?filter[email][_eq]=${encodeURIComponent(email)}&filter[date_created][_gte]=${encodeURIComponent(fiveMinAgo)}&limit=1`,
-        { headers: { Authorization: `Bearer ${directusToken}` } }
-      );
-      if (checkRes.ok) {
-        const checkData = await checkRes.json();
-        if (checkData.data?.length > 0) {
-          return json({ ok: true }, 200);
-        }
-      }
-
-      // Store submission
-      await fetch(`${directusUrl}/items/submissions`, {
+      // Get auth token for API write access
+      const loginRes = await fetch(`${sonicjsUrl}/auth/login`, {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${directusToken}`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
-          email,
-          phone: phone || null,
-          message,
-          is_spam: isSpam,
-          read: false,
-          ip_address: ipAddress,
-          user_agent: userAgent,
+          email: getEnv('SONICJS_ADMIN_EMAIL') || 'hello@infront.cy',
+          password: getEnv('SONICJS_ADMIN_PASSWORD') || 'np-admin-2026!',
         }),
       });
+
+      if (loginRes.ok) {
+        const { token } = (await loginRes.json()) as { token: string };
+
+        // Get submissions collection ID (or create if needed)
+        const colRes = await fetch(`${sonicjsUrl}/api/collections`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const cols = (await colRes.json()) as { data: Array<{ id: string; name: string }> };
+        const submissionsCol = cols.data.find(c => c.name === 'submissions');
+
+        if (submissionsCol) {
+          // Store submission
+          await fetch(`${sonicjsUrl}/api/content`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              title: `${name} — ${new Date().toISOString().slice(0, 10)}`,
+              slug: `submission-${Date.now()}`,
+              collectionId: submissionsCol.id,
+              status: 'published',
+              data: {
+                name, email,
+                phone: phone || null,
+                message,
+                is_spam: isSpam,
+                read: false,
+                ip_address: ipAddress,
+                user_agent: userAgent,
+              },
+            }),
+          });
+        }
+      }
     } catch (err) {
-      console.error('Failed to store submission in Directus:', err);
+      console.error('Failed to store submission in SonicJs:', err);
     }
   }
 
@@ -107,19 +117,25 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   // Send notification email via Resend
-  if (resendApiKey && directusUrl && directusToken) {
+  if (resendApiKey) {
     try {
-      // Fetch notification emails from site_settings
-      const settingsRes = await fetch(`${directusUrl}/items/site_settings?fields=notification_emails`, {
-        headers: { Authorization: `Bearer ${directusToken}` },
-      });
+      // Fetch notification emails from CMS site_settings
       let recipients = ['hello@nikolaspetrou.com'];
 
-      if (settingsRes.ok) {
-        const settingsData = await settingsRes.json();
-        const configuredEmails = settingsData.data?.notification_emails;
-        if (Array.isArray(configuredEmails) && configuredEmails.length > 0) {
-          recipients = configuredEmails;
+      if (sonicjsUrl) {
+        const settingsRes = await fetch(`${sonicjsUrl}/api/collections/site_settings/content?limit=1`);
+        if (settingsRes.ok) {
+          const settingsData = (await settingsRes.json()) as { data: Array<{ data: { notification_emails?: string | string[] } }> };
+          const item = settingsData.data[0];
+          if (item) {
+            let emails = item.data.notification_emails;
+            if (typeof emails === 'string') {
+              try { emails = JSON.parse(emails); } catch { /* keep as-is */ }
+            }
+            if (Array.isArray(emails) && emails.length > 0) {
+              recipients = emails;
+            }
+          }
         }
       }
 

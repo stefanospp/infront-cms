@@ -9,9 +9,10 @@ import projects from './collections/projects.collection';
 import services from './collections/services.collection';
 import testimonials from './collections/testimonials.collection';
 import reels from './collections/reels.collection';
+import submissions from './collections/submissions.collection';
 
 const collections: CollectionConfig[] = [
-  siteSettings, hero, about, projects, services, testimonials, reels,
+  siteSettings, hero, about, projects, services, testimonials, reels, submissions,
 ];
 
 registerCollections(collections);
@@ -20,6 +21,20 @@ const app = createSonicJSApp({
   collections: { autoSync: true },
   plugins: { autoLoad: true },
   middleware: {
+    // Block public registration (allow with seed secret for initial setup)
+    beforeAuth: [
+      async (c, next) => {
+        const url = new URL(c.req.url);
+        if (url.pathname === '/auth/register' && c.req.method === 'POST') {
+          const seedSecret = c.req.header('x-seed-secret');
+          const jwtSecret = c.env?.JWT_SECRET || '';
+          if (seedSecret !== jwtSecret) {
+            return c.json({ error: 'Registration is disabled. Contact the administrator.' }, 403);
+          }
+        }
+        await next();
+      },
+    ],
     afterAuth: [
       async (c, next) => {
         await next();

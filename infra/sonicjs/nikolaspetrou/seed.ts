@@ -10,10 +10,12 @@ const API_URL = process.env.SONICJS_URL || 'http://localhost:8787';
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
+const SEED_SECRET = process.env.SEED_SECRET || 'nikolaspetrou-cms-local-dev-secret';
+
 async function getAdminToken(): Promise<string> {
   await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-seed-secret': SEED_SECRET },
     body: JSON.stringify({ email: 'hello@infront.cy', username: 'admin', firstName: 'Admin', lastName: 'User', password: 'np-admin-2026!' }),
   }).catch(() => {});
 
@@ -185,7 +187,7 @@ async function main() {
   console.log('\nCreating editor user...');
   await fetch(`${API_URL}/auth/register`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-seed-secret': SEED_SECRET },
     body: JSON.stringify({ email: 'nikolaspetrouu@hotmail.com', username: 'nikolas', firstName: 'Nikolas', lastName: 'Petrou', password: 'np-editor-2026!' }),
   }).catch(() => {});
 
