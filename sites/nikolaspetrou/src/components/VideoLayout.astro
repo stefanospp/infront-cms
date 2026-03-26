@@ -1,0 +1,47 @@
+---
+import type { SiteConfig } from '@agency/config';
+import BaseLayout from '@agency/ui/layouts/BaseLayout.astro';
+import Nav from './Nav.astro';
+import Footer from './Footer.astro';
+import VideoOverlay from './VideoOverlay';
+
+export interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+  canonicalUrl?: string;
+  structuredData?: Record<string, unknown>;
+  noIndex?: boolean;
+  config: SiteConfig;
+}
+
+const props = Astro.props;
+const { config } = props;
+---
+
+<BaseLayout {...props}>
+  <Nav config={config} />
+  <main id="main-content">
+    <slot />
+  </main>
+  <Footer config={config} />
+  <VideoOverlay client:idle />
+
+  {/* Scroll-triggered section animations */}
+  <script>
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in-view');
+          }
+        });
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -50px 0px' }
+    );
+    document.querySelectorAll('main > section, main > div > section').forEach((s) => {
+      observer.observe(s);
+    });
+  </script>
+</BaseLayout>

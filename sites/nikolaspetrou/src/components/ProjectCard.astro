@@ -1,0 +1,111 @@
+---
+export interface Props {
+  title: string;
+  subtitle?: string;
+  image?: string;
+  href?: string;
+  videoSrc?: string;
+  reelUrl?: string;
+  showPlayButton?: boolean;
+  class?: string;
+}
+
+const { title, subtitle, image, href, videoSrc, reelUrl, showPlayButton = false, class: className } = Astro.props;
+
+const overlayTarget = videoSrc;
+const isOverlayTrigger = !!overlayTarget;
+const Tag = isOverlayTrigger ? 'button' : href ? 'a' : 'div';
+const hasPlay = showPlayButton || isOverlayTrigger;
+---
+
+<Tag
+  href={!isOverlayTrigger ? href : undefined}
+  type={isOverlayTrigger ? 'button' : undefined}
+  data-video-overlay={overlayTarget}
+  data-project-hover={videoSrc}
+  class:list={[
+    'group block text-left',
+    (href || isOverlayTrigger) && 'cursor-pointer',
+    isOverlayTrigger && 'project-overlay-trigger outline-none',
+    className,
+  ]}
+>
+  <div class="relative overflow-hidden rounded-lg">
+    {/* Always show poster image */}
+    {image && (
+      <img
+        src={image}
+        alt={title}
+        class="aspect-[4/3] w-full object-cover transition-transform duration-500 group-hover:scale-105 project-hover-img"
+        loading="lazy"
+      />
+    )}
+
+    {hasPlay && (
+      <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/10 project-play-btn" style="transition: opacity 0.3s ease, background-color 0.3s ease;">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform duration-300 group-hover:scale-110">
+          <svg class="ml-1 h-5 w-5 text-neutral-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        </div>
+      </div>
+    )}
+  </div>
+
+  <div class="mt-4">
+    <h3 class="text-lg font-bold text-neutral-900 group-hover:text-neutral-600 transition-colors">{title}</h3>
+    {subtitle && (
+      <p class="mt-1 text-sm text-neutral-500">{subtitle}</p>
+    )}
+  </div>
+</Tag>
+
+<script>
+  // Click → open overlay
+  document.querySelectorAll('.project-overlay-trigger[data-video-overlay]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      const src = (el as HTMLElement).dataset.videoOverlay;
+      if (src) {
+        window.dispatchEvent(new CustomEvent('open-video-overlay', { detail: src }));
+      }
+    });
+  });
+
+  // Hover → play video inline (dynamic video element)
+  document.querySelectorAll('[data-project-hover]').forEach((el) => {
+    const htmlEl = el as HTMLElement;
+    const src = htmlEl.dataset.projectHover;
+    if (!src) return;
+
+    let video: HTMLVideoElement | null = null;
+    const container = htmlEl.querySelector('.rounded-lg') as HTMLElement;
+    if (!container) return;
+
+    el.addEventListener('mouseenter', () => {
+      if (!video) {
+        video = document.createElement('video');
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.className = 'absolute inset-0 h-full w-full object-cover z-[1]';
+        video.style.transition = 'opacity 0.3s ease';
+        video.style.opacity = '0';
+        video.src = src;
+        const img = container.querySelector('.project-hover-img');
+        if (img) img.after(video);
+      }
+      video.currentTime = 0;
+      video.play().catch(() => {});
+      requestAnimationFrame(() => { if (video) video.style.opacity = '1'; });
+      const btn = container.querySelector('.project-play-btn') as HTMLElement;
+      if (btn) btn.style.opacity = '0';
+    });
+
+    el.addEventListener('mouseleave', () => {
+      if (video) { video.pause(); video.style.opacity = '0'; }
+      const btn = container.querySelector('.project-play-btn') as HTMLElement;
+      if (btn) btn.style.opacity = '1';
+    });
+  });
+</script>

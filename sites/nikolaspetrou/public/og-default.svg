@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0a0a0a"/>
+  <text x="100" y="280" font-family="Inter, Helvetica Neue, sans-serif" font-size="72" font-weight="700" fill="#ffffff">Videoshoot</text>
+  <text x="100" y="340" font-family="Inter, Helvetica Neue, sans-serif" font-size="28" fill="#a3a3a3">Crafting Visual Stories That Inspire</text>
+  <circle cx="116" cy="480" r="20" stroke="#ffffff" stroke-width="2" fill="none"/>
+  <polygon points="112,472 112,488 124,480" fill="#ffffff"/>
+</svg>
