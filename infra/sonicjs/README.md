@@ -219,6 +219,54 @@ SonicJs has a forms system with Turnstile bot protection. Use it instead of cust
 | Portability | Runs anywhere (Docker) | Cloudflare-only |
 | White-labeling | Enterprise feature (paid) | Free via middleware |
 
+## Transferability & client handoff
+
+### Licensing
+
+SonicJs is MIT licensed — white-labeling, forking, reselling, and redistribution are all permitted. The only requirement is keeping the copyright notice in the source code (not in the UI).
+
+### What's portable
+
+| Asset | Export method | Portable? |
+|---|---|---|
+| Site source code | Git repo — `sites/<slug>/` folder | Fully portable (standard Astro) |
+| CMS content data | `wrangler d1 export <db-name>` → SQLite file | Portable as raw data (JSON/SQL) |
+| Media files | `wrangler r2 object get` or S3-compatible tools | Standard files, any host |
+| Collection schemas | TypeScript files in `src/collections/` | Readable, self-documenting |
+| CMS configuration | `wrangler.toml` + env vars + seed script | Reproducible |
+
+### Transfer scenarios
+
+**Client stays on Cloudflare (easiest)**
+New agency deploys the same code to their own Cloudflare account. Transfer the repo, create new D1/R2/KV resources, import the data, deploy. Everything works as-is.
+
+**Client switches CMS (common)**
+Export all content as JSON, import into whatever CMS the new agency uses (Directus, Strapi, WordPress, etc.). The Astro site is framework-agnostic — they rewrite the data layer (`cms.ts`) to talk to their new CMS. Templates, components, and styling all carry over unchanged.
+
+**Client goes fully static (simplest)**
+The site already has fallback data hardcoded in `cms.ts`. Freeze the current content into static files and drop the CMS entirely. The site builds and deploys with zero CMS dependency.
+
+### Key difference vs Directus
+
+Directus runs in Docker anywhere (AWS, Hetzner, Fly.io, self-hosted). A client leaving the agency could take the Docker setup and run it on any VPS. SonicJs is Cloudflare-only — the CMS cannot be moved to a non-Cloudflare host.
+
+In practice, this rarely matters. The Astro site is the portable asset — it's standard code any developer can work with. The CMS is infrastructure the agency operates. When a client leaves, you export their content as JSON and hand over the site code. The new agency picks whatever CMS they want. This is the same regardless of CMS — migrations are always a data export + re-integration job.
+
+### Forking SonicJs
+
+If deeper customisation is needed beyond what middleware provides:
+
+```bash
+# Fork on GitHub, then track upstream
+git clone https://github.com/your-org/sonicjs.git
+git remote add upstream https://github.com/lane711/sonicjs.git
+
+# Pull updates
+git fetch upstream && git merge upstream/main
+```
+
+Recommended approach: keep using the npm package (`@sonicjs-cms/core`) and customise via middleware. Only fork if you hit a wall that middleware can't solve.
+
 ## Decision
 
 To be made after evaluating the pilot. Key questions:
@@ -227,3 +275,4 @@ To be made after evaluating the pilot. Key questions:
 2. Does the lack of visual editing matter for this use case?
 3. Is the Cloudflare-only lock-in acceptable given the cost/performance benefits?
 4. Is the SonicJs community/support sufficient for production use?
+5. Is the transferability story acceptable for the agency model?
