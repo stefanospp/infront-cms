@@ -44,13 +44,11 @@ const app = createSonicJSApp({
         const contentType = c.res.headers.get('content-type') || '';
         if (!contentType.includes('text/html')) return;
 
-        let html = await c.res.text();
+        // CRITICAL: Never modify HTMX responses (form submits, modals, partials)
+        // HTMX sends HX-Request header on all dynamic requests
+        if (c.req.header('hx-request') === 'true') return;
 
-        // Only modify full HTML pages, not HTMX partials
-        if (!html.includes('<!DOCTYPE') && !html.includes('<html')) {
-          c.res = new Response(html, { status: c.res.status, headers: c.res.headers });
-          return;
-        }
+        let html = await c.res.text();
 
         html = html.replace(/class="([^"]*)\bdark\b([^"]*)"/g, (_, b, a) => {
           const cleaned = `${b}${a}`.replace(/\s+/g, ' ').trim();
