@@ -2,7 +2,14 @@
 
 ## What this is
 
-A monorepo platform for running a solo web agency. Each client gets an Astro site deployed to Cloudflare Pages. CMS clients get a Directus instance on Hetzner via Kamal. Shared UI components, config, and utilities live in packages.
+A monorepo platform for running a solo web agency. Each client gets an Astro site deployed to Cloudflare Workers. CMS options: Directus (Hetzner via Kamal) or SonicJs (Cloudflare Workers — edge-native). Shared UI components, config, and utilities live in packages.
+
+## SonicJs CMS (pilot)
+
+SonicJs is being evaluated as a Directus replacement. Full documentation:
+- **Development guide:** `infra/sonicjs/GUIDE.md` — step-by-step for new sites, migration, export, storage, deployment
+- **Pilot evaluation:** `infra/sonicjs/README.md` — current status, comparison, transferability
+- **Reference implementation:** `infra/sonicjs/theorium/` — fully ported Theorium site
 
 ## Monorepo structure
 
@@ -15,6 +22,7 @@ sites/template       base site — copy for every new client
 sites/<client>/      generated client sites
 infra/admin          PM2 + Caddy config for admin deployment
 infra/docker         Directus Docker Compose files (one per CMS client)
+infra/sonicjs        SonicJs CMS projects (one per client) — see GUIDE.md
 infra/backups        database and upload backup scripts
 infra/provisioning   CLI provisioning script (alternative to admin UI)
 tests/               Playwright e2e, Vitest integration, Lighthouse CI

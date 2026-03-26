@@ -12,10 +12,14 @@ Step-by-step instructions for designing, developing, and deploying client websit
 6. [White-Label the Admin](#6-white-label-the-admin)
 7. [User Accounts & Roles](#7-user-accounts--roles)
 8. [Live Preview](#8-live-preview)
-9. [Deployment](#9-deployment)
-10. [Migration Guide: Importing from Other CMS](#10-migration-guide-importing-from-other-cms)
-11. [Export Guide: Moving to Another CMS](#11-export-guide-moving-to-another-cms)
-12. [Reference](#12-reference)
+9. [Storage & Media (R2)](#9-storage--media-r2)
+10. [Deployment](#10-deployment)
+11. [CI/CD & Auto-Deploy](#11-cicd--auto-deploy)
+12. [Backups & Monitoring](#12-backups--monitoring)
+13. [Cost Management](#13-cost-management)
+14. [Migration Guide: Importing from Other CMS](#14-migration-guide-importing-from-other-cms)
+15. [Export Guide: Moving to Another CMS](#15-export-guide-moving-to-another-cms)
+16. [Reference](#16-reference)
 
 ---
 
@@ -698,9 +702,101 @@ async function fetchCollection<T>(collection: string, options?: { limit?: number
 
 ---
 
-## 9. Deployment
+## 9. Storage & Media (R2)
 
-### 9.1 Create Cloudflare resources
+### 9.1 Create an R2 bucket per client (EU jurisdiction)
+
+Every client gets their own R2 bucket in the **EU** jurisdiction for GDPR compliance:
+
+```bash
+# Create EU-jurisdiction bucket for the client
+wrangler r2 bucket create <client-slug>-cms-media --jurisdiction eu
+
+# Verify jurisdiction
+wrangler r2 bucket list
+```
+
+**Important:** Use `--jurisdiction eu` for all client data. EU jurisdiction ensures data residency in European data centers. The EU endpoint differs from the default — use `*.eu.r2.cloudflarestorage.com`.
+
+Update `wrangler.toml`:
+
+```toml
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "<client-slug>-cms-media"
+jurisdiction = "eu"
+```
+
+### 9.2 Storage limits and file restrictions
+
+Configure in `wrangler.toml` `[vars]`:
+
+```toml
+[vars]
+MAX_FILE_SIZE = "10485760"          # 10MB per file (in bytes)
+ALLOWED_FILE_TYPES = "image/jpeg,image/png,image/webp,image/svg+xml,application/pdf"
+BUCKET_NAME = "<client-slug>-cms-media"
+```
+
+Adjust per client:
+- **Basic sites:** 10MB limit, images + PDFs only
+- **Portfolio/media sites:** 50MB limit, add `video/mp4,video/webm`
+- **Document-heavy sites:** 25MB limit, add `application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document`
+
+### 9.3 R2 bucket per client vs shared bucket
+
+**Recommended: One bucket per client** (`<client-slug>-cms-media`)
+
+- Clean isolation — no risk of cross-client data access
+- Independent lifecycle rules and quotas
+- Simple cleanup on client offboarding: delete the bucket
+- Easy transfer: hand over the entire bucket
+
+**Alternative: Shared bucket with prefixes** (`infront-uploads` with `<slug>/` prefix)
+
+- Fewer buckets to manage
+- But: no per-prefix storage limits, harder to isolate access
+
+### 9.4 Cloudflare Images (optional)
+
+For automatic image resizing/optimization, bind Cloudflare Images:
+
+```toml
+[vars]
+IMAGES_ACCOUNT_ID = "<cloudflare-account-id>"
+IMAGES_API_TOKEN = "<cloudflare-images-api-token>"
+```
+
+This enables SonicJs to generate thumbnails and serve optimized images via Cloudflare's CDN.
+
+### 9.5 Media URLs in templates
+
+```typescript
+// Helper to get media URL from SonicJs
+function getMediaUrl(cmsUrl: string, mediaId: string): string {
+  return `${cmsUrl}/media/serve/${mediaId}`;
+}
+
+// In Astro components
+<img src={getMediaUrl(import.meta.env.SONICJS_URL, item.data.image)} alt={item.title} />
+```
+
+### 9.6 R2 storage pricing
+
+| Metric | Free tier | Paid |
+|---|---|---|
+| Storage | 10 GB/month | $0.015/GB/month |
+| Class A ops (writes) | 1M/month | $4.50/M |
+| Class B ops (reads) | 10M/month | $0.36/M |
+| Egress | Free (always) | Free (always) |
+
+Most client sites stay within the free tier.
+
+---
+
+## 10. Deployment
+
+### 10.1 Create Cloudflare resources
 
 ```bash
 cd infra/sonicjs/<client-slug>
@@ -713,11 +809,11 @@ wrangler d1 create <client-slug>-cms
 wrangler kv namespace create CACHE_KV
 # Copy the id to wrangler.toml
 
-# Create R2 bucket (for media)
-wrangler r2 bucket create <client-slug>-cms-media
+# Create R2 bucket in EU jurisdiction (see Section 9.1)
+wrangler r2 bucket create <client-slug>-cms-media --jurisdiction eu
 ```
 
-### 9.2 Deploy the CMS
+### 10.2 Deploy the CMS
 
 ```bash
 cd infra/sonicjs/<client-slug>
@@ -726,13 +822,13 @@ wrangler deploy
 
 The CMS will be live at `https://<client-slug>-cms.<account>.workers.dev`.
 
-### 9.3 Seed production data
+### 10.3 Seed production data
 
 ```bash
 SONICJS_URL=https://<client-slug>-cms.<account>.workers.dev npm run seed
 ```
 
-### 9.4 Deploy the site
+### 10.4 Deploy the site
 
 ```bash
 cd sites/<client-slug>
@@ -740,13 +836,13 @@ SONICJS_URL=https://<client-slug>-cms.<account>.workers.dev npx astro build
 wrangler deploy
 ```
 
-### 9.5 Custom domains
+### 10.5 Custom domains
 
 Add custom domains via Cloudflare dashboard:
 - CMS: `cms.<domain>` → Workers route
 - Site: `<domain>` → Workers route
 
-### 9.6 Auto-deploy on content publish
+### 10.6 Auto-deploy on content publish
 
 Register a `content:publish` hook in `src/index.ts` to trigger a GitHub Actions rebuild:
 
@@ -767,7 +863,138 @@ hooks: [{
 
 ---
 
-## 10. Migration Guide: Importing from Other CMS
+## 11. CI/CD & Auto-Deploy
+
+### 11.1 GitHub Actions workflow
+
+Create `.github/workflows/deploy-<slug>.yml`:
+
+```yaml
+name: Deploy <Client> Site
+on:
+  repository_dispatch:
+    types: [cms-publish]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npx astro build
+        working-directory: sites/<slug>
+        env:
+          SONICJS_URL: ${{ secrets.SONICJS_URL }}
+      - run: npx wrangler deploy
+        working-directory: sites/<slug>
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+```
+
+### 11.2 Auto-deploy on content publish
+
+Add the `content:publish` hook in `src/index.ts` (see Section 10.6). When an editor publishes content, the CMS fires a GitHub Actions dispatch event that rebuilds and deploys the site automatically.
+
+### 11.3 Preview deploys
+
+For staging, use Cloudflare Workers preview environments:
+
+```bash
+wrangler deploy --env preview
+```
+
+---
+
+## 12. Backups & Monitoring
+
+### 12.1 D1 database backups
+
+```bash
+# Export full database
+wrangler d1 export <db-name> --output=backup-$(date +%Y%m%d).sql
+
+# Schedule via cron (add to CI/CD or local crontab)
+# Daily backup to a git-tracked backups directory
+```
+
+D1 also has automatic point-in-time recovery (Cloudflare manages this).
+
+### 12.2 R2 media backups
+
+```bash
+# List all objects
+wrangler r2 object list <bucket-name>
+
+# Sync to local directory (script each file)
+for key in $(wrangler r2 object list <bucket-name> --json | jq -r '.[].key'); do
+  wrangler r2 object get <bucket-name> "$key" --file="./backups/media/$key"
+done
+```
+
+### 12.3 Health monitoring
+
+SonicJs exposes a health endpoint:
+
+```bash
+curl https://<cms-url>/api/health
+```
+
+Set up uptime monitoring (e.g., Betterstack) to ping this endpoint.
+
+### 12.4 Built-in analytics
+
+The admin dashboard shows real-time analytics:
+- Requests per second
+- Content item counts
+- Active users
+- System status
+
+Access at `/admin/dashboard` (admin role only).
+
+---
+
+## 13. Cost Management
+
+### 13.1 Cloudflare pricing per client
+
+| Resource | Free tier | Paid ($5/mo Workers plan) |
+|---|---|---|
+| **Workers requests** | 100K/day | 10M/month |
+| **D1 storage** | 5 GB | 5 GB (then $0.75/GB) |
+| **D1 reads** | 5M/day | 25B/month |
+| **D1 writes** | 100K/day | 50M/month |
+| **R2 storage** | 10 GB | $0.015/GB/month |
+| **R2 reads** | 10M/month | $0.36/M |
+| **R2 writes** | 1M/month | $4.50/M |
+| **KV reads** | 100K/day | Unlimited |
+| **KV storage** | 1 GB | 1 GB (then $0.50/GB) |
+
+### 13.2 Typical cost per client
+
+| Tier | Monthly cost | Suitable for |
+|---|---|---|
+| Free | $0 | Development, staging, low-traffic sites |
+| Starter | $5 | Most client sites (< 10M requests/month) |
+| Growth | $5-15 | Media-heavy sites with large R2 storage |
+
+### 13.3 Monitoring usage
+
+```bash
+# Check D1 usage
+wrangler d1 info <db-name>
+
+# Check R2 usage
+wrangler r2 bucket info <bucket-name>
+```
+
+Dashboard: https://dash.cloudflare.com → Workers & Pages → Usage
+
+---
+
+## 14. Migration Guide: Importing from Other CMS
 
 ### 10.1 From Directus
 
@@ -857,7 +1084,7 @@ curl -X POST https://<cms-url>/api/media/upload \
 
 ---
 
-## 11. Export Guide: Moving to Another CMS
+## 15. Export Guide: Moving to Another CMS
 
 ### 11.1 Export content data
 
@@ -917,7 +1144,7 @@ The Astro site has fallback data hardcoded in `cms.ts`. To freeze:
 
 ---
 
-## 12. Reference
+## 16. Reference
 
 ### Project structure
 
