@@ -1281,4 +1281,214 @@ PAYLOAD_URL=https://cms-<slug>.stepet.workers.dev node --import tsx src/seed.ts
 # Types
 pnpm generate:types                   # Generate TypeScript types from schema
 pnpm generate:importmap               # Regenerate import map after adding plugins
+
+# Secrets
+echo "key" | npx wrangler secret put RESEND_API_KEY --name <worker-name>
 ```
+
+---
+
+## 25. Contact Form Integration
+
+### 25.1 Submissions collection
+
+Add a `Submissions` collection to store form submissions in the CMS:
+
+```typescript
+import type { CollectionConfig } from 'payload'
+
+export const Submissions: CollectionConfig = {
+  slug: 'submissions',
+  admin: {
+    useAsTitle: 'name',
+    defaultColumns: ['name', 'email', 'project', 'status', 'createdAt'],
+  },
+  access: {
+    create: () => true,           // Public can submit
+    read: ({ req }) => !!req.user, // Only admins can view
+    update: ({ req }) => !!req.user,
+    delete: ({ req }) => req.user?.role === 'admin',
+  },
+  fields: [
+    { name: 'name', type: 'text', required: true },
+    { name: 'email', type: 'email', required: true },
+    { name: 'project', type: 'text' },
+    { name: 'message', type: 'textarea', required: true },
+    { name: 'budget', type: 'text' },
+    {
+      name: 'status',
+      type: 'select',
+      defaultValue: 'new',
+      options: [
+        { label: 'New', value: 'new' },
+        { label: 'Read', value: 'read' },
+        { label: 'Replied', value: 'replied' },
+      ],
+      admin: { position: 'sidebar' },
+    },
+    {
+      type: 'group',
+      name: 'metadata',
+      admin: { position: 'sidebar' },
+      fields: [
+        { name: 'ip', type: 'text' },
+        { name: 'userAgent', type: 'text' },
+        { name: 'spam', type: 'checkbox', defaultValue: false },
+      ],
+    },
+  ],
+}
+```
+
+Register in `payload.config.ts` and run `payload migrate:create` + `payload migrate`.
+
+### 25.2 Astro API route
+
+The contact form API route handles: validation, honeypot spam check, Payload storage, and Resend email notification.
+
+```typescript
+export const prerender = false;
+
+const PAYLOAD_URL = 'https://cms-<slug>.stepet.workers.dev';
+const NOTIFICATION_EMAIL = 'client@email.com';
+const FROM_EMAIL = 'Client Name <noreply@infront.cy>';
+
+export async function POST({ request }) {
+  const body = await request.json();
+  const { name, email, message, project, budget, website } = body;
+
+  // Honeypot
+  if (website) return new Response(JSON.stringify({ success: true }), { status: 200 });
+
+  // Validate
+  if (!name || !email || !message) return new Response(JSON.stringify({ error: 'Required' }), { status: 400 });
+
+  // Store in Payload
+  await fetch(`${PAYLOAD_URL}/api/submissions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, project, message, budget, status: 'new',
+      metadata: { ip: request.headers.get('cf-connecting-ip'), userAgent: request.headers.get('user-agent') } }),
+  });
+
+  // Send email via Resend
+  const resendApiKey = process.env.RESEND_API_KEY || import.meta.env.RESEND_API_KEY;
+  if (resendApiKey) {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${resendApiKey}` },
+      body: JSON.stringify({
+        from: FROM_EMAIL,
+        to: NOTIFICATION_EMAIL,
+        subject: `New enquiry from ${name}`,
+        text: `Name: ${name}\nEmail: ${email}\nProject: ${project}\nBudget: ${budget}\n\nMessage:\n${message}`,
+        reply_to: email,
+      }),
+    });
+  }
+
+  return new Response(JSON.stringify({ success: true }), { status: 200 });
+}
+```
+
+### 25.3 Resend API key
+
+Set as a Cloudflare Worker secret (not in wrangler.toml):
+
+```bash
+echo "re_xxxxx" | npx wrangler secret put RESEND_API_KEY --name <worker-name>
+```
+
+All sites share the same Resend API key (`re_DXiqCxfF_...`) with `noreply@infront.cy` as the sender domain.
+
+**Note:** On Cloudflare Workers, `import.meta.env` only works at build time. For SSR routes (like the contact API), access the secret via `(globalThis as any).process?.env?.RESEND_API_KEY` or use the Cloudflare runtime env binding.
+
+---
+
+## 26. Agency Footer Credit
+
+All client sites include an agency credit in the footer:
+
+```
+© 2026 Client Name · Built by infront.cy
+```
+
+The "infront.cy" links to `https://infront.cy` with `target="_blank"` and `rel="noopener"`. Add to:
+- Homepage footer component
+- Inner page layout footer
+- About page footer (if custom layout)
+
+---
+
+## 27. Tailwind v4 Gotchas on Astro
+
+### CSS layer ordering
+
+Custom CSS must be inside `@layer base` or `@layer components`. **Unlayered CSS overrides Tailwind's `@layer utilities`**, causing utility classes like `px-8`, `py-32` to have zero effect.
+
+```css
+/* WRONG — unlayered CSS beats Tailwind utilities */
+.hero-content { position: absolute; bottom: 4rem; }
+
+/* RIGHT — inside @layer, Tailwind utilities can override */
+@layer components {
+  .hero-content { position: absolute; bottom: 4rem; }
+}
+```
+
+### @source directives required
+
+Tailwind v4 with the Vite plugin doesn't auto-detect `.astro` files. Add explicit source paths:
+
+```css
+@import "tailwindcss";
+
+@source "../components/**/*.{astro,tsx}";
+@source "../layouts/**/*.{astro,tsx}";
+@source "../pages/**/*.{astro,tsx}";
+```
+
+Without these, utility classes used in components won't be generated.
+
+### CSS import location
+
+Import `global.css` from the **page file** frontmatter, not from a layout:
+
+```astro
+---
+import '../styles/global.css';  // In each page file
+---
+```
+
+The existing nikolaspetrou site uses this pattern. Importing from a layout may cause Tailwind to not detect component classes in dev mode.
+
+---
+
+## 28. iOS Safari Specific Issues
+
+### Viewport height
+
+Use `100dvh` (dynamic viewport height) instead of `100vh` or `100svh`. It updates in real-time as Safari's toolbar appears/disappears:
+
+```css
+.hero { height: 100vh; height: 100dvh; }
+```
+
+### ScrollTrigger pinning
+
+ScrollTrigger's pinning uses `position: fixed` which can cause white gaps on iOS when the toolbar changes size. Fix:
+- Add `invalidateOnRefresh: true` to ScrollTrigger config
+- Listen to `window.visualViewport.resize` and call `ScrollTrigger.refresh()`
+- Use `100dvh` on pinned elements
+
+### Video autoplay
+
+iOS allows autoplay only with `muted` + `playsinline`. Only one video can play at a time — pause all others before playing the active one.
+
+### GPU compositing
+
+Use `translate3d()` instead of `translateY()` and add `-webkit-transform: translateZ(0)` to force GPU compositing on iOS Safari. Avoid `will-change` on too many elements.
+
+### Ken Burns on video
+
+`transform: scale()` on `<video>` elements causes rendering glitches on iOS. Wrap in `@media (pointer: fine)` to only apply on desktop.

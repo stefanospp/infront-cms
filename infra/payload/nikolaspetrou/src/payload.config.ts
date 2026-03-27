@@ -14,6 +14,7 @@ import { Media } from './collections/Media'
 import { Projects } from './collections/Projects'
 import { Services } from './collections/Services'
 import { Clients } from './collections/Clients'
+import { Submissions } from './collections/Submissions'
 import { SiteSettings } from './globals/SiteSettings'
 import { HomeSections } from './globals/HomeSections'
 import { Pages } from './globals/Pages'
@@ -85,7 +86,7 @@ export default buildConfig({
       globals: ['site-settings', 'home-sections', 'pages'],
     },
   },
-  collections: [Users, Media, Projects, Services, Clients],
+  collections: [Users, Media, Projects, Services, Clients, Submissions],
   globals: [SiteSettings, HomeSections, Pages],
   editor: lexicalEditor(),
   typescript: {
