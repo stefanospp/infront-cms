@@ -24,11 +24,15 @@ const { title, description = 'Videographer & Content Creator', noindex = false }
     />
   </head>
   <body>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[10000] focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:text-sm">Skip to content</a>
+
     <!-- Custom Cursor -->
     <div class="cursor-ring" id="cursorRing"></div>
     <div class="cursor-dot" id="cursorDot"></div>
 
-    <slot />
+    <main id="main-content">
+      <slot />
+    </main>
 
     <script>
       import { gsap } from 'gsap';
@@ -40,12 +44,6 @@ const { title, description = 'Videographer & Content Creator', noindex = false }
         duration: 1.2,
         easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       });
-
-      function raf(time: number) {
-        lenis.raf(time);
-        requestAnimationFrame(raf);
-      }
-      requestAnimationFrame(raf);
 
       // GSAP
       gsap.registerPlugin(ScrollTrigger);
@@ -59,44 +57,38 @@ const { title, description = 'Videographer & Content Creator', noindex = false }
       // Custom Cursor
       const cursorRing = document.getElementById('cursorRing')!;
       const cursorDot = document.getElementById('cursorDot')!;
-      let mouseX = 0,
-        mouseY = 0;
-      let ringX = 0,
-        ringY = 0;
-      let dotX = 0,
-        dotY = 0;
 
-      document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-      });
-
-      function animateCursor() {
-        ringX += (mouseX - ringX) * 0.15;
-        ringY += (mouseY - ringY) * 0.15;
-        cursorRing.style.left = ringX + 'px';
-        cursorRing.style.top = ringY + 'px';
-
-        dotX += (mouseX - dotX) * 0.5;
-        dotY += (mouseY - dotY) * 0.5;
-        cursorDot.style.left = dotX + 'px';
-        cursorDot.style.top = dotY + 'px';
-
-        requestAnimationFrame(animateCursor);
-      }
-      animateCursor();
-
-      // Cursor hover states
-      document.querySelectorAll('.cursor-hover').forEach((el) => {
-        el.addEventListener('mouseenter', () => cursorRing.classList.add('hover'));
-        el.addEventListener('mouseleave', () => cursorRing.classList.remove('hover'));
-      });
-
-      // Mobile check
       if (window.matchMedia('(pointer: coarse)').matches) {
         document.body.style.cursor = 'auto';
         cursorRing.style.display = 'none';
         cursorDot.style.display = 'none';
+      } else {
+        let mouseX = 0, mouseY = 0;
+        let ringX = 0, ringY = 0;
+        let dotX = 0, dotY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+          ringX += (mouseX - ringX) * 0.15;
+          ringY += (mouseY - ringY) * 0.15;
+          cursorRing.style.left = ringX + 'px';
+          cursorRing.style.top = ringY + 'px';
+          dotX += (mouseX - dotX) * 0.5;
+          dotY += (mouseY - dotY) * 0.5;
+          cursorDot.style.left = dotX + 'px';
+          cursorDot.style.top = dotY + 'px';
+          requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        document.querySelectorAll('.cursor-hover').forEach((el) => {
+          el.addEventListener('mouseenter', () => cursorRing.classList.add('hover'));
+          el.addEventListener('mouseleave', () => cursorRing.classList.remove('hover'));
+        });
       }
     </script>
   </body>

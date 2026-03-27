@@ -92,6 +92,7 @@
     position: relative;
     width: 100%;
     height: 100vh;
+    height: 100svh;
     overflow: hidden;
   }
 
@@ -107,12 +108,9 @@
   .hero-overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.55) 0%,
-      rgba(0, 0, 0, 0.2) 50%,
-      rgba(0, 0, 0, 0.15) 100%
-    );
+    background:
+      linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 15%),
+      linear-gradient(to top, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
     z-index: 1;
   }
 
@@ -122,7 +120,6 @@
     left: 2.5rem;
     z-index: 2;
     color: #fff;
-    mix-blend-mode: difference;
   }
 
   .hero-subtext {
@@ -148,7 +145,6 @@
     align-items: center;
     justify-content: center;
     animation: floatDown 2s ease-in-out infinite;
-    mix-blend-mode: difference;
   }
 
   /* Project List */
@@ -254,18 +250,65 @@
 }
 
 @media (pointer: coarse) {
-  body {
-    cursor: auto;
+  body { cursor: auto; }
+  .cursor-ring, .cursor-dot { display: none; }
+
+  .project-item {
+    background: #111;
   }
-  .cursor-ring,
-  .cursor-dot {
+
+  .project-item .project-video {
+    opacity: 0.2;
+  }
+
+  .project-item.video-active .project-video {
+    opacity: 1;
+  }
+
+  .project-item::before {
     display: none;
+  }
+
+  .project-item::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .project-item .project-title,
+  .project-item .project-meta {
+    color: #fff;
+    position: relative;
+    z-index: 2;
+  }
+
+  .project-item:hover {
+    padding-left: 0;
+  }
+
+  .project-item:hover::before {
+    width: 0;
+  }
+
+  .project-item:hover .project-title,
+  .project-item:hover .project-meta {
+    color: #fff;
+  }
+
+  .client-name:hover {
+    transform: none;
   }
 }
 
 @media (max-width: 768px) {
   .hero-content {
-    bottom: 1.5rem;
+    bottom: 5rem;
     left: 1rem;
     right: 1rem;
   }

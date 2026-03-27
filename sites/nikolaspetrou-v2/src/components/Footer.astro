@@ -19,7 +19,7 @@ const year = new Date().getFullYear();
 
     <a href={`mailto:${email}`} class="footer-cta-link cursor-hover">
       <!-- Video layer -->
-      <video class="footer-video" muted loop playsinline autoplay preload="auto">
+      <video class="footer-video" muted loop playsinline preload="none">
         {videoUrl && <source src={videoUrl} type="video/mp4" />}
       </video>
 

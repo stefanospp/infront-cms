@@ -205,6 +205,7 @@ const { words } = Astro.props;
       firstVideo.load();
       firstVideo.addEventListener('canplay', () => {
         firstVideo.classList.add('loaded');
+        firstVideo.play();
       }, { once: true });
     }
 
@@ -289,5 +290,11 @@ const { words } = Astro.props;
         }
       },
     });
+
+    // Explicitly play first video (onUpdate won't trigger for initial state)
+    const initialVideo = slides[0]?.querySelector('.word-slide-video') as HTMLVideoElement;
+    if (initialVideo?.src) {
+      initialVideo.play().catch(() => {});
+    }
   }
 </script>
