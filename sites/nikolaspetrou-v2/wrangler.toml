@@ -13,3 +13,4 @@ directory = "./dist"
 
 [vars]
 PAYLOAD_URL = "https://cms-nikolaspetrou.stepet.workers.dev"
+PREVIEW_SECRET = "np-preview-v2-secret"

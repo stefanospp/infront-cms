@@ -24,5 +24,10 @@
       "binding": "R2",
       "bucket_name": "infront-uploads"
     }
-  ]
+  ],
+
+  "vars": {
+    "SITE_URL": "https://nikolaspetrou.com/preview",
+    "PREVIEW_SECRET": "np-preview-v2-secret"
+  }
 }

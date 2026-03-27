@@ -6,9 +6,10 @@ interface Props {
   title: string;
   description?: string;
   dark?: boolean;
+  noindex?: boolean;
 }
 
-const { title, description = '', dark = false } = Astro.props;
+const { title, description = '', dark = false, noindex = false } = Astro.props;
 
 const navLinks = [
   { label: 'Works', href: '/works' },
@@ -24,6 +25,7 @@ const navLinks = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title} — Nikolas Petrou</title>
     {description && <meta name="description" content={description} />}
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link

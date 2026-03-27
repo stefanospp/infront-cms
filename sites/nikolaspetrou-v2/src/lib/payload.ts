@@ -1,4 +1,7 @@
-const PAYLOAD_URL = import.meta.env.PAYLOAD_URL || 'http://localhost:3000';
+// Works at both build time (import.meta.env) and runtime on CF Workers
+const PAYLOAD_URL = typeof import.meta.env !== 'undefined' && import.meta.env.PAYLOAD_URL
+  ? import.meta.env.PAYLOAD_URL
+  : 'https://cms-nikolaspetrou.stepet.workers.dev';
 
 interface PayloadResponse<T> {
   docs: T[];
@@ -8,8 +11,16 @@ interface PayloadResponse<T> {
   page: number;
 }
 
-async function fetchPayload<T>(endpoint: string): Promise<T> {
-  const res = await fetch(`${PAYLOAD_URL}/api${endpoint}`, {
+interface FetchOptions {
+  draft?: boolean;
+}
+
+async function fetchPayload<T>(endpoint: string, options?: FetchOptions): Promise<T> {
+  const separator = endpoint.includes('?') ? '&' : '?';
+  const url = options?.draft
+    ? `${PAYLOAD_URL}/api${endpoint}${separator}draft=true`
+    : `${PAYLOAD_URL}/api${endpoint}`;
+  const res = await fetch(url, {
     headers: { 'Content-Type': 'application/json' },
   });
   if (!res.ok) {
@@ -134,36 +145,37 @@ export interface PagesGlobal {
 
 // ── Fetch Functions ──
 
-export async function getProjects(): Promise<Project[]> {
-  const data = await fetchPayload<PayloadResponse<Project>>('/projects?sort=order&limit=50');
+export async function getProjects(options?: FetchOptions): Promise<Project[]> {
+  const data = await fetchPayload<PayloadResponse<Project>>('/projects?sort=order&limit=50', options);
   return data.docs;
 }
 
-export async function getProject(slug: string): Promise<Project | null> {
+export async function getProject(slug: string, options?: FetchOptions): Promise<Project | null> {
   const data = await fetchPayload<PayloadResponse<Project>>(
     `/projects?where[slug][equals]=${encodeURIComponent(slug)}&limit=1`,
+    options,
   );
   return data.docs[0] || null;
 }
 
-export async function getServices(): Promise<Service[]> {
-  const data = await fetchPayload<PayloadResponse<Service>>('/services?sort=order&limit=50');
+export async function getServices(options?: FetchOptions): Promise<Service[]> {
+  const data = await fetchPayload<PayloadResponse<Service>>('/services?sort=order&limit=50', options);
   return data.docs;
 }
 
-export async function getClients(): Promise<Client[]> {
-  const data = await fetchPayload<PayloadResponse<Client>>('/clients?sort=order&limit=50');
+export async function getClients(options?: FetchOptions): Promise<Client[]> {
+  const data = await fetchPayload<PayloadResponse<Client>>('/clients?sort=order&limit=50', options);
   return data.docs;
 }
 
-export async function getSiteSettings(): Promise<SiteSettings> {
-  return fetchPayload<SiteSettings>('/globals/site-settings');
+export async function getSiteSettings(options?: FetchOptions): Promise<SiteSettings> {
+  return fetchPayload<SiteSettings>('/globals/site-settings', options);
 }
 
-export async function getHomeSections(): Promise<HomeSections> {
-  return fetchPayload<HomeSections>('/globals/home-sections');
+export async function getHomeSections(options?: FetchOptions): Promise<HomeSections> {
+  return fetchPayload<HomeSections>('/globals/home-sections', options);
 }
 
-export async function getPages(): Promise<PagesGlobal> {
-  return fetchPayload<PagesGlobal>('/globals/pages');
+export async function getPages(options?: FetchOptions): Promise<PagesGlobal> {
+  return fetchPayload<PagesGlobal>('/globals/pages', options);
 }

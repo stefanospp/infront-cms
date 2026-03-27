@@ -1,0 +1,54 @@
+---
+export const prerender = false;
+
+import InnerLayout from '../../layouts/InnerLayout.astro';
+import PreviewBanner from '../../components/PreviewBanner.astro';
+import { getClients, getSiteSettings } from '../../lib/payload';
+
+const draft = { draft: true };
+
+const [clients, settings] = await Promise.all([
+  getClients(draft),
+  getSiteSettings(draft),
+]);
+---
+
+<InnerLayout title="Clients" description="Selected clients and collaborations" noindex>
+  <PreviewBanner />
+  <section class="px-4 md:px-8 pb-16">
+    <div class="mb-12 md:mb-16">
+      <span class="text-label opacity-50 block mb-4">(Collaborations)</span>
+      <h1 class="text-giant">Clients</h1>
+    </div>
+
+    <div class="max-w-3xl">
+      <p class="text-lg md:text-xl leading-relaxed opacity-60 mb-16">
+        I've had the privilege of working with brands and organisations that care
+        deeply about visual storytelling. Here are some of the teams I've
+        collaborated with.
+      </p>
+    </div>
+
+    <div class="space-y-0">
+      {
+        clients.map((client) => (
+          <div class="flex justify-between items-end py-6 border-t border-black/10 cursor-hover hover:pl-4 transition-all">
+            <div>
+              <h2 class="text-xl md:text-3xl font-medium">{client.name}</h2>
+              <span class="text-label opacity-40 mt-1 block">{client.type || ''}</span>
+            </div>
+            <span class="text-label opacity-30">{client.year || ''}</span>
+          </div>
+        ))
+      }
+      <div class="border-t border-black/10"></div>
+    </div>
+  </section>
+
+  <section class="px-4 md:px-8 py-16 md:py-24 border-t border-black/10">
+    <h2 class="text-huge mb-6">Want to work together?</h2>
+    <a href="/contact" class="inline-block text-label border border-black/30 px-8 py-4 cursor-hover hover:bg-black hover:text-white transition-all">
+      Get in Touch
+    </a>
+  </section>
+</InnerLayout>

@@ -1,0 +1,133 @@
+---
+export const prerender = false;
+
+import InnerLayout from '../../layouts/InnerLayout.astro';
+import PreviewBanner from '../../components/PreviewBanner.astro';
+import { getServices } from '../../lib/payload';
+
+const services = await getServices({ draft: true });
+---
+
+<InnerLayout title="Services" description="Videography, creative direction, content creation and post production services" noindex>
+  <PreviewBanner />
+  <section class="px-4 md:px-8 pb-16">
+    <div class="mb-12 md:mb-16">
+      <span class="text-label opacity-50 block mb-4">(What I Do)</span>
+      <h1 class="text-giant">Services</h1>
+    </div>
+
+    <div class="space-y-0">
+      {
+        services.map((service, i) => (
+          <div class="service-detail-row" data-video={service.video_url || ''}>
+            <div class="service-detail-video">
+              <video muted loop playsinline preload="none" />
+            </div>
+            <div class="service-detail-overlay" />
+            <div class="service-detail-content">
+              <div class="flex items-start gap-4 md:gap-8">
+                <span class="text-3xl md:text-5xl font-semibold opacity-10">{String(i + 1).padStart(2, '0')}</span>
+                <div class="flex-1">
+                  <h2 class="text-2xl md:text-4xl font-medium mb-4 md:mb-6">{service.title}</h2>
+                  <p class="text-sm md:text-base leading-relaxed opacity-60 max-w-xl">{service.description}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="px-4 md:px-8 py-16 md:py-24 border-t border-black/10">
+    <h2 class="text-huge mb-6">Have a project in mind?</h2>
+    <a href="/contact" class="inline-block text-label border border-black/30 px-8 py-4 cursor-hover hover:bg-black hover:text-white transition-all">
+      Let's Talk
+    </a>
+  </section>
+</InnerLayout>
+
+<style>
+  .service-detail-row {
+    position: relative;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    padding: 3rem 0;
+    overflow: hidden;
+    cursor: pointer;
+    transition: padding-left 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .service-detail-row:last-child {
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+
+  .service-detail-row:hover {
+    padding-left: 1rem;
+  }
+
+  .service-detail-video {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 0;
+  }
+
+  .service-detail-video video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .service-detail-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.7);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    z-index: 1;
+  }
+
+  .service-detail-row.video-active .service-detail-video,
+  .service-detail-row.video-active .service-detail-overlay {
+    opacity: 1;
+  }
+
+  .service-detail-content {
+    position: relative;
+    z-index: 2;
+  }
+</style>
+
+<script>
+  document.querySelectorAll('.service-detail-row').forEach((row) => {
+    const video = row.querySelector('.service-detail-video video') as HTMLVideoElement;
+    const src = row.getAttribute('data-video');
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let loaded = false;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !loaded && src) {
+          video.src = src;
+          video.preload = 'auto';
+          video.load();
+          loaded = true;
+          observer.unobserve(row);
+        }
+      });
+    }, { rootMargin: '400px 0px' });
+    observer.observe(row);
+
+    row.addEventListener('mouseenter', () => {
+      if (!loaded && src) { video.src = src; video.load(); loaded = true; }
+      timer = setTimeout(() => { video.play(); row.classList.add('video-active'); }, 300);
+    });
+    row.addEventListener('mouseleave', () => {
+      if (timer) clearTimeout(timer);
+      row.classList.remove('video-active');
+      video.pause();
+    });
+  });
+</script>

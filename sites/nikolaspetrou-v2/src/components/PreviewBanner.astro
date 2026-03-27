@@ -1,0 +1,11 @@
+---
+const currentPath = Astro.url.pathname;
+const livePath = currentPath.replace(/^\/preview/, '') || '/';
+---
+
+<div style="position:fixed;top:0;left:0;right:0;z-index:9999;background:#fbbf24;color:#000;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 1rem;font-family:system-ui,sans-serif;font-size:0.8125rem;font-weight:600;">
+  <span>PREVIEW MODE — You are viewing draft content</span>
+  <a href={livePath} style="color:#000;text-decoration:none;opacity:0.7;transition:opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+    View Live &rarr;
+  </a>
+</div>

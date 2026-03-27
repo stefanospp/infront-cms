@@ -69,7 +69,18 @@ export default buildConfig({
       titleSuffix: ' — Nikolas Petrou CMS',
     },
     livePreview: {
-      url: process.env.SITE_URL || 'http://localhost:4330',
+      url: ({ data, collectionConfig, globalConfig }) => {
+        const base = process.env.SITE_URL || 'http://localhost:4330/preview';
+        const token = process.env.PREVIEW_SECRET || 'np-preview-v2-secret';
+        if (collectionConfig?.slug === 'projects' && data?.slug) {
+          return `${base}/works/${data.slug}?token=${token}`;
+        }
+        if (collectionConfig?.slug === 'services') return `${base}/services?token=${token}`;
+        if (collectionConfig?.slug === 'clients') return `${base}/clients?token=${token}`;
+        if (globalConfig?.slug === 'home-sections') return `${base}?token=${token}`;
+        if (globalConfig?.slug === 'pages') return `${base}/about?token=${token}`;
+        return `${base}?token=${token}`;
+      },
       collections: ['projects', 'services', 'clients'],
       globals: ['site-settings', 'home-sections', 'pages'],
     },
