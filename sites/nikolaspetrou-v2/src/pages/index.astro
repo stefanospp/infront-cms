@@ -8,45 +8,70 @@ import HorizontalScroll from '../components/HorizontalScroll.astro';
 import ServiceList from '../components/ServiceList.astro';
 import Clients from '../components/Clients.astro';
 import Footer from '../components/Footer.astro';
-import { getProjects, getServices, getSiteSettings } from '../lib/payload';
+import { getProjects, getServices, getClients, getSiteSettings, getHomeSections } from '../lib/payload';
+import type { Project, Service, Client, SiteSettings, HomeSections } from '../lib/payload';
 
-let projects, services, settings;
+let projects: Project[];
+let services: Service[];
+let clients: Client[];
+let settings: SiteSettings;
+let homeSections: HomeSections;
 
 try {
-  [projects, services, settings] = await Promise.all([
+  [projects, services, clients, settings, homeSections] = await Promise.all([
     getProjects(),
     getServices(),
+    getClients(),
     getSiteSettings(),
+    getHomeSections(),
   ]);
 } catch {
   // Fallback data when Payload is not running
   settings = {
     siteName: 'Nikolas Petrou',
     tagline: 'Capturing moments that move.',
+    navLinks: [
+      { label: 'Works', href: '/works' },
+      { label: 'About', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+    ],
+    contact: { email: 'hello@nikolaspetrou.com' },
+    social: { instagram: '#', vimeo: '#', youtube: '#' },
+  };
+
+  homeSections = {
     hero: {
       heading: 'Nikolas Petrou',
       subtext: 'Capturing moments that move.',
-      video_url:
-        'https://cdn.pixabay.com/video/2022/08/16/128015-740186542_large.mp4',
+      video_url: 'https://cdn.pixabay.com/video/2022/08/16/128015-740186542_large.mp4',
     },
-    contact: { email: 'hello@nikolaspetrou.com' },
-    social: { instagram: '#', vimeo: '#', youtube: '#' },
-    clients: [
-      { name: 'Patagonia', description: 'Brand campaign series capturing outdoor adventures across Patagonia\'s seasonal collections. We spent three months embedded with their athletes across Chile and Argentina, documenting the raw beauty of untouched landscapes and the human stories that unfold within them.\n\nThe resulting twelve-part series drove a 40% increase in engagement across their digital channels and was featured at the Banff Mountain Film Festival.' },
-      { name: 'GoPro', description: 'Action sports content showcasing the limits of what\'s possible with compact camera systems. From big wave surfing in Nazaré to backcountry skiing in the Dolomites, every frame was designed to push the boundaries of perspective.\n\nThe campaign spanned six countries over four months, producing over 200 unique clips that became the foundation of GoPro\'s annual brand anthem.' },
-      { name: 'Sony', description: 'Product launch films and behind-the-scenes content for Sony\'s Alpha camera lineup. Each piece balanced technical precision with emotional storytelling, demonstrating the camera\'s capabilities through real-world creative scenarios.\n\nWe collaborated directly with Sony\'s engineering team in Tokyo to ensure every feature was showcased authentically, resulting in content that resonated with both professionals and enthusiasts.' },
-      { name: 'DJI', description: 'Aerial cinematography demos and creative direction for DJI\'s drone platform releases. The brief was simple: make people feel what it\'s like to see the world from above for the very first time.\n\nWe mapped and filmed over thirty locations across five continents, creating a visual library that DJI continues to use across their global marketing channels two years later.' },
-      { name: 'National Geographic', description: 'Documentary short films exploring coastal ecosystems and marine conservation efforts. This was a passion project that grew into a six-part series, following marine biologists and local communities working to protect endangered reef systems.\n\nThe series premiered on National Geographic\'s streaming platform and was nominated for a News & Documentary Emmy in the Outstanding Short Documentary category.' },
-    ],
-    horizontalWords: [
-      { word: 'Cinematic' },
-      { word: 'Authentic' },
-      { word: 'Visual' },
-      { word: 'Stories' },
-      { word: 'Capture' },
-      { word: 'Movement' },
-      { word: 'Emotion' },
-    ],
+    works: { label: '(Selected Works)' },
+    horizontalScroll: {
+      words: [
+        { word: 'Cinematic' },
+        { word: 'Authentic' },
+        { word: 'Visual' },
+        { word: 'Stories' },
+        { word: 'Capture' },
+        { word: 'Movement' },
+        { word: 'Emotion' },
+      ],
+    },
+    services: { label: '(Services)' },
+    clients: { label: '(Selected Clients)' },
+    footer: {
+      label: '(Get in Touch)',
+      ctaLine1: "LET'S",
+      ctaLine2: 'WORK',
+      ctaLine3: 'TOGETHER',
+      video_url: 'https://cdn.pixabay.com/video/2024/05/23/213425_large.mp4',
+      email: 'hello@nikolaspetrou.com',
+      socialLinks: [
+        { label: 'Instagram', href: '#' },
+        { label: 'Vimeo', href: '#' },
+        { label: 'YouTube', href: '#' },
+      ],
+    },
   };
 
   projects = [
@@ -140,43 +165,49 @@ try {
       order: 4,
     },
   ];
+
+  clients = [
+    { id: '1', name: 'Patagonia', type: 'Brand Campaign', year: 2024, video_url: 'https://cdn.pixabay.com/video/2016/05/12/3127-166335864_large.mp4', order: 1 },
+    { id: '2', name: 'GoPro', type: 'Action Sports Content', year: 2024, video_url: 'https://cdn.pixabay.com/video/2022/11/22/140111-774507949_large.mp4', order: 2 },
+    { id: '3', name: 'Sony', type: 'Product Launch Films', year: 2023, video_url: 'https://cdn.pixabay.com/video/2024/06/29/218714_large.mp4', order: 3 },
+    { id: '4', name: 'DJI', type: 'Aerial Cinematography', year: 2023, video_url: 'https://cdn.pixabay.com/video/2025/04/29/275633_large.mp4', order: 4 },
+    { id: '5', name: 'National Geographic', type: 'Documentary Series', year: 2023, video_url: 'https://cdn.pixabay.com/video/2022/11/11/138588-770315514_large.mp4', order: 5 },
+  ];
 }
 
-const navLinks = [
-  { label: 'Works', href: '/works' },
-  { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
-];
-
-const socialLinks = [
-  ...(settings.social.instagram
-    ? [{ label: 'Instagram', href: settings.social.instagram }]
-    : []),
-  ...(settings.social.vimeo ? [{ label: 'Vimeo', href: settings.social.vimeo }] : []),
-  ...(settings.social.youtube ? [{ label: 'YouTube', href: settings.social.youtube }] : []),
-];
+const navLinks = settings.navLinks;
 
 const videoUrls = projects.map((p) => p.video_url);
-const words = settings.horizontalWords.map((w, i) => ({
+const words = homeSections.horizontalScroll.words.map((w, i) => ({
   word: w.word,
-  videoUrl: videoUrls[i % videoUrls.length],
+  videoUrl: w.videoUrl || videoUrls[i % videoUrls.length],
 }));
-const clientItems = settings.clients.map((c: any, i: number) => ({
+const clientItems = clients.map((c) => ({
   name: c.name,
-  videoUrl: videoUrls[i % videoUrls.length],
+  videoUrl: c.video_url || videoUrls[clients.indexOf(c) % videoUrls.length],
 }));
+
+const footerSocial = homeSections.footer.socialLinks;
 ---
 
 <V2Layout title={`${settings.siteName} — Videographer`}>
   <Navigation links={navLinks} />
   <Hero
-    heading={settings.hero.heading}
-    subtext={settings.hero.subtext}
-    videoUrl={settings.hero.video_url}
+    heading={homeSections.hero.heading}
+    subtext={homeSections.hero.subtext}
+    videoUrl={homeSections.hero.video_url}
   />
-  <ProjectList projects={projects} />
+  <ProjectList projects={projects} label={homeSections.works.label} />
   <HorizontalScroll words={words} />
-  <ServiceList services={services} />
-  <Clients clients={clientItems} />
-  <Footer email={settings.contact.email} social={socialLinks} videoUrl="https://cdn.pixabay.com/video/2024/05/23/213425_large.mp4" />
+  <ServiceList services={services} label={homeSections.services.label} />
+  <Clients clients={clientItems} label={homeSections.clients.label} />
+  <Footer
+    email={homeSections.footer.email}
+    social={footerSocial}
+    videoUrl={homeSections.footer.video_url}
+    label={homeSections.footer.label}
+    ctaLine1={homeSections.footer.ctaLine1}
+    ctaLine2={homeSections.footer.ctaLine2}
+    ctaLine3={homeSections.footer.ctaLine3}
+  />
 </V2Layout>

@@ -1,5 +1,28 @@
 ---
 import InnerLayout from '../layouts/InnerLayout.astro';
+import { getPages } from '../lib/payload';
+import type { LegalPage } from '../lib/payload';
+
+let legal: LegalPage;
+
+try {
+  const pages = await getPages();
+  legal = pages.legal;
+} catch {
+  legal = {
+    lastUpdated: 'March 2026',
+    privacySections: [],
+    termsSections: [
+      { title: '1. Services', body: 'Nikolas Petrou provides videography, creative direction, content creation, and post-production services. All project terms, deliverables, and timelines are agreed upon before work begins.' },
+      { title: '2. Intellectual Property', body: "All original content, including videos, photographs, and designs created by Nikolas Petrou remain the intellectual property of Nikolas Petrou unless otherwise agreed in a written contract. Clients receive a licence to use delivered content for agreed purposes." },
+      { title: '3. Payment Terms', body: 'Payment terms are outlined in individual project agreements. A deposit is typically required before work begins, with the balance due upon delivery.' },
+      { title: '4. Cancellation', body: 'Either party may cancel a project with written notice. Deposits are non-refundable. Work completed up to the point of cancellation will be invoiced accordingly.' },
+      { title: '5. Limitation of Liability', body: 'Nikolas Petrou shall not be liable for any indirect, incidental, or consequential damages arising from the use of services or delivered content.' },
+      { title: '6. Website Use', body: 'This website and its content are provided for informational purposes. You may not reproduce, distribute, or create derivative works from any content on this site without prior written consent.' },
+      { title: '7. Contact', body: 'For questions about these terms, contact: hello@nikolaspetrou.com' },
+    ],
+  };
+}
 ---
 
 <InnerLayout title="Terms of Service" description="Terms of service for nikolaspetrou.com">
@@ -8,42 +31,14 @@ import InnerLayout from '../layouts/InnerLayout.astro';
       <h1 class="text-huge">Terms of Service</h1>
     </div>
     <div class="space-y-8 text-sm leading-relaxed opacity-70">
-      <p><strong>Last updated:</strong> March 2026</p>
+      <p><strong>Last updated:</strong> {legal.lastUpdated}</p>
 
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">1. Services</h2>
-        <p>Nikolas Petrou provides videography, creative direction, content creation, and post-production services. All project terms, deliverables, and timelines are agreed upon before work begins.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">2. Intellectual Property</h2>
-        <p>All original content, including videos, photographs, and designs created by Nikolas Petrou remain the intellectual property of Nikolas Petrou unless otherwise agreed in a written contract. Clients receive a licence to use delivered content for agreed purposes.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">3. Payment Terms</h2>
-        <p>Payment terms are outlined in individual project agreements. A deposit is typically required before work begins, with the balance due upon delivery.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">4. Cancellation</h2>
-        <p>Either party may cancel a project with written notice. Deposits are non-refundable. Work completed up to the point of cancellation will be invoiced accordingly.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">5. Limitation of Liability</h2>
-        <p>Nikolas Petrou shall not be liable for any indirect, incidental, or consequential damages arising from the use of services or delivered content.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">6. Website Use</h2>
-        <p>This website and its content are provided for informational purposes. You may not reproduce, distribute, or create derivative works from any content on this site without prior written consent.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">7. Contact</h2>
-        <p>For questions about these terms, contact: <a href="mailto:hello@nikolaspetrou.com" class="underline cursor-hover">hello@nikolaspetrou.com</a></p>
-      </div>
+      {legal.termsSections.map((section) => (
+        <div>
+          <h2 class="text-lg font-medium mb-3 opacity-100">{section.title}</h2>
+          <p set:html={section.body.replace(/hello@nikolaspetrou\.com/g, '<a href="mailto:hello@nikolaspetrou.com" class="underline cursor-hover">hello@nikolaspetrou.com</a>')} />
+        </div>
+      ))}
     </div>
   </section>
 

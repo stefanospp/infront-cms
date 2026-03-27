@@ -53,7 +53,7 @@ const nextProject = allProjects[(currentIndex + 1) % allProjects.length];
       </div>
       <div>
         <span class="text-label opacity-40 block mb-4">Role</span>
-        <p class="text-lg">Director, Cinematographer</p>
+        <p class="text-lg">{project.role || 'Director, Cinematographer'}</p>
       </div>
     </div>
   </section>
@@ -61,9 +61,7 @@ const nextProject = allProjects[(currentIndex + 1) % allProjects.length];
   <!-- Description -->
   <section class="px-4 md:px-8 py-16 md:py-24 border-t border-white/10 max-w-3xl">
     <p class="text-xl leading-relaxed opacity-70">
-      A cinematic exploration capturing the essence of movement and emotion. This project
-      pushed the boundaries of visual storytelling through careful composition, natural
-      lighting, and an authentic approach to every frame.
+      {project.fullDescription || 'A cinematic exploration capturing the essence of movement and emotion. This project pushed the boundaries of visual storytelling through careful composition, natural lighting, and an authentic approach to every frame.'}
     </p>
   </section>
 

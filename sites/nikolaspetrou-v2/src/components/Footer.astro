@@ -3,15 +3,19 @@ interface Props {
   email: string;
   social: { label: string; href: string }[];
   videoUrl?: string;
+  label?: string;
+  ctaLine1?: string;
+  ctaLine2?: string;
+  ctaLine3?: string;
 }
 
-const { email, social, videoUrl } = Astro.props;
+const { email, social, videoUrl, label = '(Get in Touch)', ctaLine1 = "LET'S", ctaLine2 = 'WORK', ctaLine3 = 'TOGETHER' } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
 <section id="contact" class="footer-section">
   <div class="footer-cta-area">
-    <span class="text-label footer-label">(Get in Touch)</span>
+    <span class="text-label footer-label">{label}</span>
 
     <a href={`mailto:${email}`} class="footer-cta-link cursor-hover">
       <!-- Video layer -->
@@ -25,9 +29,9 @@ const year = new Date().getFullYear();
           <defs>
             <mask id="textMask">
               <rect width="100%" height="100%" fill="white" />
-              <text x="0" y="130" class="footer-svg-text">LET'S</text>
-              <text x="0" y="260" class="footer-svg-text">WORK</text>
-              <text x="0" y="390" class="footer-svg-text">TOGETHER</text>
+              <text x="0" y="130" class="footer-svg-text">{ctaLine1}</text>
+              <text x="0" y="260" class="footer-svg-text">{ctaLine2}</text>
+              <text x="0" y="390" class="footer-svg-text">{ctaLine3}</text>
             </mask>
           </defs>
           <rect width="100%" height="100%" fill="black" mask="url(#textMask)" />
@@ -39,9 +43,9 @@ const year = new Date().getFullYear();
           <defs>
             <mask id="textMaskMobile">
               <rect width="100%" height="100%" fill="white" />
-              <text x="0" y="110" class="footer-svg-text-mobile">LET'S</text>
-              <text x="0" y="220" class="footer-svg-text-mobile">WORK</text>
-              <text x="0" y="330" class="footer-svg-text-mobile">TOGETHER</text>
+              <text x="0" y="110" class="footer-svg-text-mobile">{ctaLine1}</text>
+              <text x="0" y="220" class="footer-svg-text-mobile">{ctaLine2}</text>
+              <text x="0" y="330" class="footer-svg-text-mobile">{ctaLine3}</text>
             </mask>
           </defs>
           <rect width="100%" height="100%" fill="black" mask="url(#textMaskMobile)" />

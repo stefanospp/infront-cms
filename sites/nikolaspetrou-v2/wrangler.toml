@@ -3,8 +3,13 @@ compatibility_date = "2026-03-22"
 compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 
+routes = [
+  { pattern = "nikolaspetrou.com", custom_domain = true },
+  { pattern = "www.nikolaspetrou.com", custom_domain = true },
+]
+
 [assets]
 directory = "./dist"
 
 [vars]
-PAYLOAD_URL = "http://localhost:3000"
+PAYLOAD_URL = "https://cms-nikolaspetrou.stepet.workers.dev"

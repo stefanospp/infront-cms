@@ -1,12 +1,63 @@
 ---
 import '../styles/global.css';
 import Navigation from '../components/Navigation.astro';
+import { getPages, getSiteSettings } from '../lib/payload';
+import type { SiteSettings, AboutPage } from '../lib/payload';
 
-const navLinks = [
-  { label: 'Works', href: '/works' },
-  { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
-];
+let settings: SiteSettings;
+let about: AboutPage;
+
+try {
+  const [settingsData, pagesData] = await Promise.all([
+    getSiteSettings(),
+    getPages(),
+  ]);
+  settings = settingsData;
+  about = pagesData.about;
+} catch {
+  settings = {
+    siteName: 'Nikolas Petrou',
+    tagline: 'Capturing moments that move.',
+    navLinks: [
+      { label: 'Works', href: '/works' },
+      { label: 'About', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+    ],
+    contact: { email: 'hello@nikolaspetrou.com' },
+    social: { instagram: '#', vimeo: '#', youtube: '#' },
+  };
+
+  about = {
+    video_url: 'https://cdn.pixabay.com/video/2022/08/16/128015-740186542_large.mp4',
+    directorName: 'Nikolas Petrou',
+    location: 'Cyprus',
+    specialisations: [
+      { text: 'Cinematic Storytelling' },
+      { text: 'Aerial Cinematography' },
+      { text: 'Brand Content' },
+      { text: 'Documentary Film' },
+    ],
+    bio: "I'm a videographer and content creator with a passion for visual storytelling. Every project begins with understanding the story — then finding the most compelling way to bring it to life.",
+    bio2: "With experience across commercial campaigns, documentaries, brand content, and aerial cinematography, I bring a cinematic eye to every frame. From pre-production planning to final colour grade, I'm involved at every stage.",
+    stats: [
+      { value: '5+', label: 'Years' },
+      { value: '50+', label: 'Projects' },
+      { value: '20+', label: 'Clients' },
+    ],
+    process: [
+      { title: 'Pre-Production', description: 'Concept, scripting, location scouting' },
+      { title: 'Production', description: 'Direction, cinematography, sound' },
+      { title: 'Post-Production', description: 'Editing, colour grading, finishing' },
+    ],
+    equipment: [
+      { name: 'Sony FX6' },
+      { name: 'DJI Inspire 3' },
+      { name: 'DaVinci Resolve' },
+    ],
+  };
+}
+
+const navLinks = settings.navLinks;
 ---
 
 <!doctype html>
@@ -14,8 +65,8 @@ const navLinks = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>About — Nikolas Petrou</title>
-    <meta name="description" content="About Nikolas Petrou — Videographer & Content Creator" />
+    <title>About — {settings.siteName}</title>
+    <meta name="description" content={`About ${settings.siteName} — Videographer & Content Creator`} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -29,7 +80,7 @@ const navLinks = [
     <!-- Full-screen video background (fixed) -->
     <div class="about-video-bg">
       <video autoplay muted loop playsinline>
-        <source src="https://cdn.pixabay.com/video/2022/08/16/128015-740186542_large.mp4" type="video/mp4" />
+        <source src={about.video_url} type="video/mp4" />
       </video>
       <div class="about-video-overlay"></div>
     </div>
@@ -41,77 +92,56 @@ const navLinks = [
 
       <div class="credits-block">
         <span class="text-label opacity-40">Directed by</span>
-        <h2 class="credits-name">Nikolas Petrou</h2>
+        <h2 class="credits-name">{about.directorName}</h2>
       </div>
 
       <div class="credits-block">
         <span class="text-label opacity-40">Based in</span>
-        <h2 class="credits-title">Cyprus</h2>
+        <h2 class="credits-title">{about.location}</h2>
       </div>
 
       <div class="credits-block">
         <span class="text-label opacity-40">Specialising in</span>
-        <h2 class="credits-title">Cinematic Storytelling</h2>
-        <h2 class="credits-title">Aerial Cinematography</h2>
-        <h2 class="credits-title">Brand Content</h2>
-        <h2 class="credits-title">Documentary Film</h2>
+        {about.specialisations.map((s) => (
+          <h2 class="credits-title">{s.text}</h2>
+        ))}
       </div>
 
       <div class="credits-block credits-block-text">
         <span class="text-label opacity-40 block mb-6">(About)</span>
-        <p class="credits-body">
-          I'm a videographer and content creator with a passion for visual storytelling.
-          Every project begins with understanding the story — then finding the most
-          compelling way to bring it to life.
-        </p>
-        <p class="credits-body">
-          With experience across commercial campaigns, documentaries, brand content,
-          and aerial cinematography, I bring a cinematic eye to every frame. From
-          pre-production planning to final colour grade, I'm involved at every stage.
-        </p>
+        <p class="credits-body">{about.bio}</p>
+        <p class="credits-body">{about.bio2}</p>
       </div>
 
       <div class="credits-block">
         <span class="text-label opacity-40">Experience</span>
         <div class="credits-stat-row">
-          <div>
-            <span class="credits-stat">5+</span>
-            <span class="text-label opacity-40">Years</span>
-          </div>
-          <div>
-            <span class="credits-stat">50+</span>
-            <span class="text-label opacity-40">Projects</span>
-          </div>
-          <div>
-            <span class="credits-stat">20+</span>
-            <span class="text-label opacity-40">Clients</span>
-          </div>
+          {about.stats.map((stat) => (
+            <div>
+              <span class="credits-stat">{stat.value}</span>
+              <span class="text-label opacity-40">{stat.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
       <div class="credits-block">
         <span class="text-label opacity-40">Process</span>
         <div class="credits-process">
-          <div>
-            <h3 class="credits-process-title">Pre-Production</h3>
-            <p class="credits-process-desc">Concept, scripting, location scouting</p>
-          </div>
-          <div>
-            <h3 class="credits-process-title">Production</h3>
-            <p class="credits-process-desc">Direction, cinematography, sound</p>
-          </div>
-          <div>
-            <h3 class="credits-process-title">Post-Production</h3>
-            <p class="credits-process-desc">Editing, colour grading, finishing</p>
-          </div>
+          {about.process.map((step) => (
+            <div>
+              <h3 class="credits-process-title">{step.title}</h3>
+              <p class="credits-process-desc">{step.description}</p>
+            </div>
+          ))}
         </div>
       </div>
 
       <div class="credits-block">
         <span class="text-label opacity-40">Equipment</span>
-        <h2 class="credits-title">Sony FX6</h2>
-        <h2 class="credits-title">DJI Inspire 3</h2>
-        <h2 class="credits-title">DaVinci Resolve</h2>
+        {about.equipment.map((item) => (
+          <h2 class="credits-title">{item.name}</h2>
+        ))}
       </div>
 
       <div class="credits-block">
@@ -128,11 +158,11 @@ const navLinks = [
             NI<span style="display:inline-block;transform:scaleX(-1);margin-left:-0.35em">K</span>
           </a>
           <div class="flex gap-6">
-            <a href="/works" class="text-label cursor-hover hover:opacity-50 transition-opacity">Works</a>
-            <a href="/services" class="text-label cursor-hover hover:opacity-50 transition-opacity">Services</a>
-            <a href="/contact" class="text-label cursor-hover hover:opacity-50 transition-opacity">Contact</a>
+            {navLinks.map((link) => (
+              <a href={link.href} class="text-label cursor-hover hover:opacity-50 transition-opacity">{link.label}</a>
+            ))}
           </div>
-          <div class="text-label opacity-40">&copy; {new Date().getFullYear()} Nikolas Petrou</div>
+          <div class="text-label opacity-40">&copy; {new Date().getFullYear()} {settings.siteName}</div>
         </div>
       </footer>
     </div>

@@ -6,9 +6,10 @@ interface Client {
 
 interface Props {
   clients: Client[];
+  label?: string;
 }
 
-const { clients } = Astro.props;
+const { clients, label = '(Selected Clients)' } = Astro.props;
 ---
 
 <section class="clients-section" id="clientsSection">
@@ -18,7 +19,7 @@ const { clients } = Astro.props;
   </div>
 
   <div class="clients-content">
-    <span class="text-label opacity-50 block mb-8">(Selected Clients)</span>
+    <span class="text-label opacity-50 block mb-8">{label}</span>
     <div class="space-y-4">
       {
         clients.map((client) => (

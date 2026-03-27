@@ -7,14 +7,15 @@ interface Service {
 
 interface Props {
   services: Service[];
+  label?: string;
 }
 
-const { services } = Astro.props;
+const { services, label = '(Services)' } = Astro.props;
 ---
 
 <section id="about" class="py-16 px-4 md:py-32 md:px-8">
   <div class="mb-16">
-    <span class="text-label opacity-50">(Services)</span>
+    <span class="text-label opacity-50">{label}</span>
   </div>
 
   <div class="projects-wrapper">

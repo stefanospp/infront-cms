@@ -48,6 +48,21 @@ export const Projects: CollectionConfig = {
       relationTo: 'media',
     },
     {
+      name: 'role',
+      type: 'text',
+      defaultValue: 'Director, Cinematographer',
+      admin: {
+        description: 'Role on the project — shown on detail page',
+      },
+    },
+    {
+      name: 'fullDescription',
+      type: 'textarea',
+      admin: {
+        description: 'Detailed description shown on the project detail page',
+      },
+    },
+    {
       name: 'description',
       type: 'richText',
     },

@@ -8,14 +8,15 @@ interface Project {
 
 interface Props {
   projects: Project[];
+  label?: string;
 }
 
-const { projects } = Astro.props;
+const { projects, label = '(Selected Works)' } = Astro.props;
 ---
 
 <section id="works" class="py-16 px-4 md:py-32 md:px-8 min-h-screen">
   <div class="mb-16">
-    <span class="text-label opacity-50">(Selected Works)</span>
+    <span class="text-label opacity-50">{label}</span>
   </div>
 
   <div class="projects-wrapper">

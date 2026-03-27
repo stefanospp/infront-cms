@@ -1,5 +1,28 @@
 ---
 import InnerLayout from '../layouts/InnerLayout.astro';
+import { getPages } from '../lib/payload';
+import type { LegalPage } from '../lib/payload';
+
+let legal: LegalPage;
+
+try {
+  const pages = await getPages();
+  legal = pages.legal;
+} catch {
+  legal = {
+    lastUpdated: 'March 2026',
+    privacySections: [
+      { title: '1. Information We Collect', body: 'When you use our contact form, we collect your name, email address, and message content. We do not collect any personal information automatically beyond standard server logs.' },
+      { title: '2. How We Use Your Information', body: 'Information submitted through the contact form is used solely to respond to your enquiry. We do not sell, share, or distribute your personal information to third parties.' },
+      { title: '3. Data Storage', body: 'Contact form submissions are stored securely and retained only for as long as necessary to fulfill the purpose for which they were collected.' },
+      { title: '4. Cookies', body: 'This website does not use cookies for tracking or advertising. Essential cookies may be used for site functionality.' },
+      { title: '5. Third-Party Services', body: "We use Google Fonts for typography, which may collect usage data according to Google's privacy policy. Video content is hosted on third-party CDNs." },
+      { title: '6. Your Rights', body: 'You have the right to request access to, correction of, or deletion of your personal data. Contact us at hello@nikolaspetrou.com for any privacy-related requests.' },
+      { title: '7. Contact', body: 'For questions about this privacy policy, contact: hello@nikolaspetrou.com' },
+    ],
+    termsSections: [],
+  };
+}
 ---
 
 <InnerLayout title="Privacy Policy" description="Privacy policy for nikolaspetrou.com">
@@ -8,42 +31,14 @@ import InnerLayout from '../layouts/InnerLayout.astro';
       <h1 class="text-huge">Privacy Policy</h1>
     </div>
     <div class="space-y-8 text-sm leading-relaxed opacity-70">
-      <p><strong>Last updated:</strong> March 2026</p>
+      <p><strong>Last updated:</strong> {legal.lastUpdated}</p>
 
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">1. Information We Collect</h2>
-        <p>When you use our contact form, we collect your name, email address, and message content. We do not collect any personal information automatically beyond standard server logs.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">2. How We Use Your Information</h2>
-        <p>Information submitted through the contact form is used solely to respond to your enquiry. We do not sell, share, or distribute your personal information to third parties.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">3. Data Storage</h2>
-        <p>Contact form submissions are stored securely and retained only for as long as necessary to fulfill the purpose for which they were collected.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">4. Cookies</h2>
-        <p>This website does not use cookies for tracking or advertising. Essential cookies may be used for site functionality.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">5. Third-Party Services</h2>
-        <p>We use Google Fonts for typography, which may collect usage data according to Google's privacy policy. Video content is hosted on third-party CDNs.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">6. Your Rights</h2>
-        <p>You have the right to request access to, correction of, or deletion of your personal data. Contact us at hello@nikolaspetrou.com for any privacy-related requests.</p>
-      </div>
-
-      <div>
-        <h2 class="text-lg font-medium mb-3 opacity-100">7. Contact</h2>
-        <p>For questions about this privacy policy, contact: <a href="mailto:hello@nikolaspetrou.com" class="underline cursor-hover">hello@nikolaspetrou.com</a></p>
-      </div>
+      {legal.privacySections.map((section) => (
+        <div>
+          <h2 class="text-lg font-medium mb-3 opacity-100">{section.title}</h2>
+          <p set:html={section.body.replace(/hello@nikolaspetrou\.com/g, '<a href="mailto:hello@nikolaspetrou.com" class="underline cursor-hover">hello@nikolaspetrou.com</a>')} />
+        </div>
+      ))}
     </div>
   </section>
 

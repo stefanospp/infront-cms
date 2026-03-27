@@ -1,5 +1,37 @@
 ---
 import InnerLayout from '../layouts/InnerLayout.astro';
+import { getClients, getSiteSettings } from '../lib/payload';
+import type { Client, SiteSettings } from '../lib/payload';
+
+let clients: Client[];
+let settings: SiteSettings;
+
+try {
+  [clients, settings] = await Promise.all([
+    getClients(),
+    getSiteSettings(),
+  ]);
+} catch {
+  settings = {
+    siteName: 'Nikolas Petrou',
+    tagline: 'Capturing moments that move.',
+    navLinks: [
+      { label: 'Works', href: '/works' },
+      { label: 'About', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+    ],
+    contact: { email: 'hello@nikolaspetrou.com' },
+    social: { instagram: '#', vimeo: '#', youtube: '#' },
+  };
+
+  clients = [
+    { id: '1', name: 'Patagonia', type: 'Brand Campaign', year: 2024, order: 1 },
+    { id: '2', name: 'GoPro', type: 'Action Sports Content', year: 2024, order: 2 },
+    { id: '3', name: 'Sony', type: 'Product Launch Films', year: 2023, order: 3 },
+    { id: '4', name: 'DJI', type: 'Aerial Cinematography', year: 2023, order: 4 },
+    { id: '5', name: 'National Geographic', type: 'Documentary Series', year: 2023, order: 5 },
+  ];
+}
 ---
 
 <InnerLayout title="Clients" description="Selected clients and collaborations">
@@ -19,19 +51,13 @@ import InnerLayout from '../layouts/InnerLayout.astro';
 
     <div class="space-y-0">
       {
-        [
-          { name: 'Patagonia', type: 'Brand Campaign', year: '2024' },
-          { name: 'GoPro', type: 'Action Sports Content', year: '2024' },
-          { name: 'Sony', type: 'Product Launch Films', year: '2023' },
-          { name: 'DJI', type: 'Aerial Cinematography', year: '2023' },
-          { name: 'National Geographic', type: 'Documentary Series', year: '2023' },
-        ].map((client) => (
+        clients.map((client) => (
           <div class="flex justify-between items-end py-6 border-t border-black/10 cursor-hover hover:pl-4 transition-all">
             <div>
               <h2 class="text-xl md:text-3xl font-medium">{client.name}</h2>
-              <span class="text-label opacity-40 mt-1 block">{client.type}</span>
+              <span class="text-label opacity-40 mt-1 block">{client.type || ''}</span>
             </div>
-            <span class="text-label opacity-30">{client.year}</span>
+            <span class="text-label opacity-30">{client.year || ''}</span>
           </div>
         ))
       }

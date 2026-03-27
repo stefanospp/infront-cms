@@ -1,38 +1,92 @@
 ---
 import InnerLayout from '../layouts/InnerLayout.astro';
+import { getPages, getSiteSettings } from '../lib/payload';
+import type { SiteSettings, ContactPage } from '../lib/payload';
+
+let settings: SiteSettings;
+let contact: ContactPage;
+
+try {
+  const [settingsData, pagesData] = await Promise.all([
+    getSiteSettings(),
+    getPages(),
+  ]);
+  settings = settingsData;
+  contact = pagesData.contact;
+} catch {
+  settings = {
+    siteName: 'Nikolas Petrou',
+    tagline: 'Capturing moments that move.',
+    navLinks: [
+      { label: 'Works', href: '/works' },
+      { label: 'About', href: '/about' },
+      { label: 'Contact', href: '/contact' },
+    ],
+    contact: { email: 'hello@nikolaspetrou.com' },
+    social: { instagram: '#', vimeo: '#', youtube: '#' },
+  };
+
+  contact = {
+    heading: "Let's\nTalk",
+    subtext: "Have a project in mind? I'd love to hear about it. Drop me a message and I'll get back to you within 24 hours.",
+    email: 'hello@nikolaspetrou.com',
+    location: 'Cyprus',
+    socialLinks: [
+      { label: 'Instagram', href: '#' },
+      { label: 'Vimeo', href: '#' },
+      { label: 'YouTube', href: '#' },
+    ],
+    projectTypes: [
+      { label: 'Select a service', value: '' },
+      { label: 'Video Production', value: 'video-production' },
+      { label: 'Creative Direction', value: 'creative-direction' },
+      { label: 'Content Creation', value: 'content-creation' },
+      { label: 'Post Production', value: 'post-production' },
+      { label: 'Other', value: 'other' },
+    ],
+    budgetRanges: [
+      { label: 'Select a range', value: '' },
+      { label: 'Under \u20AC2,000', value: 'under-2k' },
+      { label: '\u20AC2,000 \u2014 \u20AC5,000', value: '2k-5k' },
+      { label: '\u20AC5,000 \u2014 \u20AC10,000', value: '5k-10k' },
+      { label: '\u20AC10,000+', value: '10k-plus' },
+    ],
+  };
+}
+
+const headingParts = contact.heading.split('\n');
 ---
 
-<InnerLayout title="Contact" description="Get in touch with Nikolas Petrou" dark>
+<InnerLayout title="Contact" description={`Get in touch with ${settings.siteName}`} dark>
   <section class="px-4 md:px-8 pb-16 md:pb-24 min-h-[80vh] flex flex-col justify-center">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-24 items-start">
       <!-- Left: heading + info -->
       <div>
         <div class="mb-12 md:mb-16">
-          <h1 class="text-giant">Let's<br/>Talk</h1>
+          <h1 class="text-giant">{headingParts.map((part, i) => i < headingParts.length - 1 ? <>{part}<br/></> : part)}</h1>
         </div>
         <p class="text-xl md:text-2xl leading-relaxed opacity-60 mb-12">
-          Have a project in mind? I'd love to hear about it. Drop me a message
-          and I'll get back to you within 24 hours.
+          {contact.subtext}
         </p>
 
         <div class="space-y-6">
           <div>
             <span class="text-label opacity-40 block mb-2">Email</span>
-            <a href="mailto:hello@nikolaspetrou.com" class="text-xl md:text-2xl cursor-hover hover:opacity-70 transition-opacity">
-              hello@nikolaspetrou.com
+            <a href={`mailto:${contact.email}`} class="text-xl md:text-2xl cursor-hover hover:opacity-70 transition-opacity">
+              {contact.email}
             </a>
           </div>
           <div>
             <span class="text-label opacity-40 block mb-2">Social</span>
             <div class="flex gap-6">
-              <a href="#" class="text-label cursor-hover hover:opacity-50 transition-opacity">Instagram</a>
-              <a href="#" class="text-label cursor-hover hover:opacity-50 transition-opacity">Vimeo</a>
-              <a href="#" class="text-label cursor-hover hover:opacity-50 transition-opacity">YouTube</a>
+              {contact.socialLinks.map((link) => (
+                <a href={link.href} class="text-label cursor-hover hover:opacity-50 transition-opacity">{link.label}</a>
+              ))}
             </div>
           </div>
           <div>
             <span class="text-label opacity-40 block mb-2">Based in</span>
-            <p class="text-xl md:text-2xl opacity-70">Cyprus</p>
+            <p class="text-xl md:text-2xl opacity-70">{contact.location}</p>
           </div>
         </div>
       </div>
@@ -76,12 +130,9 @@ import InnerLayout from '../layouts/InnerLayout.astro';
               name="project"
               class="w-full bg-transparent border-b border-white/20 pb-3 text-lg focus:outline-none focus:border-white/60 transition-colors appearance-none"
             >
-              <option value="" class="bg-black">Select a service</option>
-              <option value="video-production" class="bg-black">Video Production</option>
-              <option value="creative-direction" class="bg-black">Creative Direction</option>
-              <option value="content-creation" class="bg-black">Content Creation</option>
-              <option value="post-production" class="bg-black">Post Production</option>
-              <option value="other" class="bg-black">Other</option>
+              {contact.projectTypes.map((pt) => (
+                <option value={pt.value} class="bg-black">{pt.label}</option>
+              ))}
             </select>
           </div>
 
@@ -104,11 +155,9 @@ import InnerLayout from '../layouts/InnerLayout.astro';
               name="budget"
               class="w-full bg-transparent border-b border-white/20 pb-3 text-lg focus:outline-none focus:border-white/60 transition-colors appearance-none"
             >
-              <option value="" class="bg-black">Select a range</option>
-              <option value="under-2k" class="bg-black">Under €2,000</option>
-              <option value="2k-5k" class="bg-black">€2,000 — €5,000</option>
-              <option value="5k-10k" class="bg-black">€5,000 — €10,000</option>
-              <option value="10k-plus" class="bg-black">€10,000+</option>
+              {contact.budgetRanges.map((br) => (
+                <option value={br.value} class="bg-black">{br.label}</option>
+              ))}
             </select>
           </div>
 
