@@ -2,11 +2,19 @@
 
 ## What this is
 
-A monorepo platform for running a solo web agency. Each client gets an Astro site deployed to Cloudflare Workers. CMS options: Directus (Hetzner via Kamal) or SonicJs (Cloudflare Workers — edge-native). Shared UI components, config, and utilities live in packages.
+A monorepo platform for running a solo web agency. Each client gets an Astro site deployed to Cloudflare Workers. CMS options: Payload CMS (primary, Cloudflare Workers), Directus (legacy, Hetzner via Kamal), or SonicJs (deprecated pilot). Shared UI components, config, and utilities live in packages.
 
-## SonicJs CMS (pilot)
+## Payload CMS (primary)
 
-SonicJs is being evaluated as a Directus replacement. Full documentation:
+Payload CMS is the primary CMS for all new client sites. Runs on Cloudflare Workers with D1 (SQLite) and R2 (media). Full documentation:
+- **Development guide:** `infra/payload/GUIDE.md` — complete setup, deployment, migration, preview system, exit strategy
+- **Overview & comparison:** `infra/payload/README.md` — architecture, limitations, why Payload over SonicJs/Directus
+- **Reference implementation:** `infra/payload/nikolaspetrou/` — fully deployed Payload CMS for nikolaspetrou.com
+- **Reference site:** `sites/nikolaspetrou-v2/` — Astro site wired to Payload with preview system
+
+## SonicJs CMS (deprecated — pilot only)
+
+SonicJs was evaluated as a Directus replacement but has been superseded by Payload CMS. Existing SonicJs sites will be migrated to Payload. Documentation preserved for reference:
 - **Development guide:** `infra/sonicjs/GUIDE.md` — step-by-step for new sites, migration, export, storage, deployment
 - **Pilot evaluation:** `infra/sonicjs/README.md` — current status, comparison, transferability
 - **Reference implementation:** `infra/sonicjs/theorium/` — fully ported Theorium site
@@ -22,7 +30,8 @@ sites/template       base site — copy for every new client
 sites/<client>/      generated client sites
 infra/admin          PM2 + Caddy config for admin deployment
 infra/docker         Directus Docker Compose files (one per CMS client)
-infra/sonicjs        SonicJs CMS projects (one per client) — see GUIDE.md
+infra/payload        Payload CMS projects (one per client) — see GUIDE.md (PRIMARY)
+infra/sonicjs        SonicJs CMS projects (deprecated) — see GUIDE.md
 infra/backups        database and upload backup scripts
 infra/provisioning   CLI provisioning script (alternative to admin UI)
 tests/               Playwright e2e, Vitest integration, Lighthouse CI
@@ -33,7 +42,7 @@ tests/               Playwright e2e, Vitest integration, Lighthouse CI
 - **Framework:** Astro 6 (static output with per-route `prerender = false` for server routes)
 - **Styling:** Tailwind CSS v4 (CSS-based config via `@theme` blocks, `@tailwindcss/vite` plugin)
 - **Islands:** React (for interactive components only — forms, mobile nav, cookie consent)
-- **CMS:** Directus 11 (PostgreSQL, Docker, deployed via Kamal)
+- **CMS:** Payload CMS (primary, D1 + R2, Cloudflare Workers) / Directus 11 (legacy, PostgreSQL, Docker)
 - **Hosting:** Cloudflare Pages (sites), Hetzner VPS (Directus)
 - **Email:** Resend (contact forms)
 - **Analytics:** Plausible / Fathom / Google Analytics (per-client choice)
