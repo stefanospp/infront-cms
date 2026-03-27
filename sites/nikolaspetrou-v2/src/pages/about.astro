@@ -87,12 +87,16 @@ const navLinks = settings.navLinks;
 
     <!-- Scrolling credits content -->
     <div class="about-credits" id="aboutCredits">
-      <!-- Spacer so video is visible first -->
-      <div class="h-screen"></div>
-
-      <div class="credits-block">
+      <!-- Opening title — fades in over the video -->
+      <div class="credits-intro" id="creditsIntro">
         <span class="text-label opacity-40">Directed by</span>
         <h2 class="credits-name">{about.directorName}</h2>
+        <div class="scroll-hint">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </div>
       </div>
 
       <div class="credits-block">
@@ -184,6 +188,49 @@ const navLinks = settings.navLinks;
         position: absolute;
         inset: 0;
         background: rgba(0, 0, 0, 0.55);
+      }
+
+      /* Intro — fills viewport, fades in, then user scrolls */
+      .credits-intro {
+        height: 100vh;
+        height: 100svh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        opacity: 0;
+        animation: introFadeIn 2s ease-out 0.5s forwards;
+      }
+
+      @keyframes introFadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .scroll-hint {
+        position: absolute;
+        bottom: 2.5rem;
+        color: rgba(255, 255, 255, 0.4);
+        animation: hintBounce 2s ease-in-out 3s infinite;
+        opacity: 0;
+        animation: hintAppear 1s ease-out 3s forwards, hintBounce 2s ease-in-out 4s infinite;
+      }
+
+      @keyframes hintAppear {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes hintBounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(6px); }
       }
 
       .about-credits {
@@ -292,15 +339,27 @@ const navLinks = settings.navLinks;
       // Fade in each credits block as it scrolls into view
       document.querySelectorAll('.credits-block').forEach((block) => {
         gsap.from(block.children, {
-          y: 40,
+          y: 60,
           opacity: 0,
-          duration: 1,
-          stagger: 0.15,
+          duration: 1.2,
+          stagger: 0.2,
           ease: 'power3.out',
           scrollTrigger: {
             trigger: block,
-            start: 'top 80%',
-            toggleActions: 'play none none none',
+            start: 'top 85%',
+            toggleActions: 'play none none reverse',
+          },
+        });
+
+        // Parallax — block moves slightly slower than scroll
+        gsap.to(block, {
+          yPercent: -10,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: block,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: 1,
           },
         });
       });

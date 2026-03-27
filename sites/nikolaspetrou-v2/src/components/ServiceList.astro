@@ -22,9 +22,10 @@ const { services, label = '(Services)' } = Astro.props;
     <div class="project-list">
       {
         services.map((service, i) => (
-          <div
+          <a
+            href="/services"
             class:list={[
-              'project-item cursor-hover',
+              'project-item cursor-hover block no-underline text-inherit',
               i === services.length - 1 && 'border-b border-black/10',
             ]}
             data-video={service.video_url || ''}
@@ -41,7 +42,7 @@ const { services, label = '(Services)' } = Astro.props;
                 {String(i + 1).padStart(2, '0')}
               </span>
             </div>
-          </div>
+          </a>
         ))
       }
     </div>

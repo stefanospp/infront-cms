@@ -92,7 +92,7 @@
     position: relative;
     width: 100%;
     height: 100vh;
-    height: 100svh;
+    height: 100dvh;
     overflow: hidden;
   }
 
@@ -259,10 +259,12 @@
 
   .project-item .project-video {
     opacity: 0.2;
+    z-index: 0;
   }
 
   .project-item.video-active .project-video {
     opacity: 1;
+    z-index: 0;
   }
 
   .project-item::before {

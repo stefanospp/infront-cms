@@ -24,7 +24,7 @@ const { words } = Astro.props;
     ))
   }
 
-  <!-- Progress indicator -->
+  <!-- Progress -->
   <div class="word-progress" id="wordProgress">
     <div class="word-progress-track">
       <div class="word-progress-fill" id="wordProgressFill"></div>
@@ -32,7 +32,7 @@ const { words } = Astro.props;
     <div class="word-progress-count">
       <span id="wordCurrent">01</span>
       <span class="word-progress-sep">/</span>
-      <span id="wordTotal">{String(words.length).padStart(2, '0')}</span>
+      <span>{String(words.length).padStart(2, '0')}</span>
     </div>
   </div>
 </section>
@@ -41,8 +41,16 @@ const { words } = Astro.props;
   .word-slides {
     position: relative;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     background: #000;
+  }
+
+  /* When pinned by ScrollTrigger, ensure full coverage on iOS Safari */
+  .word-slides.pin-spacer,
+  .word-slides[style*="position: fixed"] {
+    height: 100vh !important;
+    height: 100dvh !important;
   }
 
   .word-slide {
@@ -53,13 +61,15 @@ const { words } = Astro.props;
     justify-content: center;
     opacity: 0;
     z-index: 0;
+    transition: opacity 0.6s ease;
   }
 
   .word-slide.active {
     opacity: 1;
-    z-index: 1;
+    z-index: 2;
   }
 
+  /* Video — use -webkit-transform for iOS Safari */
   .word-slide-video {
     position: absolute;
     top: 0;
@@ -69,10 +79,24 @@ const { words } = Astro.props;
     object-fit: cover;
     opacity: 0;
     transition: opacity 0.8s ease;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 
   .word-slide-video.loaded {
     opacity: 1;
+  }
+
+  /* Ken Burns — desktop only (causes rendering glitches on iOS) */
+  @media (pointer: fine) {
+    .word-slide.active .word-slide-video {
+      animation: kenBurns 5s ease-out forwards;
+    }
+  }
+
+  @keyframes kenBurns {
+    from { transform: scale(1); }
+    to { transform: scale(1.08); }
   }
 
   .word-slide-overlay {
@@ -89,36 +113,53 @@ const { words } = Astro.props;
   }
 
   .word-slide-text {
-    font-size: clamp(2.5rem, 15vw, 14rem);
+    font-size: clamp(2rem, 12vw, 14rem);
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: -0.04em;
     color: #fff;
     white-space: nowrap;
     display: block;
+    -webkit-transform: translateZ(0);
   }
 
-  /* Slide transition — text slides up in, previous slides up out */
+  /* Text transitions — use translate3d for iOS GPU acceleration */
   .word-slide .word-slide-text {
-    transform: translateY(100%);
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    -webkit-transform: translate3d(0, 100%, 0);
+    transform: translate3d(0, 100%, 0);
+    transition: -webkit-transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .word-slide.active .word-slide-text {
-    transform: translateY(0);
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
   }
 
   .word-slide.exiting .word-slide-text {
-    transform: translateY(-100%);
-    transition: transform 0.4s cubic-bezier(0.7, 0, 0.84, 0);
+    -webkit-transform: translate3d(0, -100%, 0);
+    transform: translate3d(0, -100%, 0);
+    transition: -webkit-transform 0.4s cubic-bezier(0.7, 0, 0.84, 0),
+                transform 0.4s cubic-bezier(0.7, 0, 0.84, 0);
   }
 
-  /* Video crossfade */
-  .word-slide {
-    transition: opacity 0.6s ease;
+  /* Flash cut between slides */
+  .word-slides::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease;
   }
 
-  /* Progress indicator — bottom right */
+  .word-slides.flash::after {
+    opacity: 0.06;
+  }
+
+  /* Progress — faint */
   .word-progress {
     position: absolute;
     bottom: 1.5rem;
@@ -140,7 +181,7 @@ const { words } = Astro.props;
   .word-progress-track {
     width: 60px;
     height: 1px;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
     position: relative;
     overflow: hidden;
   }
@@ -157,20 +198,20 @@ const { words } = Astro.props;
     left: 0;
     height: 100%;
     width: 0%;
-    background: #fff;
+    background: rgba(255, 255, 255, 0.3);
     transition: width 0.4s ease;
   }
 
   .word-progress-count {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     letter-spacing: 0.15em;
-    color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 0.2);
     font-variant-numeric: tabular-nums;
   }
 
   .word-progress-sep {
-    margin: 0 0.2em;
-    opacity: 0.4;
+    margin: 0 0.15em;
+    opacity: 0.3;
   }
 </style>
 
@@ -188,15 +229,15 @@ const { words } = Astro.props;
   let prevIndex = -1;
 
   if (section && totalSlides > 0) {
-    const isMobile = window.innerWidth < 768;
-    const scrollPerSlide = window.innerHeight * (isMobile ? 0.4 : 0.6);
+    const isMobile = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 768;
+    const scrollPerSlide = window.innerHeight * (isMobile ? 0.55 : 0.6);
     const totalScroll = scrollPerSlide * totalSlides;
 
     // Set first slide active
     slides[0]?.classList.add('active');
     prevIndex = 0;
 
-    // Eagerly preload first slide's video immediately
+    // Eagerly preload first slide's video
     const firstVideo = slides[0]?.querySelector('.word-slide-video') as HTMLVideoElement;
     const firstSrc = slides[0]?.getAttribute('data-video');
     if (firstVideo && firstSrc) {
@@ -205,34 +246,42 @@ const { words } = Astro.props;
       firstVideo.load();
       firstVideo.addEventListener('canplay', () => {
         firstVideo.classList.add('loaded');
-        firstVideo.play();
+        firstVideo.play().catch(() => {});
       }, { once: true });
     }
 
-    // Preload remaining videos when section is ~800px from viewport
+    // Preload remaining videos when section is near
+    // On mobile: load only next slide ahead (iOS limits simultaneous videos)
+    // On desktop: load all at once
     let videosLoaded = false;
+    const loadedSlides = new Set([0]);
+
+    function loadSlideVideo(index: number) {
+      if (index < 0 || index >= totalSlides || loadedSlides.has(index)) return;
+      const slide = slides[index];
+      const video = slide?.querySelector('.word-slide-video') as HTMLVideoElement;
+      const src = slide?.getAttribute('data-video');
+      if (video && src && !video.src) {
+        video.src = src;
+        video.preload = 'auto';
+        video.load();
+        video.addEventListener('canplay', () => video.classList.add('loaded'), { once: true });
+        loadedSlides.add(index);
+      }
+    }
+
     const sectionObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && !videosLoaded) {
             videosLoaded = true;
-            slides.forEach((slide, i) => {
-              if (i === 0) return; // already loaded
-              const video = slide.querySelector('.word-slide-video') as HTMLVideoElement;
-              const src = slide.getAttribute('data-video');
-              if (src) {
-                video.src = src;
-                video.preload = 'auto';
-                video.load();
-                video.addEventListener(
-                  'canplay',
-                  () => {
-                    video.classList.add('loaded');
-                  },
-                  { once: true },
-                );
-              }
-            });
+            if (isMobile) {
+              // Load just the next slide ahead
+              loadSlideVideo(1);
+            } else {
+              // Desktop: load all
+              for (let i = 1; i < totalSlides; i++) loadSlideVideo(i);
+            }
             sectionObserver.unobserve(section);
           }
         });
@@ -246,7 +295,9 @@ const { words } = Astro.props;
       start: 'top top',
       end: () => `+=${totalScroll}`,
       pin: true,
+      pinSpacing: true,
       scrub: 0.5,
+      invalidateOnRefresh: true,
       onUpdate: (self) => {
         const progress = self.progress;
         const currentIndex = Math.min(
@@ -257,44 +308,66 @@ const { words } = Astro.props;
         // Update progress bar
         const fillPercent = ((currentIndex + 1) / totalSlides) * 100;
         if (progressFill) progressFill.style.width = `${fillPercent}%`;
-        if (currentCount)
-          currentCount.textContent = String(currentIndex + 1).padStart(2, '0');
+        if (currentCount) currentCount.textContent = String(currentIndex + 1).padStart(2, '0');
 
         if (currentIndex !== prevIndex) {
-          // Mark previous as exiting
+          // Flash cut
+          section!.classList.add('flash');
+          setTimeout(() => section!.classList.remove('flash'), 120);
+
+          // Exit previous
           if (prevIndex >= 0 && prevIndex < totalSlides) {
             const prevSlide = slides[prevIndex];
-            const prevVideo = prevSlide?.querySelector(
-              '.word-slide-video',
-            ) as HTMLVideoElement;
+            const prevVideo = prevSlide?.querySelector('.word-slide-video') as HTMLVideoElement;
             prevSlide?.classList.remove('active');
             prevSlide?.classList.add('exiting');
             prevVideo?.pause();
+            setTimeout(() => prevSlide?.classList.remove('exiting'), 400);
+          }
 
-            // Remove exiting class after animation
-            setTimeout(() => {
-              prevSlide?.classList.remove('exiting');
-            }, 400);
+          // Pause ALL videos first (iOS only allows 1 playing)
+          if (isMobile) {
+            slides.forEach((s) => {
+              const v = s.querySelector('.word-slide-video') as HTMLVideoElement;
+              v?.pause();
+            });
           }
 
           // Activate current
           const currentSlide = slides[currentIndex];
-          const currentVideo = currentSlide?.querySelector(
-            '.word-slide-video',
-          ) as HTMLVideoElement;
+          const currentVideo = currentSlide?.querySelector('.word-slide-video') as HTMLVideoElement;
           currentSlide?.classList.remove('exiting');
           currentSlide?.classList.add('active');
-          currentVideo?.play();
+          currentVideo?.play().catch(() => {});
+
+          // Preload next slide on mobile
+          if (isMobile) {
+            loadSlideVideo(currentIndex + 1);
+          }
 
           prevIndex = currentIndex;
         }
       },
     });
 
-    // Explicitly play first video (onUpdate won't trigger for initial state)
+    // Explicitly play first video
     const initialVideo = slides[0]?.querySelector('.word-slide-video') as HTMLVideoElement;
     if (initialVideo?.src) {
       initialVideo.play().catch(() => {});
+    }
+
+    // iOS Safari: refresh ScrollTrigger when viewport resizes (toolbar show/hide)
+    if (isMobile) {
+      let resizeTimer: ReturnType<typeof setTimeout>;
+      const visualViewport = window.visualViewport;
+      if (visualViewport) {
+        visualViewport.addEventListener('resize', () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(() => {
+            ScrollTrigger.refresh();
+          }, 100);
+        });
+      }
     }
   }
 </script>

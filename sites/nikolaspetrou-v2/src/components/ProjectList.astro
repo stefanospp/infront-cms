@@ -1,6 +1,7 @@
 ---
 interface Project {
   title: string;
+  slug?: string;
   category: string;
   year: number;
   video_url: string;
@@ -23,9 +24,10 @@ const { projects, label = '(Selected Works)' } = Astro.props;
     <div class="project-list">
       {
         projects.map((project, i) => (
-          <div
+          <a
+            href={project.slug ? `/works/${project.slug}` : '#'}
             class:list={[
-              'project-item cursor-hover',
+              'project-item cursor-hover block no-underline text-inherit',
               i === projects.length - 1 && 'border-b border-black/10',
             ]}
             data-video={project.video_url}
@@ -44,7 +46,7 @@ const { projects, label = '(Selected Works)' } = Astro.props;
                 {String(i + 1).padStart(2, '0')}
               </span>
             </div>
-          </div>
+          </a>
         ))
       }
     </div>
@@ -59,28 +61,51 @@ const { projects, label = '(Selected Works)' } = Astro.props;
       const videoEl = item.querySelector('.project-video video') as HTMLVideoElement;
       const videoSrc = item.getAttribute('data-video');
       let loaded = false;
+      let ready = false;
 
-      const observer = new IntersectionObserver(
+      // Preload video when item is 300px from viewport
+      const preloadObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              if (!loaded && videoSrc) {
-                videoEl.src = videoSrc;
-                videoEl.load();
-                loaded = true;
-              }
-              videoEl.play();
-              item.classList.add('video-active');
-            } else {
-              videoEl.pause();
-              item.classList.remove('video-active');
+            if (entry.isIntersecting && !loaded && videoSrc) {
+              videoEl.src = videoSrc;
+              videoEl.preload = 'auto';
+              videoEl.load();
+              videoEl.addEventListener('canplay', () => { ready = true; }, { once: true });
+              loaded = true;
+              preloadObserver.unobserve(item);
             }
           });
         },
-        { threshold: 0.5 },
+        { rootMargin: '300px 0px' },
       );
+      preloadObserver.observe(item);
 
-      observer.observe(item);
+      // Play/pause when visible
+      const playObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              item.classList.add('video-active');
+              if (ready) {
+                videoEl.play().catch(() => {});
+              } else if (loaded) {
+                videoEl.addEventListener('canplay', () => {
+                  ready = true;
+                  if (item.classList.contains('video-active')) {
+                    videoEl.play().catch(() => {});
+                  }
+                }, { once: true });
+              }
+            } else {
+              item.classList.remove('video-active');
+              videoEl.pause();
+            }
+          });
+        },
+        { threshold: 0.3 },
+      );
+      playObserver.observe(item);
     });
   } else {
     // Desktop: preload + hover
