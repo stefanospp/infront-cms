@@ -10,3 +10,6 @@ routes = [
 
 [assets]
 directory = "./dist"
+
+[vars]
+PAYLOAD_URL = "https://cms-theorium.stepet.workers.dev"
