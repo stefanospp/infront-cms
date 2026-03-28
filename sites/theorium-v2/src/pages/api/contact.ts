@@ -65,7 +65,14 @@ export const POST: APIRoute = async ({ request }) => {
       // CMS storage failed — continue to email
     }
 
-    // Send notification email to Theodora
+    // Fetch notification recipient from CMS (SiteSettings.contact.email)
+    let notifyEmail = 'hello@infront.cy';
+    try {
+      const settings = await fetch(`${PAYLOAD_URL}/api/globals/site-settings`).then((r) => r.json());
+      if (settings?.contact?.email) notifyEmail = settings.contact.email;
+    } catch {}
+
+    // Send notification email
     if (RESEND_API_KEY) {
       try {
         await fetch('https://api.resend.com/emails', {
@@ -76,7 +83,7 @@ export const POST: APIRoute = async ({ request }) => {
           },
           body: JSON.stringify({
             from: 'Theorium <noreply@infront.cy>',
-            to: 'theodora@theorium.cy',
+            to: notifyEmail,
             subject: `New enquiry from ${data.name}`,
             html: `
               <div style="font-family: Inter, -apple-system, sans-serif; max-width: 600px; margin: 0 auto;">
