@@ -15,7 +15,7 @@
   "d1_databases": [
     {
       "binding": "D1",
-      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "database_id": "fb0e08a3-7004-4844-ae9e-47c146ba07fd",
       "database_name": "theorium-payload",
       "remote": true
     }
