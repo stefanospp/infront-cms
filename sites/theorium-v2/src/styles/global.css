@@ -28,14 +28,29 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Paper lines — applied to light sections */
-.bg-white,
+/* Paper lines — page texture on sections only, not cards/buttons/inputs */
+section.bg-white,
+section.bg-gray-50,
 section[class*="bg-white"],
-.bg-gray-50,
 section[class*="bg-gray-50"] {
   background-image:
     linear-gradient(to bottom, transparent 95%, rgba(0,0,0,0.04) 95%);
   background-size: 100% 2rem;
+}
+
+/* Cards, buttons, inputs, dropdowns sit on top with clean backgrounds */
+.course-card,
+.subject-cell,
+.btn-brutal,
+.contact-icon,
+.pill,
+details,
+select,
+input,
+textarea,
+form,
+[class*="border-2"][class*="bg-white"] {
+  background-image: none !important;
 }
 
 /* Neobrutalist highlight underline — color variants */
