@@ -2,7 +2,9 @@
 
 Complete step-by-step guide for setting up Payload CMS on Cloudflare Workers with D1 + R2, connecting to an Astro site, and deploying to production.
 
-**Reference implementation:** `infra/payload/nikolaspetrou/` + `sites/nikolaspetrou-v2/`
+**Reference implementations:**
+- `infra/payload/nikolaspetrou/` + `sites/nikolaspetrou-v2/` (videographer portfolio)
+- `infra/payload/theorium/` + `sites/theorium-v2/` (tutoring platform — 9 collections, 3 globals)
 
 ---
 
@@ -32,6 +34,7 @@ Complete step-by-step guide for setting up Payload CMS on Cloudflare Workers wit
 22. [Known Issues & Workarounds](#22-known-issues--workarounds)
 23. [Cost & Resource Management](#23-cost--resource-management)
 24. [Reference](#24-reference)
+25. [Lessons Learned (Theorium)](#25-lessons-learned-theorium)
 
 ---
 
@@ -1492,3 +1495,157 @@ Use `translate3d()` instead of `translateY()` and add `-webkit-transform: transl
 ### Ken Burns on video
 
 `transform: scale()` on `<video>` elements causes rendering glitches on iOS. Wrap in `@media (pointer: fine)` to only apply on desktop.
+
+---
+
+## 25. Lessons Learned (Theorium)
+
+Documented from the Theorium v2 build (`infra/payload/theorium/` + `sites/theorium-v2/`). These apply to all future Payload + Astro + Cloudflare Workers projects.
+
+### Tailwind v4 + React Islands: class scanning
+
+**Problem:** Tailwind v4 scans source files at build time to generate CSS. Classes inside React conditional renders (`{open && <div className="fixed ...">}`) may not be found by the scanner, resulting in missing CSS utilities at runtime.
+
+**Solution:** Never conditionally render elements that use Tailwind classes. Instead, always render the element in the DOM and control visibility with CSS classes:
+
+```tsx
+// BAD — Tailwind may miss these classes
+{open && <div className="fixed inset-0 bg-white z-40">...</div>}
+
+// GOOD — element always in DOM, visibility toggled
+<div className={`fixed inset-0 bg-white z-40 ${open ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>...</div>
+```
+
+**Also:** Put responsive classes like `md:hidden` on server-rendered Astro wrappers, not inside React islands. Astro components are always scanned correctly; island JSX may not be.
+
+### Astro Islands + `display: contents` breaks CSS positioning
+
+**Problem:** Astro wraps React islands in `<astro-island>` which uses `display: contents`. This means the island doesn't create a CSS box, so `position: fixed` with `inset: 0` or `bottom: 0` inside an island computes to `height: 0px`.
+
+**Solution:** Use explicit heights instead of relying on inset positioning:
+
+```tsx
+// BAD — height computes to 0px inside astro-island
+style={{ position: 'fixed', top: '5rem', bottom: 0 }}
+
+// GOOD — explicit height
+style={{ position: 'fixed', top: '5rem', height: 'calc(100vh - 5rem)' }}
+```
+
+### Environment variables on Cloudflare Workers
+
+**Problem:** `import.meta.env.VARIABLE` only works at build time in Astro. Worker secrets set via `wrangler secret put` are available at runtime through `process.env`, but Astro's SSR on Workers needs a specific access pattern.
+
+**Solution:** Use the dual-access pattern from nikolaspetrou:
+
+```typescript
+const API_KEY = (globalThis as any).process?.env?.RESEND_API_KEY
+  || (typeof import.meta.env !== 'undefined' ? import.meta.env.RESEND_API_KEY : '');
+```
+
+### Resend email: use a verified domain
+
+**Problem:** Resend rejects emails from unverified domains silently. Using `noreply@newdomain.eu` when only `infront.cy` is verified means no emails are delivered and no error is returned.
+
+**Solution:** Always use `noreply@infront.cy` (the verified domain) as the `from` address for all client sites until their domain is verified in Resend. The display name can be customised: `ClientName <noreply@infront.cy>`.
+
+### CMS-driven email recipients
+
+**Problem:** Hardcoding notification email addresses in code requires a deploy to change them.
+
+**Solution:** Store the notification email in Payload's `SiteSettings` global (e.g., `contact.email`). The contact form API fetches this value at runtime:
+
+```typescript
+let notifyEmail = 'hello@infront.cy'; // fallback
+try {
+  const settings = await fetch(`${PAYLOAD_URL}/api/globals/site-settings`).then(r => r.json());
+  if (settings?.contact?.email) notifyEmail = settings.contact.email;
+} catch {}
+```
+
+### Build the site before wiring the CMS
+
+**Problem:** Trying to wire CMS and build the frontend simultaneously leads to broken pages, missing types, and confusing errors.
+
+**Solution:** Follow this order:
+1. Build the full site with hardcoded data first — get design, content, and pages right
+2. Extract data into typed files (`lib/courses.ts`, `lib/subjects.ts`, etc.)
+3. Create the Payload CMS with collections matching those types
+4. Create a CMS data layer (`lib/cms.ts`) with try/catch fallbacks
+5. Switch pages to import from the CMS layer — hardcoded data becomes the fallback
+6. The site continues working if the CMS is down
+
+### Keep hardcoded data as fallbacks forever
+
+**Problem:** If the CMS goes down or the API is slow, the site breaks completely.
+
+**Solution:** Never delete the hardcoded data files. Every page should wrap CMS fetches in try/catch:
+
+```typescript
+let courses;
+try { courses = await getCourses(); } catch { courses = fallbackCourses; }
+```
+
+This means the site always renders — with CMS data when available, with fallback data otherwise.
+
+### Seed script: handle existing data
+
+**Problem:** Running the seed script twice creates duplicate data.
+
+**Solution:** Check if data exists before seeding:
+
+```typescript
+async function seedIfEmpty(collection: string, items: unknown[]) {
+  const existing = await api('GET', `/${collection}?limit=1`);
+  if (existing.totalDocs > 0) {
+    console.log(`  ⏭ ${collection}: ${existing.totalDocs} items exist, skipping`);
+    return;
+  }
+  for (const item of items) await api('POST', `/${collection}`, item);
+  console.log(`  ✓ ${collection}: ${items.length} items created`);
+}
+```
+
+### Rich text vs textarea for simple content
+
+**Problem:** Payload's `richText` field uses Lexical editor and produces complex JSON. Seeding richText programmatically requires matching Lexical's exact node format, which varies between versions.
+
+**Solution:** Use `textarea` for content that doesn't need formatting (FAQ answers, descriptions, terms sections). Reserve `richText` for content that genuinely needs bold, links, lists (e.g., about page bio, course full descriptions).
+
+### Custom domain setup order
+
+**Problem:** `wrangler deploy` fails with "hostname already has externally managed DNS records" when trying to set a custom domain.
+
+**Solution:** Delete conflicting DNS records (A, CNAME) from Cloudflare dashboard before deploying with custom domain routes:
+1. Go to Cloudflare Dashboard → domain → DNS Records
+2. Delete A records and CNAME records on `@` and `www` (or the subdomain)
+3. Run `wrangler deploy` — it will create the Worker routes automatically
+
+### CMS admin on a subdomain
+
+**Solution:** Add a custom domain to the CMS worker's `wrangler.jsonc`:
+
+```jsonc
+"routes": [
+  { "pattern": "admin.clientdomain.eu", "custom_domain": true }
+]
+```
+
+The admin panel is then at `https://admin.clientdomain.eu/admin`. Update the Astro site's `PAYLOAD_URL`, CSP headers, and fetch client to match.
+
+### Paper lines / background textures on section-based layouts
+
+**Problem:** CSS background patterns on `body` are covered by sections with opaque backgrounds (`bg-white`, `bg-gray-50`).
+
+**Solution:** Apply the texture to the sections themselves, not the body. Exclude UI elements (cards, buttons, inputs) with `background-image: none`:
+
+```css
+section.bg-white, section.bg-gray-50 {
+  background-image: linear-gradient(to bottom, transparent 95%, rgba(0,0,0,0.04) 95%);
+  background-size: 100% 2rem;
+}
+
+.course-card, .btn-brutal, input, select, form {
+  background-image: none !important;
+}
+```
