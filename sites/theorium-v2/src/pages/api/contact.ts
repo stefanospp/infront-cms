@@ -42,12 +42,6 @@ export const POST: APIRoute = async ({ request }) => {
 
     // TODO: Wire up to Payload CMS submissions collection
     // TODO: Wire up Resend for email notification
-    console.log('Contact form submission:', {
-      name: data.name,
-      contact: data.contact,
-      school: data.school,
-      message: data.message.substring(0, 50) + '...',
-    });
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
