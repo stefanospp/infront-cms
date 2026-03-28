@@ -10,7 +10,7 @@ if (typeof window !== 'undefined') {
 
 const PAYLOAD_URL = typeof import.meta.env !== 'undefined' && import.meta.env.PAYLOAD_URL
   ? import.meta.env.PAYLOAD_URL
-  : 'https://cms-theorium.stepet.workers.dev';
+  : 'https://admin.theorium.eu';
 
 interface PayloadResponse<T> {
   docs: T[];

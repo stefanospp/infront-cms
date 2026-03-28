@@ -4,6 +4,11 @@
   "name": "cms-theorium",
   "compatibility_date": "2025-08-15",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "workers_dev": true,
+
+  "routes": [
+    { "pattern": "admin.theorium.eu", "custom_domain": true }
+  ],
 
   "assets": {
     "directory": ".open-next/assets",

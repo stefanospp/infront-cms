@@ -6,8 +6,8 @@
 
 /preview/*
   X-Robots-Tag: noindex
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.infront.cy; font-src 'self'; connect-src 'self' https://cms-theorium.stepet.workers.dev; frame-ancestors 'self' https://cms-theorium.stepet.workers.dev
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.infront.cy; font-src 'self'; connect-src 'self' https://admin.theorium.eu; frame-ancestors 'self' https://admin.theorium.eu
 
 /*
   X-Frame-Options: DENY
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.infront.cy; font-src 'self'; connect-src 'self' https://cms-theorium.stepet.workers.dev; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://cdn.infront.cy; font-src 'self'; connect-src 'self' https://admin.theorium.eu; frame-ancestors 'none'

@@ -12,4 +12,4 @@ routes = [
 directory = "./dist"
 
 [vars]
-PAYLOAD_URL = "https://cms-theorium.stepet.workers.dev"
+PAYLOAD_URL = "https://admin.theorium.eu"
