@@ -76,7 +76,8 @@ export default function MobileMenu({ links }: Props) {
       <div
         ref={menuRef}
         id="mobile-menu"
-        className={`fixed inset-0 top-20 bg-white z-40 overflow-y-auto transition-all duration-300 ${
+        style={{ position: 'fixed', top: '5rem', left: 0, right: 0, height: 'calc(100vh - 5rem)', zIndex: 40, backgroundColor: '#fff', overflowY: 'auto' }}
+        className={`transition-all duration-300 ${
           open
             ? 'opacity-100 pointer-events-auto visible'
             : 'opacity-0 pointer-events-none invisible'

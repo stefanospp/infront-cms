@@ -22,7 +22,10 @@
 
 body {
   font-family: "Inter", -apple-system, sans-serif;
-  background: #fafafa;
+  background-color: #fafafa;
+  background-image:
+    linear-gradient(to bottom, transparent 95%, #e8e5e0 95%, #e8e5e0 100%);
+  background-size: 100% 2rem;
   color: #171717;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
