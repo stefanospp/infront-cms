@@ -24,6 +24,8 @@ const links = [
       <a href="/contact" class="btn-brutal px-6 py-2 text-sm">Get in touch</a>
     </nav>
 
-    <MobileMenu links={links} client:load />
+    <div class="md:hidden">
+      <MobileMenu links={links} client:load />
+    </div>
   </div>
 </header>

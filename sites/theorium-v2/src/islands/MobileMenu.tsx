@@ -60,7 +60,7 @@ export default function MobileMenu({ links }: Props) {
   }, [open]);
 
   return (
-    <div className="md:hidden">
+    <div>
       <button
         ref={buttonRef}
         onClick={() => setOpen(!open)}
