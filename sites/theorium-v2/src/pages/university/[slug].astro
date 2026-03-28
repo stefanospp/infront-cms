@@ -3,28 +3,32 @@ import '../../styles/global.css';
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
-import { universityExams, getExamBySlug } from '../../lib/university';
-import { courses } from '../../lib/courses';
+import { getUniversityExams, getCourses } from '../../lib/cms';
+import { universityExams as fallbackExams } from '../../lib/university';
+import { courses as fallbackCourses } from '../../lib/courses';
 import type { GetStaticPaths } from 'astro';
 
-export const getStaticPaths: GetStaticPaths = () => {
-  return universityExams.map((exam) => ({
-    params: { slug: exam.slug },
-  }));
+export const getStaticPaths: GetStaticPaths = async () => {
+  let exams;
+  try { exams = await getUniversityExams(); } catch { exams = fallbackExams; }
+  return exams.map((e) => ({ params: { slug: e.slug } }));
 };
 
 const { slug } = Astro.params;
-const exam = getExamBySlug(slug);
+let allExams, allCourses;
+try { allExams = await getUniversityExams(); } catch { allExams = fallbackExams; }
+try { allCourses = await getCourses(); } catch { allCourses = fallbackCourses; }
 
+const exam = allExams.find((e) => e.slug === slug);
 if (!exam) {
   return Astro.redirect('/university');
 }
 
-const relatedCourses = courses
+const relatedCourses = allCourses
   .filter((c) => c.subject === 'Medical Entry' || c.level === 'University Entry')
   .slice(0, 3);
 
-const otherExams = universityExams.filter((e) => e.slug !== exam.slug);
+const otherExams = allExams.filter((e) => e.slug !== exam.slug);
 
 const highlightColors = ['yellow', 'green', 'pink', 'blue'] as const;
 ---

@@ -1,7 +1,8 @@
 ---
-import { courses } from '../lib/courses';
+import { getCourses } from '../lib/cms';
 
-const featured = courses.slice(0, 3);
+const allCourses = await getCourses();
+const featured = allCourses.slice(0, 3);
 ---
 
 <section id="courses" class="py-24 px-6 bg-white">

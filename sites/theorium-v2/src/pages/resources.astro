@@ -5,7 +5,11 @@ import Nav from '../components/Nav.astro';
 import PageHero from '../components/PageHero.astro';
 import ResourceFilter from '../islands/ResourceFilter.tsx';
 import Footer from '../components/Footer.astro';
-import { resources } from '../lib/resources';
+import { getResources } from '../lib/cms';
+import { resources as fallbackResources } from '../lib/resources';
+
+let resources;
+try { resources = await getResources(); } catch { resources = fallbackResources; }
 ---
 
 <Layout title="Free Resources — Theorium" description="Free past papers, revision notes, and worksheets for IGCSE, A-Level, and IB Biology, Chemistry, and Physics.">

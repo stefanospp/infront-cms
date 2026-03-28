@@ -1,0 +1,36 @@
+---
+export const prerender = false;
+
+import '../../styles/global.css';
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Hero from '../../components/Hero.astro';
+import WhyTheorium from '../../components/WhyTheorium.astro';
+import SubjectGrid from '../../components/SubjectGrid.astro';
+import HowItWorks from '../../components/HowItWorks.astro';
+import UniversitySection from '../../components/UniversitySection.astro';
+import RevisionCourses from '../../components/RevisionCourses.astro';
+import FAQ from '../../components/FAQ.astro';
+import ContactSection from '../../components/ContactSection.astro';
+import Footer from '../../components/Footer.astro';
+---
+
+<Layout title="Preview — Theorium" noindex>
+  <div class="bg-yellow-400 text-black text-center py-2 text-xs font-black uppercase tracking-widest fixed top-0 w-full z-[60]">
+    Preview Mode — Draft Content
+  </div>
+  <div class="mt-8">
+    <Nav />
+    <main id="main-content">
+      <Hero />
+      <WhyTheorium />
+      <SubjectGrid />
+      <HowItWorks />
+      <UniversitySection />
+      <RevisionCourses />
+      <FAQ />
+      <ContactSection showHeading />
+    </main>
+    <Footer />
+  </div>
+</Layout>

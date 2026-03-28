@@ -4,7 +4,11 @@ import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import PageHero from '../../components/PageHero.astro';
 import Footer from '../../components/Footer.astro';
-import { universityExams } from '../../lib/university';
+import { getUniversityExams } from '../../lib/cms';
+import { universityExams as fallbackExams } from '../../lib/university';
+
+let universityExams;
+try { universityExams = await getUniversityExams(); } catch { universityExams = fallbackExams; }
 ---
 
 <Layout title="University & Medical School — Theorium" description="UCAT, BMAT, SAT, and AP preparation for university entrance. Medical school admissions support in Cyprus.">

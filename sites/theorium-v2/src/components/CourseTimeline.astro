@@ -1,7 +1,9 @@
 ---
 import CourseFilter from '../islands/CourseFilter.tsx';
-import { courses, examPeriods } from '../lib/courses';
+import { getCourses } from '../lib/cms';
+import { examPeriods } from '../lib/courses';
 
+const courses = await getCourses();
 const filterCourses = courses.map((c) => ({
   slug: c.slug,
   name: c.name,

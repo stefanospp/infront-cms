@@ -3,28 +3,32 @@ import '../../styles/global.css';
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
-import { subjectDetails, getSubjectBySlug } from '../../lib/subjects';
-import { courses } from '../../lib/courses';
+import { getSubjects, getCourses } from '../../lib/cms';
+import { subjectDetails as fallbackSubjects } from '../../lib/subjects';
+import { courses as fallbackCourses } from '../../lib/courses';
 import type { GetStaticPaths } from 'astro';
 
-export const getStaticPaths: GetStaticPaths = () => {
-  return subjectDetails.map((subject) => ({
-    params: { slug: subject.slug },
-  }));
+export const getStaticPaths: GetStaticPaths = async () => {
+  let subjects;
+  try { subjects = await getSubjects(); } catch { subjects = fallbackSubjects; }
+  return subjects.map((s) => ({ params: { slug: s.slug } }));
 };
 
 const { slug } = Astro.params;
-const subject = getSubjectBySlug(slug);
+let allSubjects, allCourses;
+try { allSubjects = await getSubjects(); } catch { allSubjects = fallbackSubjects; }
+try { allCourses = await getCourses(); } catch { allCourses = fallbackCourses; }
 
+const subject = allSubjects.find((s) => s.slug === slug);
 if (!subject) {
   return Astro.redirect('/subjects');
 }
 
-const relatedCourses = courses
+const relatedCourses = allCourses
   .filter((c) => c.subject === subject.name || c.subject === 'All Sciences')
   .slice(0, 3);
 
-const otherSubjects = subjectDetails.filter((s) => s.slug !== subject.slug);
+const otherSubjects = allSubjects.filter((s) => s.slug !== subject.slug);
 
 const highlightColor = subject.slug === 'biology' ? 'pink' : subject.slug === 'chemistry' ? 'yellow' : 'green';
 ---

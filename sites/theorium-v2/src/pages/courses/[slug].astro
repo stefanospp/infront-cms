@@ -3,23 +3,38 @@ import '../../styles/global.css';
 import Layout from '../../layouts/Layout.astro';
 import Nav from '../../components/Nav.astro';
 import Footer from '../../components/Footer.astro';
-import { courses, getCourseBySlug, getRelatedCourses } from '../../lib/courses';
+import { getCourses } from '../../lib/cms';
+import { courses as fallbackCourses, getCourseBySlug as getFallbackCourse, getRelatedCourses as getFallbackRelated } from '../../lib/courses';
 import type { GetStaticPaths } from 'astro';
 
-export const getStaticPaths: GetStaticPaths = () => {
-  return courses.map((course) => ({
+export const getStaticPaths: GetStaticPaths = async () => {
+  let courseList;
+  try {
+    courseList = await getCourses();
+  } catch {
+    courseList = fallbackCourses;
+  }
+  return courseList.map((course) => ({
     params: { slug: course.slug },
   }));
 };
 
 const { slug } = Astro.params;
-const course = getCourseBySlug(slug);
+let allCourses;
+try {
+  allCourses = await getCourses();
+} catch {
+  allCourses = fallbackCourses;
+}
+const course = allCourses.find((c) => c.slug === slug);
 
 if (!course) {
   return Astro.redirect('/courses');
 }
 
-const related = getRelatedCourses(course);
+const related = allCourses
+  .filter((c) => c.slug !== course.slug && (c.subject === course.subject || c.season === course.season))
+  .slice(0, 3);
 ---
 
 <Layout

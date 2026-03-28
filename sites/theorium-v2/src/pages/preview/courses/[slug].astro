@@ -1,0 +1,85 @@
+---
+export const prerender = false;
+
+import '../../../styles/global.css';
+import Layout from '../../../layouts/Layout.astro';
+import Nav from '../../../components/Nav.astro';
+import Footer from '../../../components/Footer.astro';
+import { getCourses } from '../../../lib/cms';
+import { courses as fallbackCourses } from '../../../lib/courses';
+
+const { slug } = Astro.params;
+let allCourses;
+try { allCourses = await getCourses(); } catch { allCourses = fallbackCourses; }
+
+const course = allCourses.find((c) => c.slug === slug);
+if (!course) {
+  return Astro.redirect('/preview');
+}
+
+const related = allCourses
+  .filter((c) => c.slug !== course.slug && (c.subject === course.subject || c.season === course.season))
+  .slice(0, 3);
+---
+
+<Layout title={`Preview: ${course.name} — Theorium`} noindex>
+  <div class="bg-yellow-400 text-black text-center py-2 text-xs font-black uppercase tracking-widest fixed top-0 w-full z-[60]">
+    Preview Mode — Draft Content
+  </div>
+  <div class="mt-8">
+    <Nav />
+    <main id="main-content">
+      <section class="pt-32 pb-12 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+          <a href="/preview" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-gray-900 mb-6">
+            &larr; Back to preview
+          </a>
+          <div class="flex items-center gap-3 mb-4 flex-wrap">
+            <span class="text-xs font-black uppercase tracking-widest text-gray-400">{course.level}</span>
+            <span class="text-[10px] font-black uppercase tracking-widest px-2 py-1" style={`background: ${course.color};`}>{course.dates}</span>
+          </div>
+          <h1 class="text-4xl lg:text-5xl font-black mb-4 tracking-tight">{course.name}</h1>
+        </div>
+      </section>
+
+      <section class="pb-16 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+          <div class="grid md:grid-cols-3 gap-8">
+            <div class="md:col-span-2">
+              <p class="text-lg text-gray-700 font-medium leading-relaxed mb-10">{course.fullDescription}</p>
+              {course.topics.length > 0 && (
+                <div class="mb-10">
+                  <h2 class="text-xl font-black uppercase tracking-tight mb-4">Topics Covered</h2>
+                  <ul class="space-y-2">
+                    {course.topics.map((topic) => (
+                      <li class="flex items-start gap-3 text-gray-700 font-medium">
+                        <span class="w-1.5 h-1.5 bg-gray-900 rounded-full mt-2 shrink-0"></span>
+                        {topic}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <div>
+              <div class="border-2 border-gray-200 p-5 sticky top-24">
+                {course.price && <div class="text-3xl font-black mb-2">{course.price}</div>}
+                <div class="space-y-3 text-sm">
+                  <div class="flex justify-between border-b border-gray-100 pb-2">
+                    <span class="font-semibold text-gray-500">Duration</span>
+                    <span class="font-bold">{course.duration}</span>
+                  </div>
+                  <div class="flex justify-between border-b border-gray-100 pb-2">
+                    <span class="font-semibold text-gray-500">Class Size</span>
+                    <span class="font-bold">{course.classSize}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <Footer />
+  </div>
+</Layout>

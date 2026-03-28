@@ -1,6 +1,27 @@
 ---
 import SchoolTabs from '../islands/SchoolTabs.tsx';
-import { schoolData } from '../lib/subjects';
+import { getSchools, getSubjects } from '../lib/cms';
+import { schoolData as fallbackSchoolData } from '../lib/subjects';
+
+// Build school data from CMS subjects + schools
+let schoolData;
+try {
+  const [schools, subjects] = await Promise.all([getSchools(), getSubjects()]);
+  schoolData = schools.map((s: any) => ({
+    name: s.name,
+    location: s.location,
+    examBoards: s.examBoards,
+    subjects: subjects.map((sub: any) => ({
+      code: sub.code,
+      name: sub.name,
+      slug: sub.slug,
+      description: sub.levels?.[0]?.topics?.slice(0, 4)?.join(', ') || sub.tagline,
+      levels: s.levels || [],
+    })),
+  }));
+} catch {
+  schoolData = fallbackSchoolData;
+}
 
 interface Props {
   showHeading?: boolean;
