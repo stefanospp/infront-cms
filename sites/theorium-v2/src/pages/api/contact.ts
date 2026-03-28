@@ -12,7 +12,8 @@ const ALLOWED_ORIGINS = [
 ];
 
 const PAYLOAD_URL = import.meta.env.PAYLOAD_URL || 'https://admin.theorium.eu';
-const RESEND_API_KEY = import.meta.env.RESEND_API_KEY || '';
+const RESEND_API_KEY = (globalThis as any).process?.env?.RESEND_API_KEY
+  || (typeof import.meta.env !== 'undefined' ? import.meta.env.RESEND_API_KEY : '');
 
 const contactSchema = z.object({
   name: z.string().min(1).max(100),
@@ -74,7 +75,7 @@ export const POST: APIRoute = async ({ request }) => {
             Authorization: `Bearer ${RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: 'Theorium <noreply@theorium.eu>',
+            from: 'Theorium <noreply@infront.cy>',
             to: 'theodora@theorium.cy',
             subject: `New enquiry from ${data.name}`,
             html: `
@@ -118,7 +119,7 @@ export const POST: APIRoute = async ({ request }) => {
             Authorization: `Bearer ${RESEND_API_KEY}`,
           },
           body: JSON.stringify({
-            from: 'Theorium <noreply@theorium.eu>',
+            from: 'Theorium <noreply@infront.cy>',
             to: data.contact,
             subject: 'Thanks for reaching out — Theorium',
             html: `
