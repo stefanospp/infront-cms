@@ -72,33 +72,38 @@ export default function MobileMenu({ links }: Props) {
         {open ? '✕' : '☰'}
       </button>
 
-      {open && (
-        <div
-          ref={menuRef}
-          id="mobile-menu"
-          className="fixed inset-0 top-20 bg-white z-40 overflow-y-auto"
-        >
-          <nav aria-label="Mobile navigation" className="flex flex-col items-center gap-6 pt-12 pb-20 px-6">
-            {links.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className="font-bold text-lg uppercase tracking-wider hover:text-blue-800 transition-colors"
-                onClick={() => setOpen(false)}
-              >
-                {link.label}
-              </a>
-            ))}
+      {/* Always rendered — visibility controlled by CSS, not conditional rendering */}
+      <div
+        ref={menuRef}
+        id="mobile-menu"
+        className={`fixed inset-0 top-20 bg-white z-40 overflow-y-auto transition-all duration-300 ${
+          open
+            ? 'opacity-100 pointer-events-auto visible'
+            : 'opacity-0 pointer-events-none invisible'
+        }`}
+      >
+        <nav aria-label="Mobile navigation" className="flex flex-col items-center gap-6 pt-12 pb-20 px-6">
+          {links.map((link) => (
             <a
-              href="/contact"
-              className="btn-brutal px-8 py-3 text-sm mt-4"
+              key={link.href}
+              href={link.href}
+              className="font-bold text-lg uppercase tracking-wider hover:text-blue-800 transition-colors"
               onClick={() => setOpen(false)}
+              tabIndex={open ? 0 : -1}
             >
-              Get in touch
+              {link.label}
             </a>
-          </nav>
-        </div>
-      )}
+          ))}
+          <a
+            href="/contact"
+            className="btn-brutal px-8 py-3 text-sm mt-4"
+            onClick={() => setOpen(false)}
+            tabIndex={open ? 0 : -1}
+          >
+            Get in touch
+          </a>
+        </nav>
+      </div>
     </div>
   );
 }
