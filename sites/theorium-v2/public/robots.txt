@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://theorium.infront.cy/sitemap-index.xml
+Sitemap: https://theorium.eu/sitemap-index.xml

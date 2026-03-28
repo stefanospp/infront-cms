@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const prerender = false;
 
 const ALLOWED_ORIGINS = [
-  'https://theorium.infront.cy',
+  'https://theorium.eu',
   'http://localhost:4321',
   'http://localhost:4327',
   'http://localhost:4328',

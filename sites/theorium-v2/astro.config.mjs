@@ -5,7 +5,7 @@ import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://theorium.infront.cy',
+  site: 'https://theorium.eu',
   output: 'static',
   adapter: cloudflare(),
   integrations: [

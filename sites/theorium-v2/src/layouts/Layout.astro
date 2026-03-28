@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { title, description = 'Private Science Tutoring in Larnaca, Cyprus — Biology, Chemistry, Physics at IGCSE, A-Level, and IB.', ogImage = '/og-default.png', noindex = false } = Astro.props;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://theorium.infront.cy');
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://theorium.eu');
 
 /** Safe JSON-LD serializer — escapes < to prevent script injection from CMS content */
 function safeJsonLd(data: unknown): string {
@@ -31,7 +31,7 @@ function safeJsonLd(data: unknown): string {
     <meta property="og:url" content={canonicalURL.toString()} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={new URL(ogImage, Astro.site || 'https://theorium.infront.cy').toString()} />
+    <meta property="og:image" content={new URL(ogImage, Astro.site || 'https://theorium.eu').toString()} />
     <meta property="og:locale" content="en_GB" />
     <meta property="og:site_name" content="Theorium" />
 
@@ -39,7 +39,7 @@ function safeJsonLd(data: unknown): string {
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={new URL(ogImage, Astro.site || 'https://theorium.infront.cy').toString()} />
+    <meta name="twitter:image" content={new URL(ogImage, Astro.site || 'https://theorium.eu').toString()} />
 
     <!-- Structured Data: EducationalOrganization -->
     <script type="application/ld+json" set:html={safeJsonLd({
@@ -47,7 +47,7 @@ function safeJsonLd(data: unknown): string {
       '@type': 'EducationalOrganization',
       name: 'Theorium',
       description: 'Private science tutoring in Larnaca, Cyprus. Biology, Chemistry, and Physics at IGCSE, A-Level, and IB levels.',
-      url: 'https://theorium.infront.cy',
+      url: 'https://theorium.eu',
       email: 'theodora@theorium.cy',
       address: {
         '@type': 'PostalAddress',
