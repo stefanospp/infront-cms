@@ -14,6 +14,18 @@ export default function MobileMenu({ links }: Props) {
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
 
@@ -52,7 +64,7 @@ export default function MobileMenu({ links }: Props) {
       <button
         ref={buttonRef}
         onClick={() => setOpen(!open)}
-        className="font-black text-2xl"
+        className="relative z-50 w-10 h-10 flex items-center justify-center font-black text-2xl"
         aria-label={open ? 'Close menu' : 'Open menu'}
         aria-expanded={open}
         aria-controls="mobile-menu"
@@ -61,8 +73,12 @@ export default function MobileMenu({ links }: Props) {
       </button>
 
       {open && (
-        <div ref={menuRef} id="mobile-menu" className="fixed inset-0 top-20 bg-white z-40 border-t border-gray-200">
-          <nav aria-label="Mobile navigation" className="flex flex-col items-center gap-6 pt-12">
+        <div
+          ref={menuRef}
+          id="mobile-menu"
+          className="fixed inset-0 top-20 bg-white z-40 overflow-y-auto"
+        >
+          <nav aria-label="Mobile navigation" className="flex flex-col items-center gap-6 pt-12 pb-20 px-6">
             {links.map((link) => (
               <a
                 key={link.href}
