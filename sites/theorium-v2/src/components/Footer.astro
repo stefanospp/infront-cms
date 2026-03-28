@@ -3,18 +3,21 @@
 ---
 
 <footer class="bg-gray-900 text-white py-12 px-6">
-  <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+  <div class="max-w-7xl mx-auto flex flex-col items-center gap-6 md:flex-row md:justify-between">
     <a href="/" class="flex items-center gap-3" aria-label="Theorium — Home">
       <div class="w-8 h-8 bg-[#fff33b] text-black flex items-center justify-center font-black">Th</div>
       <span class="font-black text-xl">THEORIUM</span>
     </a>
-    <div class="flex items-center gap-4 text-xs font-medium text-gray-400">
-      <a href="/privacy" class="hover:text-white transition-colors">Privacy</a>
-      <span class="text-gray-600">·</span>
-      <a href="/terms" class="hover:text-white transition-colors">Terms</a>
-      <span class="text-gray-600">·</span>
+
+    <div class="flex flex-col items-center gap-3 md:flex-row md:gap-4 text-xs font-medium text-gray-400">
+      <div class="flex items-center gap-3">
+        <a href="/privacy" class="hover:text-white transition-colors">Privacy</a>
+        <span class="text-gray-600">·</span>
+        <a href="/terms" class="hover:text-white transition-colors">Terms</a>
+      </div>
+      <span class="hidden md:inline text-gray-600">·</span>
       <span>&copy; {new Date().getFullYear()} Theorium</span>
-      <span class="text-gray-300">·</span>
+      <span class="hidden md:inline text-gray-600">·</span>
       <a href="https://infront.cy" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors">Built by infront.cy</a>
     </div>
   </div>
