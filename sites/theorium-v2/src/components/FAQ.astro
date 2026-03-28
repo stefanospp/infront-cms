@@ -1,0 +1,59 @@
+---
+const faqs = [
+  {
+    question: 'What exam boards do you cover?',
+    answer: 'We cover Cambridge International (CIE), Pearson Edexcel, and IB Diploma Programme. Lessons are tailored to the specific syllabus and exam format of your board — including past paper practice with real mark schemes.',
+  },
+  {
+    question: 'Do you offer online lessons?',
+    answer: 'Yes. We offer both in-person lessons in Larnaca and online sessions via Zoom for students anywhere in Cyprus and across Europe. Online students get the same structured approach — screen sharing, digital whiteboards, and recorded sessions for review.',
+  },
+  {
+    question: 'How are group revision courses structured?',
+    answer: 'Group courses run over 4–8 weeks with sessions 2–3 times per week. Classes are capped at 8–10 students to ensure everyone gets individual attention. Each session covers specific syllabus topics with exam-style questions and timed practice.',
+  },
+  {
+    question: 'What subjects do you teach?',
+    answer: 'We specialise in the three core sciences: Biology, Chemistry, and Physics. We cover these at IGCSE, AS, A-Level, and IB Higher/Standard Level. This focused approach means deeper expertise and better results.',
+  },
+  {
+    question: 'How do I prepare for the UCAT exam?',
+    answer: 'Our UCAT preparation covers all four sections — Verbal Reasoning, Decision Making, Quantitative Reasoning, and Situational Judgement. We offer intensive one-day workshops and ongoing weekly sessions from June through September, timed to the UCAT testing window.',
+  },
+  {
+    question: 'Do you help with IB Internal Assessments?',
+    answer: 'Yes. IB Internal Assessments carry significant weight in your final grade. We help with topic selection, experimental design, data analysis, and report writing — all aligned with IB assessment criteria to maximise your marks.',
+  },
+  {
+    question: 'When should I start revision?',
+    answer: 'For May/June exams, serious revision should begin 8–10 weeks ahead — around late February or early March. We run Easter intensive courses specifically for this window. For mock exams in January, we recommend starting in November.',
+  },
+  {
+    question: 'Which schools do your students attend?',
+    answer: 'Our students come from American Academy Larnaca, Pascal English School, Med High, The English School, Forum, and other private schools across Cyprus. Each student\'s lessons follow their own school\'s curriculum and exam board.',
+  },
+];
+---
+
+<section class="py-24 px-6 bg-white">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="section-divider" aria-hidden="true"></div>
+      <h2 class="text-5xl font-black mb-4 uppercase tracking-tight">Frequently <span class="highlight-box highlight-green">Asked.</span></h2>
+    </div>
+
+    <div class="max-w-3xl mx-auto space-y-4">
+      {faqs.map((faq) => (
+        <details class="group border-2 border-gray-200 bg-white">
+          <summary class="flex items-center justify-between cursor-pointer p-6 font-black text-lg select-none hover:bg-gray-50 transition-colors">
+            {faq.question}
+            <span class="text-gray-400 group-open:rotate-45 transition-transform text-2xl ml-4 shrink-0">+</span>
+          </summary>
+          <div class="px-6 pb-6 text-gray-600 font-medium leading-relaxed border-t border-gray-100 pt-4">
+            {faq.answer}
+          </div>
+        </details>
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,41 @@
+---
+const features = [
+  {
+    title: 'Curriculum-Aligned',
+    description: 'Every lesson follows the exact syllabus your school uses — Cambridge, Edexcel, or IB. No generic worksheets, no wasted time on topics you don\'t need.',
+  },
+  {
+    title: 'Small Groups, Big Results',
+    description: 'Group revision classes are capped at 8–10 students. Everyone gets attention, everyone gets answers. One-on-one sessions are also available.',
+  },
+  {
+    title: 'Exam-Focused Approach',
+    description: 'Past papers, mark schemes, examiner reports — we teach how the exams work, not just the content. Students learn to maximise marks on every question.',
+  },
+  {
+    title: 'In-Person & Online',
+    description: 'Face-to-face lessons in Larnaca for local students. Online sessions via Zoom for students anywhere in Cyprus and across Europe.',
+  },
+];
+---
+
+<section class="py-24 px-6 bg-white">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="section-divider" aria-hidden="true"></div>
+      <h2 class="text-5xl font-black mb-4 uppercase tracking-tight">Why <span class="highlight-box highlight-green">Theorium.</span></h2>
+      <p class="text-gray-600 font-medium max-w-2xl mx-auto">
+        Private science tuition built around the way exams actually work — not the way textbooks are written.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+      {features.map((feature) => (
+        <div class="border-l-4 border-[#fff33b] pl-6 py-2">
+          <h3 class="text-xl font-black mb-2">{feature.title}</h3>
+          <p class="text-gray-600 font-medium leading-relaxed">{feature.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

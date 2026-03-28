@@ -1,0 +1,38 @@
+---
+const steps = [
+  {
+    number: '01',
+    title: 'Get in Touch',
+    description: 'Send a message via WhatsApp, Viber, or the contact form. Tell us your school, year group, and which subjects you need help with.',
+  },
+  {
+    number: '02',
+    title: 'Tailored Plan',
+    description: 'We review your current level, upcoming exams, and target grades. You get a personalised study plan aligned to your school\'s syllabus and exam board.',
+  },
+  {
+    number: '03',
+    title: 'Start Learning',
+    description: 'Begin with one-on-one sessions or join a small group revision course. Track your progress with regular assessments and past paper practice.',
+  },
+];
+---
+
+<section class="py-24 px-6 bg-gray-50 border-t border-gray-200">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="section-divider" aria-hidden="true"></div>
+      <h2 class="text-5xl font-black mb-4 uppercase tracking-tight">How It <span class="highlight-box highlight-blue">Works.</span></h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+      {steps.map((step) => (
+        <div class="text-center">
+          <div class="text-6xl font-black text-gray-200 mb-4">{step.number}</div>
+          <h3 class="text-xl font-black mb-3">{step.title}</h3>
+          <p class="text-gray-600 font-medium leading-relaxed">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

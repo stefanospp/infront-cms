@@ -1,0 +1,43 @@
+---
+const exams = [
+  {
+    region: 'United Kingdom',
+    name: 'UCAT',
+    description: 'Required by all UK medical and dental schools. Quantitative reasoning, decision making, verbal reasoning.',
+  },
+  {
+    region: 'United States',
+    name: 'SAT / AP',
+    description: 'SAT preparation for science subjects. AP Biology, Chemistry, and Physics support available.',
+  },
+  {
+    region: 'EU & Germany',
+    name: 'Science Foundations',
+    description: 'Dutch and German universities require strong A-Level or IB results. Subject-level tuition.',
+  },
+];
+---
+
+<section id="university" class="py-24 px-6 bg-slate-900 text-white">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-16">
+      <div class="w-16 h-1 bg-[#fff33b] mx-auto mb-8"></div>
+      <h2 class="text-5xl font-black mb-4">
+        UNIVERSITY EXAMS & <span class="text-[#fff33b]">MEDICAL SCHOOL.</span>
+      </h2>
+      <p class="text-gray-400 font-medium max-w-2xl mx-auto text-lg">
+        Preparation for entrance exams and admissions to universities in the UK, US, Netherlands, Germany, and Cyprus.
+      </p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+      {exams.map((exam) => (
+        <div class="border-2 border-gray-700 p-8 hover:border-[#fff33b] transition-colors bg-slate-800">
+          <div class="text-[#fff33b] text-xs font-black uppercase tracking-widest mb-4">{exam.region}</div>
+          <h3 class="text-2xl font-black mb-4">{exam.name}</h3>
+          <p class="text-gray-400 text-sm mb-6 leading-relaxed">{exam.description}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

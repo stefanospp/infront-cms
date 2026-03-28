@@ -1,0 +1,29 @@
+---
+import '../styles/global.css';
+import Layout from '../layouts/Layout.astro';
+import Nav from '../components/Nav.astro';
+import Hero from '../components/Hero.astro';
+import WhyTheorium from '../components/WhyTheorium.astro';
+import SubjectGrid from '../components/SubjectGrid.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import UniversitySection from '../components/UniversitySection.astro';
+import RevisionCourses from '../components/RevisionCourses.astro';
+import FAQ from '../components/FAQ.astro';
+import ContactSection from '../components/ContactSection.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Theorium — Science. Every Level.">
+  <Nav />
+  <main id="main-content">
+    <Hero />
+    <WhyTheorium />
+    <SubjectGrid />
+    <HowItWorks />
+    <UniversitySection />
+    <RevisionCourses />
+    <FAQ />
+    <ContactSection showHeading />
+  </main>
+  <Footer />
+</Layout>

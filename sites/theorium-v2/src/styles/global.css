@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+@source "../components/**/*.{astro,tsx}";
+@source "../layouts/**/*.{astro,tsx}";
+@source "../pages/**/*.{astro,tsx}";
+@source "../islands/**/*.{tsx}";
+
+/* Self-hosted Inter */
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+@import "@fontsource/inter/800.css";
+@import "@fontsource/inter/900.css";
+
+/* Base */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  font-family: "Inter", -apple-system, sans-serif;
+  background: #fafafa;
+  color: #171717;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Neobrutalist highlight underline — color variants */
+.highlight-box {
+  padding: 0 4px;
+  font-weight: 900;
+  color: #171717;
+  box-decoration-break: clone;
+}
+.highlight-yellow { background: linear-gradient(to top, #fff33b 40%, transparent 40%); }
+.highlight-green  { background: linear-gradient(to top, #b8ff6b 40%, transparent 40%); }
+.highlight-pink   { background: linear-gradient(to top, #ffb3c6 40%, transparent 40%); }
+.highlight-blue   { background: linear-gradient(to top, #a8e8ff 40%, transparent 40%); }
+
+/* Filter pills */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  background: white;
+  border: 2px solid #171717;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pill:hover,
+.pill.active {
+  background: #374151;
+  color: white;
+}
+
+/* Course cards */
+.course-card {
+  border: 2px solid #d1d5db;
+  background: white;
+  transition: all 0.2s;
+}
+
+.course-card:hover {
+  border-color: #171717;
+  transform: translate(-3px, -3px);
+  box-shadow: 6px 6px 0px #e5e7eb;
+}
+
+/* Brutal buttons */
+.btn-brutal {
+  background: #171717;
+  color: white;
+  border: 2px solid #171717;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.btn-brutal:hover {
+  background: #374151;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px #e5e7eb;
+}
+
+/* Section divider */
+.section-divider {
+  height: 3px;
+  background: #d1d5db;
+  width: 60px;
+  margin: 0 auto 32px;
+}
+
+/* Subject cells */
+.subject-cell {
+  background: white;
+  border: 2px solid #e5e7eb;
+  padding: 24px;
+  transition: all 0.2s;
+}
+
+.subject-cell:hover {
+  border-color: #171717;
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px #e5e7eb;
+}
+
+/* Highlighter hover colors per subject */
+.subject-cell.highlight-yellow:hover { background: #fff33b; }
+.subject-cell.highlight-green:hover  { background: #b8ff6b; }
+.subject-cell.highlight-pink:hover   { background: #ffb3c6; }
+.subject-cell.highlight-blue:hover   { background: #a8e8ff; }
+
+/* Keep text readable on bright highlighter backgrounds — target specific elements, not badges */
+.subject-cell:hover > div,
+.subject-cell:hover > h3,
+.subject-cell:hover > p {
+  color: #000;
+}
+
+/* Contact icon links */
+.contact-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.contact-icon:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0px #e5e7eb;
+}
+
+.contact-icon img {
+  width: 100%;
+  height: 100%;
+  border-radius: 16px;
+}
+
+/* Focus indicators for keyboard users */
+.btn-brutal:focus-visible,
+.pill:focus-visible,
+.contact-icon:focus-visible {
+  outline: 3px solid #171717;
+  outline-offset: 2px;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+
+  .course-card:hover,
+  .subject-cell:hover,
+  .btn-brutal:hover,
+  .contact-icon:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
