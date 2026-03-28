@@ -1,0 +1,185 @@
+---
+import '../../styles/global.css';
+import Layout from '../../layouts/Layout.astro';
+import Nav from '../../components/Nav.astro';
+import Footer from '../../components/Footer.astro';
+import { universityExams, getExamBySlug } from '../../lib/university';
+import { courses } from '../../lib/courses';
+import type { GetStaticPaths } from 'astro';
+
+export const getStaticPaths: GetStaticPaths = () => {
+  return universityExams.map((exam) => ({
+    params: { slug: exam.slug },
+  }));
+};
+
+const { slug } = Astro.params;
+const exam = getExamBySlug(slug);
+
+if (!exam) {
+  return Astro.redirect('/university');
+}
+
+const relatedCourses = courses
+  .filter((c) => c.subject === 'Medical Entry' || c.level === 'University Entry')
+  .slice(0, 3);
+
+const otherExams = universityExams.filter((e) => e.slug !== exam.slug);
+
+const highlightColors = ['yellow', 'green', 'pink', 'blue'] as const;
+---
+
+<Layout
+  title={`${exam.shortName} Preparation — Theorium`}
+  description={exam.description}
+>
+  <Nav />
+  <main id="main-content">
+    <!-- Hero -->
+    <section class="pt-32 pb-12 bg-white">
+      <div class="max-w-7xl mx-auto px-6">
+        <a href="/university" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-gray-900 mb-6 transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+          Back to university
+        </a>
+
+        <div class="flex items-center gap-3 mb-4 flex-wrap">
+          <span class="text-xs font-black uppercase tracking-widest text-gray-400">{exam.region}</span>
+          <span
+            class="text-[10px] font-black uppercase tracking-widest px-2 py-1"
+            style={`background: ${exam.color};`}
+          >
+            {exam.shortName}
+          </span>
+        </div>
+
+        <h1 class="text-4xl lg:text-5xl font-black mb-4 tracking-tight">{exam.name}</h1>
+        <p class="text-lg text-gray-600 font-medium">{exam.forWho}</p>
+      </div>
+    </section>
+
+    <!-- Content -->
+    <section class="pb-16 bg-white">
+      <div class="max-w-7xl mx-auto px-6">
+        <div class="grid md:grid-cols-3 gap-8">
+          <!-- Main content -->
+          <div class="md:col-span-2">
+            <p class="text-lg text-gray-700 font-medium leading-relaxed mb-12">
+              {exam.fullDescription}
+            </p>
+
+            <!-- Exam sections -->
+            <div class="mb-10">
+              <h2 class="text-xl font-black uppercase tracking-tight mb-4">
+                Exam <span class="highlight-box highlight-yellow">Sections</span>
+              </h2>
+              <div class="space-y-4">
+                {exam.sections.map((section, i) => (
+                  <div class="border-l-4 pl-5 py-1" style={`border-color: ${exam.color};`}>
+                    <h3 class="font-black mb-1">{section.name}</h3>
+                    <p class="text-sm text-gray-600 font-medium leading-relaxed">{section.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <!-- What we offer -->
+            <div class="mb-10">
+              <h2 class="text-xl font-black uppercase tracking-tight mb-4">
+                What We <span class="highlight-box highlight-green">Offer</span>
+              </h2>
+              <ul class="space-y-2">
+                {exam.whatWeOffer.map((item) => (
+                  <li class="flex items-start gap-3 text-gray-700 font-medium">
+                    <span class="text-green-600 font-black mt-0.5 shrink-0">&#10003;</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div>
+            <div class="border-2 border-gray-200 p-5 sticky top-24">
+              <h3 class="text-sm font-black uppercase tracking-widest text-gray-400 mb-4">Details</h3>
+              <div class="space-y-3 text-sm">
+                <div class="flex justify-between border-b border-gray-100 pb-2">
+                  <span class="font-semibold text-gray-500">Exam</span>
+                  <span class="font-bold text-gray-900">{exam.shortName}</span>
+                </div>
+                <div class="flex justify-between border-b border-gray-100 pb-2">
+                  <span class="font-semibold text-gray-500">Region</span>
+                  <span class="font-bold text-gray-900">{exam.region}</span>
+                </div>
+                <div class="flex justify-between border-b border-gray-100 pb-2">
+                  <span class="font-semibold text-gray-500">Sections</span>
+                  <span class="font-bold text-gray-900">{exam.sections.length}</span>
+                </div>
+                <div class="flex justify-between border-b border-gray-100 pb-2">
+                  <span class="font-semibold text-gray-500">Timeline</span>
+                  <span class="font-bold text-gray-900 text-right">{exam.timeline}</span>
+                </div>
+              </div>
+
+              <a href="/contact" class="btn-brutal w-full justify-center px-6 py-3 mt-6 text-sm">Enquire Now</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Related courses -->
+    {relatedCourses.length > 0 && (
+      <section class="py-16 bg-gray-50 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="text-2xl font-black uppercase tracking-tight mb-6">
+            Related <span class="highlight-box highlight-blue">Courses</span>
+          </h2>
+          <div class="grid md:grid-cols-3 gap-4">
+            {relatedCourses.map((rc) => (
+              <a href={`/courses/${rc.slug}`} class="border-2 border-gray-200 bg-white p-5 flex flex-col transition-all hover:border-gray-400 hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_#e5e7eb] no-underline">
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-black uppercase tracking-widest text-gray-400">{rc.level}</span>
+                  <span class="text-[10px] font-black uppercase tracking-widest px-2 py-1 shrink-0" style={`background: ${rc.color};`}>{rc.dates}</span>
+                </div>
+                <h3 class="text-lg font-black mb-1 leading-tight text-gray-900">{rc.name}</h3>
+                <p class="text-sm text-gray-600 font-medium leading-relaxed line-clamp-2 flex-1">{rc.description}</p>
+                <div class="flex items-center justify-between pt-3 border-t border-gray-100 mt-auto">
+                  <span class="text-xs font-semibold text-gray-500">{rc.classSize}</span>
+                  <span class="text-xs font-black uppercase tracking-wider text-gray-900">View →</span>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+
+    <!-- Other exams -->
+    {otherExams.length > 0 && (
+      <section class="py-16 bg-white border-t border-gray-200">
+        <div class="max-w-7xl mx-auto px-6">
+          <h2 class="text-2xl font-black uppercase tracking-tight mb-6">
+            Other <span class="highlight-box highlight-pink">Exams</span>
+          </h2>
+          <div class="grid md:grid-cols-3 gap-4">
+            {otherExams.map((oe) => (
+              <a href={`/university/${oe.slug}`} class="border-2 border-gray-200 bg-white p-5 flex items-center justify-between transition-all hover:border-gray-400 hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_#e5e7eb] no-underline">
+                <div>
+                  <span class="text-[10px] font-black uppercase tracking-widest px-2 py-1 mr-2" style={`background: ${oe.color};`}>{oe.shortName}</span>
+                  <span class="text-lg font-black text-gray-900">{oe.name}</span>
+                  <p class="text-xs text-gray-500 font-medium mt-1">{oe.region}</p>
+                </div>
+                <span class="text-xs font-black uppercase tracking-wider text-gray-900 shrink-0 ml-4">View →</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    )}
+  </main>
+  <Footer />
+</Layout>

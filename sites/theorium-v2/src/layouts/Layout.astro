@@ -2,24 +2,158 @@
 interface Props {
   title: string;
   description?: string;
+  ogImage?: string;
   noindex?: boolean;
 }
 
-const { title, description = 'Private Science Tutoring in Larnaca, Cyprus', noindex = false } = Astro.props;
+const { title, description = 'Private Science Tutoring in Larnaca, Cyprus — Biology, Chemistry, Physics at IGCSE, A-Level, and IB.', ogImage = '/og-default.png', noindex = false } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site || 'https://theorium.infront.cy');
+
+/** Safe JSON-LD serializer — escapes < to prevent script injection from CMS content */
+function safeJsonLd(data: unknown): string {
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL.toString()} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(ogImage, Astro.site || 'https://theorium.infront.cy').toString()} />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:site_name" content="Theorium" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={new URL(ogImage, Astro.site || 'https://theorium.infront.cy').toString()} />
+
+    <!-- Structured Data: EducationalOrganization -->
+    <script type="application/ld+json" set:html={safeJsonLd({
+      '@context': 'https://schema.org',
+      '@type': 'EducationalOrganization',
+      name: 'Theorium',
+      description: 'Private science tutoring in Larnaca, Cyprus. Biology, Chemistry, and Physics at IGCSE, A-Level, and IB levels.',
+      url: 'https://theorium.infront.cy',
+      email: 'theodora@theorium.cy',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Larnaca',
+        addressCountry: 'CY',
+      },
+      areaServed: [
+        { '@type': 'City', name: 'Larnaca' },
+        { '@type': 'Country', name: 'Cyprus' },
+      ],
+      knowsAbout: ['Biology', 'Chemistry', 'Physics', 'IGCSE', 'A-Level', 'IB Diploma', 'UCAT', 'Medical School Preparation'],
+    })} />
   </head>
   <body class="antialiased">
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[10000] focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:text-sm">Skip to content</a>
     <slot />
+
+    <script>
+      // Cookie Consent
+      import 'vanilla-cookieconsent/dist/cookieconsent.css';
+      import * as CookieConsent from 'vanilla-cookieconsent';
+
+      CookieConsent.run({
+        guiOptions: {
+          consentModal: {
+            layout: 'box inline',
+            position: 'bottom left',
+          },
+          preferencesModal: {
+            layout: 'box',
+          },
+        },
+        categories: {
+          necessary: {
+            enabled: true,
+            readOnly: true,
+          },
+          analytics: {
+            autoClear: {
+              cookies: [{ name: /^_ga/ }, { name: '_gid' }],
+            },
+          },
+        },
+        language: {
+          default: 'en',
+          translations: {
+            en: {
+              consentModal: {
+                title: 'We use cookies',
+                description: 'We use essential cookies to make the site work. With your consent, we may also use analytics cookies to improve your experience.',
+                acceptAllBtn: 'Accept all',
+                acceptNecessaryBtn: 'Reject all',
+                showPreferencesBtn: 'Manage preferences',
+              },
+              preferencesModal: {
+                title: 'Cookie preferences',
+                acceptAllBtn: 'Accept all',
+                acceptNecessaryBtn: 'Reject all',
+                savePreferencesBtn: 'Save preferences',
+                sections: [
+                  {
+                    title: 'Essential cookies',
+                    description: 'These cookies are required for the website to function and cannot be disabled.',
+                    linkedCategory: 'necessary',
+                  },
+                  {
+                    title: 'Analytics cookies',
+                    description: 'These cookies help us understand how visitors use the website, allowing us to improve it.',
+                    linkedCategory: 'analytics',
+                  },
+                ],
+              },
+            },
+          },
+        },
+      });
+    </script>
+
+    <script>
+      // Scroll-triggered fade-in for sections (skip first visible ones)
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        const sections = document.querySelectorAll('main > section, main > *:not(nav):not(header)');
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in-up');
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.05 }
+        );
+
+        sections.forEach((el, i) => {
+          if (!(el instanceof HTMLElement)) return;
+          // First 2 sections visible immediately (hero + next)
+          if (i < 2) {
+            el.style.opacity = '1';
+            return;
+          }
+          el.style.opacity = '0';
+          observer.observe(el);
+        });
+      }
+    </script>
   </body>
 </html>

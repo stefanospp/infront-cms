@@ -1,5 +1,10 @@
 // Payload CMS fetch client for Theorium v2
 // Not wired to a live CMS yet — all pages use hardcoded fallback data
+// Server-only — must not be imported in client-side code
+
+if (typeof window !== 'undefined') {
+  throw new Error('payload.ts must not be imported on the client');
+}
 
 const PAYLOAD_URL = typeof import.meta.env !== 'undefined' && import.meta.env.PAYLOAD_URL
   ? import.meta.env.PAYLOAD_URL
@@ -18,6 +23,10 @@ interface FetchOptions {
 }
 
 async function fetchPayload<T>(endpoint: string, options?: FetchOptions): Promise<T> {
+  // Prevent SSRF — endpoint must be a relative path
+  if (endpoint.includes('://') || endpoint.startsWith('//')) {
+    throw new Error('Invalid endpoint — must be a relative path');
+  }
   const separator = endpoint.includes('?') ? '&' : '?';
   const url = options?.draft
     ? `${PAYLOAD_URL}/api${endpoint}${separator}draft=true`

@@ -10,11 +10,11 @@ const { heading, highlight, highlightColor = 'yellow', description } = Astro.pro
 ---
 
 <section class="pt-32 pb-16 px-6 bg-white">
-  <div class="max-w-7xl mx-auto text-center">
+  <div class="max-w-7xl mx-auto px-6">
     <h1 class="text-5xl lg:text-7xl font-black mb-4 tracking-tight uppercase">
       {heading}{highlight && <> <span class={`highlight-box highlight-${highlightColor}`}>{highlight}</span></>}
     </h1>
-    <p class="text-xl font-medium text-gray-600 max-w-2xl mx-auto leading-relaxed">
+    <p class="text-xl font-medium text-gray-600 max-w-2xl leading-relaxed">
       {description}
     </p>
   </div>

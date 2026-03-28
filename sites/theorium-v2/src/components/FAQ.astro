@@ -35,9 +35,23 @@ const faqs = [
 ];
 ---
 
+<!-- FAQPage structured data -->
+<script type="application/ld+json" set:html={JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: faq.answer,
+    },
+  })),
+})} />
+
 <section class="py-24 px-6 bg-white">
   <div class="max-w-7xl mx-auto">
-    <div class="text-center mb-16">
+    <div class="mb-16">
       <div class="section-divider" aria-hidden="true"></div>
       <h2 class="text-5xl font-black mb-4 uppercase tracking-tight">Frequently <span class="highlight-box highlight-green">Asked.</span></h2>
     </div>

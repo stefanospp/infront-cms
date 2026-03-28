@@ -10,7 +10,9 @@ export default defineConfig({
   adapter: cloudflare(),
   integrations: [
     react(),
-    sitemap(),
+    sitemap({
+      filter: (page) => !page.includes('/api/'),
+    }),
   ],
   vite: {
     plugins: [
