@@ -9,8 +9,9 @@ import { getCourses } from '../../../lib/cms';
 import { courses as fallbackCourses } from '../../../lib/courses';
 
 const { slug } = Astro.params;
+const draft = { draft: true };
 let allCourses;
-try { allCourses = await getCourses(); } catch { allCourses = fallbackCourses; }
+try { allCourses = await getCourses(draft); } catch { allCourses = fallbackCourses; }
 
 const course = allCourses.find((c) => c.slug === slug);
 if (!course) {
@@ -44,39 +45,20 @@ const related = allCourses
 
       <section class="pb-16 bg-white">
         <div class="max-w-7xl mx-auto px-6">
-          <div class="grid md:grid-cols-3 gap-8">
-            <div class="md:col-span-2">
-              <p class="text-lg text-gray-700 font-medium leading-relaxed mb-10">{course.fullDescription}</p>
-              {course.topics.length > 0 && (
-                <div class="mb-10">
-                  <h2 class="text-xl font-black uppercase tracking-tight mb-4">Topics Covered</h2>
-                  <ul class="space-y-2">
-                    {course.topics.map((topic) => (
-                      <li class="flex items-start gap-3 text-gray-700 font-medium">
-                        <span class="w-1.5 h-1.5 bg-gray-900 rounded-full mt-2 shrink-0"></span>
-                        {topic}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+          <p class="text-lg text-gray-700 font-medium leading-relaxed mb-10">{course.fullDescription}</p>
+          {course.topics.length > 0 && (
+            <div class="mb-10">
+              <h2 class="text-xl font-black uppercase tracking-tight mb-4">Topics Covered</h2>
+              <ul class="space-y-2">
+                {course.topics.map((topic) => (
+                  <li class="flex items-start gap-3 text-gray-700 font-medium">
+                    <span class="w-1.5 h-1.5 bg-gray-900 rounded-full mt-2 shrink-0"></span>
+                    {topic}
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div>
-              <div class="border-2 border-gray-200 p-5 sticky top-24">
-                {course.price && <div class="text-3xl font-black mb-2">{course.price}</div>}
-                <div class="space-y-3 text-sm">
-                  <div class="flex justify-between border-b border-gray-100 pb-2">
-                    <span class="font-semibold text-gray-500">Duration</span>
-                    <span class="font-bold">{course.duration}</span>
-                  </div>
-                  <div class="flex justify-between border-b border-gray-100 pb-2">
-                    <span class="font-semibold text-gray-500">Class Size</span>
-                    <span class="font-bold">{course.classSize}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
     </main>

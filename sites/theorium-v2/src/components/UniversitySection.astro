@@ -2,8 +2,10 @@
 import { getUniversityExams } from '../lib/cms';
 import { universityExams as fallbackExams } from '../lib/university';
 
+interface Props { draft?: boolean; }
+const { draft } = Astro.props;
 let universityExams;
-try { universityExams = await getUniversityExams(); } catch { universityExams = fallbackExams; }
+try { universityExams = await getUniversityExams(draft ? { draft: true } : undefined); } catch { universityExams = fallbackExams; }
 const featured = universityExams.slice(0, 4);
 ---
 

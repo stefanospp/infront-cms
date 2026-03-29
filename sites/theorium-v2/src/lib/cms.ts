@@ -25,6 +25,10 @@ import { subjectDetails as fallbackSubjects, schoolData as fallbackSchoolData } 
 import { resources as fallbackResources } from './resources';
 import { universityExams as fallbackUniversityExams } from './university';
 
+export interface FetchOptions {
+  draft?: boolean;
+}
+
 // ── Courses ──
 
 function mapPayloadCourse(pc: PayloadCourse): Course {
@@ -38,7 +42,7 @@ function mapPayloadCourse(pc: PayloadCourse): Course {
     level: pc.level,
     season: pc.season,
     examBoard: pc.examBoard,
-    schools: [], // Schools come as IDs from Payload, simplified for now
+    schools: [],
     classSize: pc.classSize,
     duration: pc.duration,
     schedule: pc.schedule,
@@ -51,9 +55,9 @@ function mapPayloadCourse(pc: PayloadCourse): Course {
   };
 }
 
-export async function getCourses(): Promise<Course[]> {
+export async function getCourses(options?: FetchOptions): Promise<Course[]> {
   try {
-    const payloadCourses = await fetchCourses();
+    const payloadCourses = await fetchCourses(options);
     return payloadCourses.map(mapPayloadCourse);
   } catch {
     return fallbackCourses;
@@ -62,9 +66,9 @@ export async function getCourses(): Promise<Course[]> {
 
 // ── Subjects ──
 
-export async function getSubjects() {
+export async function getSubjects(options?: FetchOptions) {
   try {
-    const payloadSubjects = await fetchSubjects();
+    const payloadSubjects = await fetchSubjects(options);
     return payloadSubjects.map((ps) => ({
       slug: ps.slug,
       name: ps.name,
@@ -78,7 +82,7 @@ export async function getSubjects() {
         topics: l.topics?.map((t) => t.topic) || [],
       })) || [],
       whyStudy: ps.whyStudy?.map((w) => w.reason) || [],
-      schools: [], // Simplified
+      schools: [],
     }));
   } catch {
     return fallbackSubjects;
@@ -87,14 +91,14 @@ export async function getSubjects() {
 
 // ── Schools ──
 
-export async function getSchools() {
+export async function getSchools(options?: FetchOptions) {
   try {
-    const payloadSchools = await fetchSchools();
+    const payloadSchools = await fetchSchools(options);
     return payloadSchools.map((ps: PayloadSchool) => ({
       name: ps.name,
       location: ps.location,
       examBoards: ps.examBoards,
-      subjects: [], // Will be populated by subjects data
+      subjects: [],
       levels: ps.levels || [],
     }));
   } catch {
@@ -104,9 +108,9 @@ export async function getSchools() {
 
 // ── Resources ──
 
-export async function getResources() {
+export async function getResources(options?: FetchOptions) {
   try {
-    const payloadResources = await fetchResources();
+    const payloadResources = await fetchResources(options);
     return payloadResources.map((pr) => ({
       slug: pr.slug,
       name: pr.name,
@@ -129,9 +133,9 @@ export async function getResources() {
 
 // ── University Exams ──
 
-export async function getUniversityExams() {
+export async function getUniversityExams(options?: FetchOptions) {
   try {
-    const payloadExams = await fetchUniversityExams();
+    const payloadExams = await fetchUniversityExams(options);
     return payloadExams.map((pe: PayloadUniversityExam) => ({
       slug: pe.slug,
       name: pe.name,
@@ -152,35 +156,34 @@ export async function getUniversityExams() {
 
 // ── FAQs ──
 
-export async function getFAQs() {
+export async function getFAQs(options?: FetchOptions) {
   try {
-    const payloadFAQs = await fetchFAQs();
+    const payloadFAQs = await fetchFAQs(options);
     return payloadFAQs.map((pf: PayloadFAQ) => ({
       question: pf.question,
       answer: pf.answer,
     }));
   } catch {
-    // Return hardcoded FAQs from the FAQ component
-    return null; // null = use component defaults
+    return null;
   }
 }
 
 // ── Site Settings ──
 
-export async function getSiteSettings() {
+export async function getSiteSettings(options?: FetchOptions) {
   try {
-    return await fetchSiteSettings();
+    return await fetchSiteSettings(options);
   } catch {
-    return null; // null = use component defaults
+    return null;
   }
 }
 
 // ── Home Sections ──
 
-export async function getHomeSections() {
+export async function getHomeSections(options?: FetchOptions) {
   try {
-    return await fetchHomeSections();
+    return await fetchHomeSections(options);
   } catch {
-    return null; // null = use component defaults
+    return null;
   }
 }

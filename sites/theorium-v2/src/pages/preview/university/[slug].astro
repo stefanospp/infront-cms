@@ -9,8 +9,9 @@ import { getUniversityExams } from '../../../lib/cms';
 import { universityExams as fallbackExams } from '../../../lib/university';
 
 const { slug } = Astro.params;
+const draft = { draft: true };
 let allExams;
-try { allExams = await getUniversityExams(); } catch { allExams = fallbackExams; }
+try { allExams = await getUniversityExams(draft); } catch { allExams = fallbackExams; }
 
 const exam = allExams.find((e) => e.slug === slug);
 if (!exam) {

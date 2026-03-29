@@ -3,10 +3,14 @@ import SchoolTabs from '../islands/SchoolTabs.tsx';
 import { getSchools, getSubjects } from '../lib/cms';
 import { schoolData as fallbackSchoolData } from '../lib/subjects';
 
+interface Props { showHeading?: boolean; draft?: boolean; }
+const { showHeading = true, draft } = Astro.props;
+const opts = draft ? { draft: true } : undefined;
+
 // Build school data from CMS subjects + schools
 let schoolData;
 try {
-  const [schools, subjects] = await Promise.all([getSchools(), getSubjects()]);
+  const [schools, subjects] = await Promise.all([getSchools(opts), getSubjects(opts)]);
   schoolData = schools.map((s: any) => ({
     name: s.name,
     location: s.location,
@@ -23,11 +27,6 @@ try {
   schoolData = fallbackSchoolData;
 }
 
-interface Props {
-  showHeading?: boolean;
-}
-
-const { showHeading = true } = Astro.props;
 ---
 
 <section id="subjects" class="py-24 px-6 bg-gray-50">

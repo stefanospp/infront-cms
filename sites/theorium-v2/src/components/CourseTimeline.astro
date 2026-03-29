@@ -3,7 +3,9 @@ import CourseFilter from '../islands/CourseFilter.tsx';
 import { getCourses } from '../lib/cms';
 import { examPeriods } from '../lib/courses';
 
-const courses = await getCourses();
+interface Props { draft?: boolean; }
+const { draft } = Astro.props;
+const courses = await getCourses(draft ? { draft: true } : undefined);
 const filterCourses = courses.map((c) => ({
   slug: c.slug,
   name: c.name,

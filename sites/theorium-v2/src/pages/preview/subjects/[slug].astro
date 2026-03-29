@@ -9,8 +9,9 @@ import { getSubjects } from '../../../lib/cms';
 import { subjectDetails as fallbackSubjects } from '../../../lib/subjects';
 
 const { slug } = Astro.params;
+const draft = { draft: true };
 let allSubjects;
-try { allSubjects = await getSubjects(); } catch { allSubjects = fallbackSubjects; }
+try { allSubjects = await getSubjects(draft); } catch { allSubjects = fallbackSubjects; }
 
 const subject = allSubjects.find((s) => s.slug === slug);
 if (!subject) {

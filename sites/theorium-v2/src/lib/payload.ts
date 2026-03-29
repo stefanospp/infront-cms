@@ -34,6 +34,7 @@ async function fetchPayload<T>(endpoint: string, options?: FetchOptions): Promis
     : `${PAYLOAD_URL}/api${endpoint}`;
   const res = await fetch(url, {
     headers: { 'Content-Type': 'application/json' },
+    ...(options?.draft ? { cache: 'no-store' as RequestCache } : {}),
   });
   if (!res.ok) {
     throw new Error(`Payload API error: ${res.status} ${res.statusText}`);

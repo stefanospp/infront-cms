@@ -1,7 +1,9 @@
 ---
 import { getCourses } from '../lib/cms';
 
-const allCourses = await getCourses();
+interface Props { draft?: boolean; }
+const { draft } = Astro.props;
+const allCourses = await getCourses(draft ? { draft: true } : undefined);
 const featured = allCourses.slice(0, 3);
 ---
 
