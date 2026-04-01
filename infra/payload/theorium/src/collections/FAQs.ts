@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { collectionRebuildHook } from '../hooks/triggerRebuild'
 
 export const FAQs: CollectionConfig = {
   slug: 'faqs',
@@ -7,6 +8,7 @@ export const FAQs: CollectionConfig = {
     defaultColumns: ['question', 'order'],
   },
   access: { read: () => true },
+  hooks: { afterChange: [collectionRebuildHook] },
   fields: [
     { name: 'question', type: 'text', required: true },
     { name: 'answer', type: 'textarea', required: true },

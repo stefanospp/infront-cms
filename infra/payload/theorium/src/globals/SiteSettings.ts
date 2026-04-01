@@ -1,8 +1,10 @@
 import type { GlobalConfig } from 'payload'
+import { globalRebuildHook } from '../hooks/triggerRebuild'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
   access: { read: () => true },
+  hooks: { afterChange: [globalRebuildHook] },
   fields: [
     { name: 'siteName', type: 'text', required: true, defaultValue: 'Theorium' },
     { name: 'tagline', type: 'text', defaultValue: 'Private Science Tutoring' },

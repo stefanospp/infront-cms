@@ -1,6 +1,8 @@
 name: Deploy CMS Site
 
 on:
+  repository_dispatch:
+    types: [cms-publish]
   workflow_dispatch:
     inputs:
       slug:
@@ -12,7 +14,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      SITE_SLUG: ${{ inputs.slug }}
+      SITE_SLUG: ${{ inputs.slug || github.event.client_payload.slug }}
     steps:
       - uses: actions/checkout@v4
 
@@ -41,5 +43,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: sites/${{ inputs.slug }}
+          workingDirectory: sites/${{ env.SITE_SLUG }}
           command: deploy

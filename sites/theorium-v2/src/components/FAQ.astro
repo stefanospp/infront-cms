@@ -1,5 +1,11 @@
 ---
-const faqs = [
+import { getFAQs, type FetchOptions } from '../lib/cms';
+
+interface Props { draft?: boolean; }
+const { draft } = Astro.props;
+const opts: FetchOptions | undefined = draft ? { draft: true } : undefined;
+
+const fallbackFaqs = [
   {
     question: 'What exam boards do you cover?',
     answer: 'We cover Cambridge International (CIE), Pearson Edexcel, and IB Diploma Programme. Lessons are tailored to the specific syllabus and exam format of your board — including past paper practice with real mark schemes.',
@@ -33,6 +39,9 @@ const faqs = [
     answer: 'Our students come from American Academy Larnaca, Pascal English School, Med High, The English School, Forum, and other private schools across Cyprus. Each student\'s lessons follow their own school\'s curriculum and exam board.',
   },
 ];
+
+const cmsFaqs = await getFAQs(opts);
+const faqs = cmsFaqs?.length ? cmsFaqs : fallbackFaqs;
 ---
 
 <!-- FAQPage structured data -->

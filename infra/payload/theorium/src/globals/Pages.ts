@@ -1,8 +1,10 @@
 import type { GlobalConfig } from 'payload'
+import { globalRebuildHook } from '../hooks/triggerRebuild'
 
 export const Pages: GlobalConfig = {
   slug: 'pages',
   access: { read: () => true },
+  hooks: { afterChange: [globalRebuildHook] },
   fields: [
     {
       type: 'group',

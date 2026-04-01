@@ -35,6 +35,7 @@
 
   "vars": {
     "SITE_URL": "https://theorium.eu/preview",
-    "PREVIEW_SECRET": "th-preview-v2-secret"
+    "PREVIEW_SECRET": "th-preview-v2-secret",
+    "GH_REPO": "stefanospp/infront-cms"
   }
 }

@@ -106,7 +106,6 @@ infront-uploads/
 
 | Instance | Port | Slug/R2 Prefix | Docker Compose |
 |----------|------|----------------|----------------|
-| theorium | 8060 | `theorium/` | `infra/docker/theorium/docker-compose.yml` |
 | nikolaspetrou | 8057 | `nikolaspetrou/` | `infra/docker/nikolaspetrou/docker-compose.yml` |
 | atelier-kosta | 8055 | `atelier-kosta/` | `infra/docker/atelier-kosta/docker-compose.yml` |
 | meridian-properties | 8056 | `meridian-properties/` | `infra/docker/meridian-properties/docker-compose.yml` |

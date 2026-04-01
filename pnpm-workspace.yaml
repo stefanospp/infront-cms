@@ -1,3 +1,5 @@
 packages:
-  - 'packages/*'
-  - 'sites/*'
+  - packages/*
+  - sites/*
+
+onlyBuiltDependencies: esbuild sharp workerd

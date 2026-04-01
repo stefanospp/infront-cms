@@ -1,5 +1,11 @@
 ---
-const features = [
+import { getHomeSections, type FetchOptions } from '../lib/cms';
+
+interface Props { draft?: boolean; }
+const { draft } = Astro.props;
+const opts: FetchOptions | undefined = draft ? { draft: true } : undefined;
+
+const fallbackFeatures = [
   {
     title: 'Curriculum-Aligned',
     description: 'Every lesson follows the exact syllabus your school uses — Cambridge, Edexcel, or IB. No generic worksheets, no wasted time on topics you don\'t need.',
@@ -17,6 +23,13 @@ const features = [
     description: 'Face-to-face lessons in Larnaca for local students. Online sessions via Zoom for students anywhere in Cyprus and across Europe.',
   },
 ];
+
+const fallbackDescription = 'Private science tuition built around the way exams actually work — not the way textbooks are written.';
+
+const homeSections = await getHomeSections(opts);
+const why = homeSections?.why;
+const features = why?.features?.length ? why.features : fallbackFeatures;
+const description = why?.description || fallbackDescription;
 ---
 
 <section class="py-24 px-6 bg-white">
@@ -25,7 +38,7 @@ const features = [
       <div class="section-divider" aria-hidden="true"></div>
       <h2 class="text-5xl font-black mb-4 uppercase tracking-tight">Why <span class="highlight-box highlight-green">Theorium.</span></h2>
       <p class="text-gray-600 font-medium max-w-2xl">
-        Private science tuition built around the way exams actually work — not the way textbooks are written.
+        {description}
       </p>
     </div>
 

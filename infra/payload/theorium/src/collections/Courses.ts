@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { collectionRebuildHook } from '../hooks/triggerRebuild'
 
 export const Courses: CollectionConfig = {
   slug: 'courses',
@@ -7,6 +8,7 @@ export const Courses: CollectionConfig = {
     defaultColumns: ['name', 'subject', 'season', 'status', 'order'],
   },
   access: { read: () => true },
+  hooks: { afterChange: [collectionRebuildHook] },
   fields: [
     { name: 'name', type: 'text', required: true },
     { name: 'slug', type: 'text', required: true, unique: true, admin: { position: 'sidebar' } },

@@ -14,10 +14,9 @@ Payload CMS is the primary CMS for all new client sites. Runs on Cloudflare Work
 
 ## SonicJs CMS (deprecated — pilot only)
 
-SonicJs was evaluated as a Directus replacement but has been superseded by Payload CMS. Existing SonicJs sites will be migrated to Payload. Documentation preserved for reference:
+SonicJs was evaluated as a Directus replacement but has been superseded by Payload CMS. The Theorium pilot has been removed; Theorium now runs on Payload (v2). Documentation preserved for reference:
 - **Development guide:** `infra/sonicjs/GUIDE.md` — step-by-step for new sites, migration, export, storage, deployment
 - **Pilot evaluation:** `infra/sonicjs/README.md` — current status, comparison, transferability
-- **Reference implementation:** `infra/sonicjs/theorium/` — fully ported Theorium site
 
 ## Monorepo structure
 

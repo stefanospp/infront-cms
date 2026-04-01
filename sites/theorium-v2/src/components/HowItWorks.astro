@@ -1,5 +1,11 @@
 ---
-const steps = [
+import { getHomeSections, type FetchOptions } from '../lib/cms';
+
+interface Props { draft?: boolean; }
+const { draft } = Astro.props;
+const opts: FetchOptions | undefined = draft ? { draft: true } : undefined;
+
+const fallbackSteps = [
   {
     number: '01',
     title: 'Get in Touch',
@@ -16,6 +22,10 @@ const steps = [
     description: 'Begin with one-on-one sessions or join a small group revision course. Track your progress with regular assessments and past paper practice.',
   },
 ];
+
+const homeSections = await getHomeSections(opts);
+const howItWorks = homeSections?.howItWorks;
+const steps = howItWorks?.steps?.length ? howItWorks.steps : fallbackSteps;
 ---
 
 <section class="py-24 px-6 bg-gray-50 border-t border-gray-200">

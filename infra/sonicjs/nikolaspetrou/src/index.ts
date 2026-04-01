@@ -45,8 +45,18 @@ const app = createSonicJSApp({
         if (!contentType.includes('text/html')) return;
 
         // CRITICAL: Never modify HTMX responses (form submits, modals, partials)
-        // HTMX sends HX-Request header on all dynamic requests
         if (c.req.header('hx-request') === 'true') return;
+
+        // Debug: log admin PUT/POST errors
+        if (c.req.method === 'PUT' || c.req.method === 'POST') {
+          if (url.pathname.startsWith('/admin/content')) {
+            console.log(`[DEBUG] ${c.req.method} ${url.pathname} → ${c.res.status}`);
+            const body = await c.res.clone().text();
+            if (body.includes('Failed') || body.includes('error')) {
+              console.log(`[DEBUG] Response body: ${body.substring(0, 500)}`);
+            }
+          }
+        }
 
         let html = await c.res.text();
 
