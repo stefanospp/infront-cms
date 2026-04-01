@@ -10,8 +10,8 @@ const [firstName, lastName] = heading.split(' ');
 ---
 
 <header class="hero-video-wrapper">
-  <video autoplay muted loop playsinline>
-    <source src={videoUrl} type="video/mp4" />
+  <video autoplay muted loop playsinline preload="auto" id="heroVideo">
+    <source src={videoUrl} type={videoUrl.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
   </video>
   <div class="hero-overlay"></div>
 
@@ -38,6 +38,34 @@ const [firstName, lastName] = heading.split(' ');
 </header>
 
 <script>
+  // Pause hero video when scrolled out of view or tab is hidden
+  const heroVideo = document.getElementById('heroVideo') as HTMLVideoElement;
+  if (heroVideo) {
+    let isVisible = true;
+    const heroObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isVisible = entry.isIntersecting;
+          if (isVisible && !document.hidden) {
+            heroVideo.play().catch(() => {});
+          } else {
+            heroVideo.pause();
+          }
+        });
+      },
+      { threshold: 0.1 },
+    );
+    heroObserver.observe(heroVideo.closest('.hero-video-wrapper')!);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        heroVideo.pause();
+      } else if (isVisible) {
+        heroVideo.play().catch(() => {});
+      }
+    });
+  }
+
   import { gsap } from 'gsap';
 
   gsap.from('.hero-content .text-giant', {

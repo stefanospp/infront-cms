@@ -98,29 +98,44 @@ const { clients, label = '(Selected Clients)' } = Astro.props;
 <script>
   const section = document.getElementById('clientsSection');
   const bgContainer = section?.querySelector('.clients-bg-video') as HTMLElement;
-  const bgVideo = document.getElementById('clientsBgVideo') as HTMLVideoElement;
   const clientNames = section?.querySelectorAll('.client-name');
-  let currentSrc = '';
 
-  // Preload all client videos when section is ~600px from viewport
-  if (section) {
+  if (section && bgContainer) {
+    // Build a cache of video elements — one per unique URL, created once
+    const videoCache = new Map<string, HTMLVideoElement>();
+    let activeVideo: HTMLVideoElement | null = null;
+
+    // Remove the placeholder video element
+    const placeholder = document.getElementById('clientsBgVideo');
+    placeholder?.remove();
+
+    // Collect unique URLs
     const videoUrls = new Set<string>();
     clientNames?.forEach((el) => {
       const url = el.getAttribute('data-video');
       if (url) videoUrls.add(url);
     });
 
+    // Create and cache video elements when section is near viewport
+    function createCachedVideo(url: string): HTMLVideoElement {
+      const video = document.createElement('video');
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.preload = 'auto';
+      video.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.3s ease';
+      video.src = url;
+      video.load();
+      bgContainer.insertBefore(video, bgContainer.querySelector('.clients-bg-overlay'));
+      videoCache.set(url, video);
+      return video;
+    }
+
     const preloadObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            videoUrls.forEach((url) => {
-              const link = document.createElement('link');
-              link.rel = 'preload';
-              link.as = 'video';
-              link.href = url;
-              document.head.appendChild(link);
-            });
+            videoUrls.forEach((url) => createCachedVideo(url));
             preloadObserver.unobserve(section);
           }
         });
@@ -128,25 +143,34 @@ const { clients, label = '(Selected Clients)' } = Astro.props;
       { rootMargin: '600px 0px' },
     );
     preloadObserver.observe(section);
+
+    clientNames?.forEach((el) => {
+      const videoUrl = el.getAttribute('data-video');
+
+      el.addEventListener('mouseenter', () => {
+        if (!videoUrl) return;
+        let video = videoCache.get(videoUrl);
+        if (!video) video = createCachedVideo(videoUrl);
+
+        // Hide previous, show current
+        if (activeVideo && activeVideo !== video) {
+          activeVideo.pause();
+          activeVideo.style.opacity = '0';
+        }
+        activeVideo = video;
+        video.style.opacity = '1';
+        video.play().catch(() => {});
+        bgContainer.classList.add('active');
+      });
+
+      el.addEventListener('mouseleave', () => {
+        bgContainer.classList.remove('active');
+        if (activeVideo) {
+          activeVideo.pause();
+          activeVideo.style.opacity = '0';
+          activeVideo = null;
+        }
+      });
+    });
   }
-
-  clientNames?.forEach((el) => {
-    const videoUrl = el.getAttribute('data-video');
-
-    el.addEventListener('mouseenter', () => {
-      if (!videoUrl) return;
-      if (videoUrl !== currentSrc) {
-        currentSrc = videoUrl;
-        bgVideo.src = videoUrl;
-        bgVideo.load();
-      }
-      bgVideo.play();
-      bgContainer.classList.add('active');
-    });
-
-    el.addEventListener('mouseleave', () => {
-      bgContainer.classList.remove('active');
-      bgVideo.pause();
-    });
-  });
 </script>

@@ -79,8 +79,8 @@ const navLinks = settings.navLinks;
 
     <!-- Full-screen video background (fixed) -->
     <div class="about-video-bg">
-      <video autoplay muted loop playsinline>
-        <source src={about.video_url} type="video/mp4" />
+      <video autoplay muted loop playsinline id="aboutBgVideo">
+        <source src={about.video_url} type={about.video_url.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
       </video>
       <div class="about-video-overlay"></div>
     </div>
@@ -331,6 +331,18 @@ const navLinks = settings.navLinks;
     </style>
 
     <script>
+      // Pause background video when page is not visible (tab switch)
+      const aboutBgVideo = document.getElementById('aboutBgVideo') as HTMLVideoElement;
+      if (aboutBgVideo) {
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            aboutBgVideo.pause();
+          } else {
+            aboutBgVideo.play().catch(() => {});
+          }
+        });
+      }
+
       import { gsap } from 'gsap';
       import { ScrollTrigger } from 'gsap/ScrollTrigger';
 

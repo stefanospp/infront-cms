@@ -356,6 +356,19 @@ const { words } = Astro.props;
       initialVideo.play().catch(() => {});
     }
 
+    // Pause all videos when tab is hidden
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        slides.forEach((s) => {
+          const v = s.querySelector('.word-slide-video') as HTMLVideoElement;
+          v?.pause();
+        });
+      } else if (prevIndex >= 0) {
+        const activeVideo = slides[prevIndex]?.querySelector('.word-slide-video') as HTMLVideoElement;
+        activeVideo?.play().catch(() => {});
+      }
+    });
+
     // iOS Safari: refresh ScrollTrigger when viewport resizes (toolbar show/hide)
     if (isMobile) {
       let resizeTimer: ReturnType<typeof setTimeout>;
