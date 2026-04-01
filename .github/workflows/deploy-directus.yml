@@ -13,6 +13,6 @@ jobs:
     env:
       KAMAL_REGISTRY_PASSWORD: ${{ secrets.KAMAL_REGISTRY_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: gem install kamal
       - run: kamal deploy
