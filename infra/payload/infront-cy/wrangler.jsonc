@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "cms-infront",
+  "compatibility_date": "2025-08-15",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+
+  "d1_databases": [
+    {
+      "binding": "D1",
+      "database_id": "f4b16b4d-e400-41aa-8f00-ef1923c48dbd",
+      "database_name": "infront-payload",
+      "remote": true
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "R2",
+      "bucket_name": "infront-uploads"
+    }
+  ],
+
+  "vars": {
+    "SITE_URL": "https://infront.cy/preview",
+    "PREVIEW_SECRET": "infront-preview-secret"
+  }
+}

@@ -1,0 +1,101 @@
+import type { CollectionConfig } from 'payload'
+
+export const IndustryPages: CollectionConfig = {
+  slug: 'industry_pages',
+  admin: {
+    useAsTitle: 'title',
+    defaultColumns: ['title', 'slug', 'status', 'display_order'],
+  },
+  access: {
+    read: () => true,
+  },
+  fields: [
+    {
+      name: 'title',
+      type: 'text',
+      required: true,
+    },
+    {
+      name: 'slug',
+      type: 'text',
+      required: true,
+      unique: true,
+      admin: { position: 'sidebar' },
+    },
+    {
+      name: 'meta_title',
+      type: 'text',
+    },
+    {
+      name: 'meta_description',
+      type: 'textarea',
+    },
+    {
+      name: 'hero_heading',
+      type: 'text',
+    },
+    {
+      name: 'hero_description',
+      type: 'textarea',
+    },
+    {
+      name: 'card_description',
+      type: 'textarea',
+      admin: {
+        description: 'Short description shown on the /who-we-help listing page',
+      },
+    },
+    {
+      name: 'problems',
+      type: 'array',
+      fields: [
+        { name: 'heading', type: 'text', required: true },
+        { name: 'description', type: 'textarea', required: true },
+      ],
+    },
+    {
+      name: 'services',
+      type: 'array',
+      admin: {
+        description: 'Services relevant to this industry (links to service pages)',
+      },
+      fields: [
+        { name: 'title', type: 'text', required: true },
+        { name: 'description', type: 'textarea', required: true },
+        { name: 'slug', type: 'text' },
+      ],
+    },
+    {
+      name: 'faq',
+      type: 'array',
+      fields: [
+        { name: 'question', type: 'text', required: true },
+        { name: 'answer', type: 'textarea', required: true },
+      ],
+    },
+    {
+      name: 'cta_heading',
+      type: 'text',
+    },
+    {
+      name: 'cta_description',
+      type: 'textarea',
+    },
+    {
+      name: 'status',
+      type: 'select',
+      options: [
+        { label: 'Draft', value: 'draft' },
+        { label: 'Published', value: 'published' },
+      ],
+      defaultValue: 'draft',
+      admin: { position: 'sidebar' },
+    },
+    {
+      name: 'display_order',
+      type: 'number',
+      defaultValue: 0,
+      admin: { position: 'sidebar' },
+    },
+  ],
+}
