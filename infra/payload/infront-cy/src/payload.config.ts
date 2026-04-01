@@ -19,6 +19,7 @@ import { Articles } from './collections/Articles'
 import { Portfolio } from './collections/Portfolio'
 import { IndustryPages } from './collections/IndustryPages'
 import { Submissions } from './collections/Submissions'
+import { Audits } from './collections/Audits'
 import { SiteSettings } from './globals/SiteSettings'
 
 const filename = fileURLToPath(import.meta.url)
@@ -93,7 +94,7 @@ export default buildConfig({
       globals: ['site-settings'],
     },
   },
-  collections: [Users, Media, FAQ, Testimonials, Services, ServicePages, Articles, Portfolio, IndustryPages, Submissions],
+  collections: [Users, Media, FAQ, Testimonials, Services, ServicePages, Articles, Portfolio, IndustryPages, Submissions, Audits],
   globals: [SiteSettings],
   editor: lexicalEditor(),
   typescript: {
