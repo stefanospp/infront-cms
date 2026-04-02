@@ -1,6 +1,0 @@
-node_modules/
-.next/
-.open-next/
-.wrangler/
-package-lock.json
-src/payload-types.ts
