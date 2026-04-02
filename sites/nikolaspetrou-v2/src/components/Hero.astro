@@ -76,34 +76,25 @@ const [firstName, lastName] = heading.split(' ');
       heroVideo.play().catch(() => {});
 
       // Start GSAP animations only after reveal
-      gsap.from('.hero-content .text-giant', {
-        y: 80,
-        opacity: 0,
-        duration: 1.6,
-        ease: 'power4.out',
-        delay: 0.2,
-      });
+      gsap.fromTo('.hero-content .text-giant',
+        { y: 80, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1.6, ease: 'power4.out', delay: 0.2 },
+      );
 
-      gsap.from('.hero-subtext', {
-        y: 20,
-        opacity: 0,
-        duration: 1,
-        ease: 'power3.out',
-        delay: 0.6,
-      });
+      gsap.fromTo('.hero-subtext',
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.6 },
+      );
 
-      gsap.from('.hero-scroll-indicator', {
-        opacity: 0,
-        y: -10,
-        duration: 1,
-        ease: 'power2.out',
-        delay: 1.2,
-      });
+      gsap.fromTo('.hero-scroll-indicator',
+        { opacity: 0, y: -10 },
+        { opacity: 1, y: 0, duration: 1, ease: 'power2.out', delay: 1.2 },
+      );
     });
   }
 
-  // Hide hero content until reveal (prevent flash of unstyled content)
-  gsap.set('.hero-content .text-giant', { opacity: 0 });
-  gsap.set('.hero-subtext', { opacity: 0 });
-  gsap.set('.hero-scroll-indicator', { opacity: 0 });
+  // Hide hero content until reveal
+  gsap.set('.hero-content .text-giant', { y: 80, opacity: 0 });
+  gsap.set('.hero-subtext', { y: 20, opacity: 0 });
+  gsap.set('.hero-scroll-indicator', { opacity: 0, y: -10 });
 </script>

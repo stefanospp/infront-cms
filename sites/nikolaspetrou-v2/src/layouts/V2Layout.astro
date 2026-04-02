@@ -135,7 +135,8 @@ const { title, description = 'Videographer & Content Creator', noindex = false }
         setTimeout(() => {
           loader.remove();
           document.dispatchEvent(new CustomEvent('hero:reveal'));
-          startCursor();
+          // Delay cursor start so GPU is free for video + text animations
+          setTimeout(startCursor, 1500);
         }, 600);
       }
 
