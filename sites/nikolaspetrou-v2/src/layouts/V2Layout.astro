@@ -87,7 +87,7 @@ const { title, description = 'Videographer & Content Creator', noindex = false }
       const loader = document.getElementById('siteLoader')!;
       const loaderText = document.getElementById('loaderText')!;
       const heroVideo = document.getElementById('heroVideo') as HTMLVideoElement | null;
-      const phrase = 'Capturing moments that move.';
+      const phrase = 'Capturing moments that move...';
 
       // Type out the phrase
       function typeText(): Promise<void> {
@@ -126,7 +126,7 @@ const { title, description = 'Videographer & Content Creator', noindex = false }
         ]);
 
         // Brief pause after typing finishes
-        await new Promise((r) => setTimeout(r, 400));
+        await new Promise((r) => setTimeout(r, 800));
 
         // Fade out overlay
         loader.classList.add('fade-out');

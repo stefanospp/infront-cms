@@ -73,6 +73,7 @@ const [firstName, lastName] = heading.split(' ');
     // --- Triggered by the loader overlay when it's done ---
     document.addEventListener('hero:reveal', () => {
       revealed = true;
+      heroVideo.classList.add('revealed');
       heroVideo.play().catch(() => {});
 
       // Start GSAP animations only after reveal
