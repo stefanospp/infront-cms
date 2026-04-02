@@ -16,6 +16,7 @@ const { title, description = 'Videographer & Content Creator', noindex = false }
     <title>{title}</title>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex, nofollow" />}
+    <link rel="preconnect" href="https://cdn.infront.cy" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -25,6 +26,49 @@ const { title, description = 'Videographer & Content Creator', noindex = false }
   </head>
   <body>
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[10000] focus:bg-white focus:text-black focus:px-4 focus:py-2 focus:text-sm">Skip to content</a>
+
+    <!-- Loading Overlay -->
+    <div id="siteLoader">
+      <div class="loader-inner">
+        <span id="loaderText"></span><span class="loader-caret"></span>
+      </div>
+    </div>
+
+    <style>
+      #siteLoader {
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.6s ease;
+      }
+      #siteLoader.fade-out {
+        opacity: 0;
+        pointer-events: none;
+      }
+      .loader-inner {
+        font-family: 'Inter', sans-serif;
+        font-size: clamp(1rem, 3vw, 1.5rem);
+        font-weight: 400;
+        letter-spacing: 0.05em;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .loader-caret {
+        display: inline-block;
+        width: 2px;
+        height: 1.1em;
+        background: rgba(255, 255, 255, 0.8);
+        margin-left: 2px;
+        vertical-align: text-bottom;
+        animation: caretBlink 0.6s step-end infinite;
+      }
+      @keyframes caretBlink {
+        50% { opacity: 0; }
+      }
+    </style>
 
     <!-- Custom Cursor -->
     <div class="cursor-ring" id="cursorRing"></div>
@@ -39,13 +83,70 @@ const { title, description = 'Videographer & Content Creator', noindex = false }
       import { ScrollTrigger } from 'gsap/ScrollTrigger';
       import Lenis from 'lenis';
 
-      // Lenis Smooth Scroll
+      // --- Loading overlay: type text, wait for video, then reveal ---
+      const loader = document.getElementById('siteLoader')!;
+      const loaderText = document.getElementById('loaderText')!;
+      const heroVideo = document.getElementById('heroVideo') as HTMLVideoElement | null;
+      const phrase = 'Capturing moments that move.';
+
+      // Type out the phrase
+      function typeText(): Promise<void> {
+        return new Promise((resolve) => {
+          let i = 0;
+          const interval = setInterval(() => {
+            loaderText.textContent = phrase.slice(0, i + 1);
+            i++;
+            if (i >= phrase.length) {
+              clearInterval(interval);
+              resolve();
+            }
+          }, 60);
+        });
+      }
+
+      // Wait for video to be ready (or timeout)
+      function waitForVideo(): Promise<void> {
+        return new Promise((resolve) => {
+          if (!heroVideo) { resolve(); return; }
+          if (heroVideo.readyState >= 4) { resolve(); return; }
+          const timeout = setTimeout(resolve, 4000);
+          heroVideo.addEventListener('canplaythrough', () => {
+            clearTimeout(timeout);
+            resolve();
+          }, { once: true });
+        });
+      }
+
+      // Run loader sequence
+      async function runLoader() {
+        // Start both in parallel: typing + video buffering
+        const [,] = await Promise.all([
+          typeText(),
+          waitForVideo(),
+        ]);
+
+        // Brief pause after typing finishes
+        await new Promise((r) => setTimeout(r, 400));
+
+        // Fade out overlay
+        loader.classList.add('fade-out');
+
+        // After fade, remove overlay and reveal site
+        setTimeout(() => {
+          loader.remove();
+          document.dispatchEvent(new CustomEvent('hero:reveal'));
+          startCursor();
+        }, 600);
+      }
+
+      runLoader();
+
+      // --- Lenis Smooth Scroll ---
       const lenis = new Lenis({
         duration: 1.2,
         easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       });
 
-      // GSAP
       gsap.registerPlugin(ScrollTrigger);
 
       lenis.on('scroll', ScrollTrigger.update);
@@ -54,42 +155,48 @@ const { title, description = 'Videographer & Content Creator', noindex = false }
       });
       gsap.ticker.lagSmoothing(0);
 
-      // Custom Cursor
+      // --- Custom Cursor (deferred until reveal) ---
       const cursorRing = document.getElementById('cursorRing')!;
       const cursorDot = document.getElementById('cursorDot')!;
 
-      if (window.matchMedia('(pointer: coarse)').matches) {
-        document.body.style.cursor = 'auto';
-        cursorRing.style.display = 'none';
-        cursorDot.style.display = 'none';
-      } else {
-        let mouseX = 0, mouseY = 0;
-        let ringX = 0, ringY = 0;
-        let dotX = 0, dotY = 0;
+      function startCursor() {
+        if (window.matchMedia('(pointer: coarse)').matches) {
+          document.body.style.cursor = 'auto';
+          cursorRing.style.display = 'none';
+          cursorDot.style.display = 'none';
+        } else {
+          let mouseX = 0, mouseY = 0;
+          let ringX = 0, ringY = 0;
+          let dotX = 0, dotY = 0;
 
-        document.addEventListener('mousemove', (e) => {
-          mouseX = e.clientX;
-          mouseY = e.clientY;
-        });
+          document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+          });
 
-        function animateCursor() {
-          ringX += (mouseX - ringX) * 0.15;
-          ringY += (mouseY - ringY) * 0.15;
-          cursorRing.style.left = ringX + 'px';
-          cursorRing.style.top = ringY + 'px';
-          dotX += (mouseX - dotX) * 0.5;
-          dotY += (mouseY - dotY) * 0.5;
-          cursorDot.style.left = dotX + 'px';
-          cursorDot.style.top = dotY + 'px';
-          requestAnimationFrame(animateCursor);
+          function animateCursor() {
+            ringX += (mouseX - ringX) * 0.15;
+            ringY += (mouseY - ringY) * 0.15;
+            cursorRing.style.left = ringX + 'px';
+            cursorRing.style.top = ringY + 'px';
+            dotX += (mouseX - dotX) * 0.5;
+            dotY += (mouseY - dotY) * 0.5;
+            cursorDot.style.left = dotX + 'px';
+            cursorDot.style.top = dotY + 'px';
+            requestAnimationFrame(animateCursor);
+          }
+          animateCursor();
+
+          document.querySelectorAll('.cursor-hover').forEach((el) => {
+            el.addEventListener('mouseenter', () => cursorRing.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursorRing.classList.remove('hover'));
+          });
         }
-        animateCursor();
-
-        document.querySelectorAll('.cursor-hover').forEach((el) => {
-          el.addEventListener('mouseenter', () => cursorRing.classList.add('hover'));
-          el.addEventListener('mouseleave', () => cursorRing.classList.remove('hover'));
-        });
       }
+
+      // Hide cursor elements until loader finishes
+      cursorRing.style.display = 'none';
+      cursorDot.style.display = 'none';
     </script>
   </body>
 </html>

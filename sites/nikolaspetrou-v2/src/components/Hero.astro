@@ -10,7 +10,7 @@ const [firstName, lastName] = heading.split(' ');
 ---
 
 <header class="hero-video-wrapper">
-  <video autoplay muted loop playsinline preload="auto" id="heroVideo">
+  <video muted loop playsinline preload="auto" id="heroVideo">
     <source src={videoUrl} type={videoUrl.endsWith('.webm') ? 'video/webm' : 'video/mp4'} />
   </video>
   <div class="hero-overlay"></div>
@@ -38,19 +38,27 @@ const [firstName, lastName] = heading.split(' ');
 </header>
 
 <script>
-  // Pause hero video when scrolled out of view or tab is hidden
+  import { gsap } from 'gsap';
+
   const heroVideo = document.getElementById('heroVideo') as HTMLVideoElement;
+
+  // --- Video visibility management ---
   if (heroVideo) {
     let isVisible = true;
+    let revealed = false;
+
+    function tryPlay() {
+      if (revealed && isVisible && !document.hidden) {
+        heroVideo.play().catch(() => {});
+      }
+    }
+
     const heroObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           isVisible = entry.isIntersecting;
-          if (isVisible && !document.hidden) {
-            heroVideo.play().catch(() => {});
-          } else {
-            heroVideo.pause();
-          }
+          if (isVisible) tryPlay();
+          else heroVideo.pause();
         });
       },
       { threshold: 0.1 },
@@ -58,37 +66,44 @@ const [firstName, lastName] = heading.split(' ');
     heroObserver.observe(heroVideo.closest('.hero-video-wrapper')!);
 
     document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        heroVideo.pause();
-      } else if (isVisible) {
-        heroVideo.play().catch(() => {});
-      }
+      if (document.hidden) heroVideo.pause();
+      else tryPlay();
+    });
+
+    // --- Triggered by the loader overlay when it's done ---
+    document.addEventListener('hero:reveal', () => {
+      revealed = true;
+      heroVideo.play().catch(() => {});
+
+      // Start GSAP animations only after reveal
+      gsap.from('.hero-content .text-giant', {
+        y: 80,
+        opacity: 0,
+        duration: 1.6,
+        ease: 'power4.out',
+        delay: 0.2,
+      });
+
+      gsap.from('.hero-subtext', {
+        y: 20,
+        opacity: 0,
+        duration: 1,
+        ease: 'power3.out',
+        delay: 0.6,
+      });
+
+      gsap.from('.hero-scroll-indicator', {
+        opacity: 0,
+        y: -10,
+        duration: 1,
+        ease: 'power2.out',
+        delay: 1.2,
+      });
     });
   }
 
-  import { gsap } from 'gsap';
-
-  gsap.from('.hero-content .text-giant', {
-    y: 80,
-    opacity: 0,
-    duration: 1.6,
-    ease: 'power4.out',
-    delay: 0.3,
-  });
-
-  gsap.from('.hero-subtext', {
-    y: 20,
-    opacity: 0,
-    duration: 1,
-    ease: 'power3.out',
-    delay: 0.8,
-  });
-
-  gsap.from('.hero-scroll-indicator', {
-    opacity: 0,
-    y: -10,
-    duration: 1,
-    ease: 'power2.out',
-    delay: 1.5,
-  });
+  // Hide hero content until reveal (prevent flash of unstyled content)
+  gsap.set('.hero-content .text-giant', { opacity: 0 });
+  gsap.set('.hero-subtext', { opacity: 0 });
+  gsap.set('.hero-scroll-indicator', { opacity: 0 });
 </script>
