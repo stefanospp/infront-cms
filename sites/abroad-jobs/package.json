@@ -24,7 +24,7 @@
     "resend": "^4.0.0",
     "stripe": "^17.0.0",
     "tailwindcss": "^4.2.0",
-    "zod": "^3.24.0"
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "drizzle-kit": "^0.30.0"
