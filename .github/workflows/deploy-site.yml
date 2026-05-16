@@ -27,7 +27,7 @@ jobs:
           DIRECTUS_TOKEN: ${{ secrets.DIRECTUS_TOKEN }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           CONTACT_EMAIL: ${{ vars.CONTACT_EMAIL }}
-      - uses: cloudflare/wrangler-action@v3
+      - uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
